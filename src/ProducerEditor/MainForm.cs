@@ -81,7 +81,7 @@ namespace ProducerEditor
 										if (producer == null)
 											return;
 										var rename = new JoinForm(_controller, producer);
-										if (rename.ShowDialog() == DialogResult.Cancel)
+										if (rename.ShowDialog() != DialogResult.Cancel)
 										{
 											producerTable.RebuildViewPort();
 											SelectedProducerChanged(producerTable.Selected<Producer>());
@@ -253,12 +253,14 @@ namespace ProducerEditor
 			AcceptButton = new Button
 			{
 				DialogResult = DialogResult.OK,
-				Text = "Сохранить"
+				Text = "Сохранить", 
+				AutoSize = true,
 			};
 			CancelButton = new Button
 			{
 				DialogResult = DialogResult.Cancel,
-				Text = "Отмена"
+				Text = "Отмена",
+				AutoSize = true,
 			};
 			FormBorderStyle = FormBorderStyle.FixedSingle;
 			MaximizeBox = false;
