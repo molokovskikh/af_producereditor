@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Linq;
-using System.Text;
 using Castle.ActiveRecord;
-using NHibernate;
-using NHibernate.Criterion;
+using Castle.ActiveRecord.Framework.Scopes;
+using MySql.Data.MySqlClient;
 using NHibernate.Transform;
 
 namespace ProducerEditor
@@ -15,47 +15,57 @@ namespace ProducerEditor
 
 		public IList<Producer> GetAllProducers()
 		{
-			using (var scope = new SessionScope())
+			using (new SessionScope())
 			{
 				producers = (from producer in Producer.Queryable
-							 where !producer.Hidden
+				             where !producer.Hidden
 				             orderby producer.Name
 				             select producer).ToList();
 				return producers;
 			}
 		}
 
+		public void Update(Producer producer)
+		{
+			producer.Name = producer.Name.ToUpper();
+			InMaster(producer.Update);
+		}
+
 		public void Join(Producer source, Producer target)
 		{
-			var sessionHolder = ActiveRecordMediator.GetSessionFactoryHolder();
-			
-			var session = sessionHolder.CreateSession(typeof(Producer));
-			var producerEquivalent = new ProducerEquivalent
-			                         	{
-			                         		Name = source.Name,
-			                         		Producer = target,
-			                         	};
-			try
-			{
-				using (var transaction = session.BeginTransaction())
-				{
-					session.CreateSQLQuery(@"
+			InMaster(() =>
+			         	{
+			         		var sessionHolder = ActiveRecordMediator.GetSessionFactoryHolder();
+
+			         		var session = sessionHolder.CreateSession(typeof (Producer));
+			         		var producerEquivalent = new ProducerEquivalent
+			         		                         	{
+			         		                         		Name = source.Name,
+			         		                         		Producer = target,
+			         		                         	};
+			         		try
+			         		{
+			         			using (var transaction = session.BeginTransaction())
+			         			{
+			         				session.CreateSQLQuery(
+			         					@"
 update farm.SynonymFirmCr
 set CodeFirmCr = :TargetId
 where CodeFirmCr = :SourceId")
-						.SetParameter("SourceId", source.Id)
-						.SetParameter("TargetId", target.Id)
-						.ExecuteUpdate();
-					session.Save(producerEquivalent);
-					session.Delete(source);
-					transaction.Commit();
-				}
-				producers.Remove(source);
-			}
-			finally
-			{
-				sessionHolder.ReleaseSession(session);
-			}
+			         					.SetParameter("SourceId", source.Id)
+			         					.SetParameter("TargetId", target.Id)
+			         					.ExecuteUpdate();
+			         				session.Save(producerEquivalent);
+			         				session.Delete(source);
+			         				transaction.Commit();
+			         			}
+			         			producers.Remove(source);
+			         		}
+			         		finally
+			         		{
+			         			sessionHolder.ReleaseSession(session);
+			         		}
+			         	});
 		}
 
 		public IList<SynonymView> Synonyms(Producer producer)
@@ -87,15 +97,21 @@ group by sfc.SynonymFirmCrCode")
 			}
 		}
 
-		public void Update(Producer producer)
-		{
-			producer.Name = producer.Name.ToUpper();
-			producer.Update();
-		}
-
 		public List<Producer> SearchProducer(string text)
 		{
 			return producers.Where(p => p.Name.Contains((text ?? "").ToUpper())).ToList();
+		}
+
+		public void InMaster(Action action)
+		{
+			using (var connection = new MySqlConnection(ConfigurationManager.ConnectionStrings["Master"].ConnectionString))
+			{
+				connection.Open();
+				using(new DifferentDatabaseScope(connection))
+				{
+					action();
+				}
+			}
 		}
 	}
 }
