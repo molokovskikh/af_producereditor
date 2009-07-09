@@ -2,6 +2,7 @@
 using System.Windows.Forms;
 using log4net;
 using log4net.Config;
+using ProducerEditor.Views;
 
 namespace ProducerEditor
 {
@@ -17,7 +18,7 @@ namespace ProducerEditor
 				Application.EnableVisualStyles();
 				Application.SetCompatibleTextRenderingDefault(false);
 				Initialezer.Initialize();
-				Application.Run(new MainForm());
+				Application.Run(new MainView());
 				Application.ThreadException += (sender, e) => HandleException(e.Exception);
 			}
 			catch (Exception e)

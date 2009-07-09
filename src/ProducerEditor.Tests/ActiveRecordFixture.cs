@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using log4net.Config;
 using NUnit.Framework;
+using ProducerEditor.Models;
 
 namespace ProducerEditor.Tests
 {
