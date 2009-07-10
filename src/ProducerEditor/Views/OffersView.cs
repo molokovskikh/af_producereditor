@@ -6,6 +6,7 @@ using ProducerEditor.Models;
 using Subway.Dom;
 using Subway.VirtualTable;
 using Subway.VirtualTable.Behaviors;
+using Subway.VirtualTable.Behaviors.Specialized;
 
 namespace ProducerEditor.Views
 {
@@ -16,13 +17,16 @@ namespace ProducerEditor.Views
 			MinimumSize = new Size(640, 480);
 			Text = String.Format(@"Предложения производителя ""{0}""", producer.Name);
 			var offersTable = new VirtualTable(new TemplateManager<List<OfferView>, OfferView>(
-			                                   	() => {
-			                                   		return Row.Headers("Поставщик", "Сегмент", "Наименование", "Производитель");
-			                                   	},
-												offer => {
-													return Row.Cells(offer.Supplier, offer.SegmentAsString(), offer.ProductSynonym, offer.ProducerSynonym);
-												}));
-			offersTable.RegisterBehavior(new ToolTipBehavior());
+												() => Row.Headers(new Header("Поставщик").Sortable("Supplier"),
+			                                   	                  new Header("Сегмент").Sortable("Segment"),
+																  new Header("Наименование").Sortable("ProductSynonym"),
+																  new Header("Производитель").Sortable("ProducerSynonym")),
+			                                   	offer => Row.Cells(offer.Supplier,
+			                                   	                   offer.SegmentAsString(),
+			                                   	                   offer.ProductSynonym,
+			                                   	                   offer.ProducerSynonym)));
+			offersTable.RegisterBehavior(new ToolTipBehavior(),
+			                             new SortInList());
 			offersTable.TemplateManager.Source = offers;
 			Controls.Add(offersTable.Host);
 		}

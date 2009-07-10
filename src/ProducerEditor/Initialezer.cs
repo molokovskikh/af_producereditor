@@ -15,7 +15,7 @@ namespace ProducerEditor
 		{
 			StylesHolder
 				.Instance
-				.RegisterClass("SynonymsWithoutOffers")
+				.RegisterClass("WithoutOffers")
 				.Set(StyleElementType.BackgroundColor, Color.FromArgb(231, 231, 200));
 
 			var config = new InPlaceConfigurationSource();

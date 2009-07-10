@@ -17,14 +17,18 @@ namespace ProducerEditor
 
 		public IList<Producer> GetAllProducers()
 		{
-			using (new SessionScope())
-			{
-				producers = (from producer in Producer.Queryable
-				             where !producer.Hidden
-				             orderby producer.Name
-				             select producer).ToList();
-				return producers;
-			}
+			return WithSession(s => s.CreateSQLQuery(@"
+select cfc.CodeFirmCr as Id,
+cfc.FirmCr as Name,
+cfc.Hidden,
+c.Id != 0 as HasOffers
+from farm.CatalogFirmCr cfc
+	left join farm.core0 c on c.CodeFirmCr = cfc.CodeFirmCr
+where cfc.Hidden = 0
+group by cfc.CodeFirmCr
+order by cfc.FirmCr")
+			                 	.SetResultTransformer(Transformers.AliasToBean(typeof(Producer)))
+			                 	.List<Producer>()).ToList();
 		}
 
 		public void Update(Producer producer)
@@ -72,7 +76,7 @@ from farm.SynonymFirmCr sfc
     join usersettings.clientsdata cd on cd.FirmCode = pd.FirmCode
       join farm.Regions r on cd.RegionCode = r.RegionCode
   left join farm.Core0 c on c.SynonymFirmCrCode = sfc.SynonymFirmCrCode
-where sfc.CodeFirmCr = :ProducerId
+where sfc.CodeFirmCr = :ProducerId and cd.BillingCode <> 921
 group by sfc.SynonymFirmCrCode")
 				           	.SetParameter("ProducerId", producer.Id)
 				           	.SetResultTransformer(Transformers.AliasToBean(typeof (SynonymView)))

@@ -9,6 +9,7 @@ using Subway.Dom;
 using Subway.VirtualTable;
 using Subway.VirtualTable.Behaviors;
 using Subway.VirtualTable.Behaviors.Selection;
+using Subway.VirtualTable.Behaviors.Specialized;
 
 namespace ProducerEditor.Views
 {
@@ -99,25 +100,33 @@ namespace ProducerEditor.Views
 			            	};
 			producerTable = new VirtualTable(new TemplateManager<List<Producer>, Producer>(
 			                                 	() => Row.Headers("Производитель"), 
-			                                 	producer => Row.Cells(producer.Name)));
+			                                 	producer => {
+			                                 		var row = Row.Cells(producer.Name);
+													if (producer.HasOffers == 0)
+														row.AddClass("WithoutOffers");
+			                                 		return row;
+			                                 	}));
 			producerTable.RegisterBehavior(new RowSelectionBehavior(),
-			                               new AutoSizeBehavior(),
 			                               new ToolTipBehavior());
 			var behavior = producerTable.Behavior<IRowSelectionBehavior>();
 			behavior.SelectedRowChanged += (oldRow, newRow) => SelectedProducerChanged(behavior.Selected<Producer>());
 
 			synonymsTable = new VirtualTable(new TemplateManager<List<SynonymView>, SynonymView>(
-			                                 	() => Row.Headers("Синоним", "Поставщик", "Регион", "Сегмент"),
-			                                 	synonym =>
-			                                 		{
-			                                 			var row = Row.Cells(synonym.Synonym, synonym.Supplier, synonym.Region, synonym.SegmentAsString());
+			                                 	() => Row.Headers(new Header("Синоним").Sortable("Synonym"),
+																  new Header("Поставщик").Sortable("Supplier"),
+																  new Header("Регион").Sortable("Region"),
+			                                 	                  new Header("Сегмент").Sortable("Segment")),
+			                                 	synonym => {
+			                                 		var row = Row.Cells(synonym.Synonym,
+			                                 		                    synonym.Supplier,
+			                                 		                    synonym.Region,
+			                                 		                    synonym.SegmentAsString());
 			                                 			if (synonym.HaveOffers == 0)
-			                                 				row.AddClass("SynonymsWithoutOffers");
+															row.AddClass("WithoutOffers");
 			                                 			return row;
-			                                 		}
-			                                 	));
-			synonymsTable.RegisterBehavior(new AutoSizeBehavior(),
-			                               new ToolTipBehavior());
+			                                 		}));
+			synonymsTable.RegisterBehavior(new ToolTipBehavior(),
+										   new SortInList());
 
 			InputLanguageHelper.SetToRussian();
 			split.Panel1.Controls.Add(producerTable.Host);
@@ -197,7 +206,6 @@ namespace ProducerEditor.Views
 			toolStrip.Items.Add(button);
 			producersTable.CellSpacing = 1;
 			producersTable.RegisterBehavior(new RowSelectionBehavior(),
-			                                new AutoSizeBehavior(),
 			                                new ToolTipBehavior());
 			table.RowCount = 2;
 			table.RowStyles.Add(new RowStyle());

@@ -1,13 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
-using System.Linq;
-using System.Text;
 using System.Windows.Forms;
 using ProducerEditor.Models;
 using Subway.Dom;
 using Subway.VirtualTable;
 using Subway.VirtualTable.Behaviors;
+using Subway.VirtualTable.Behaviors.Specialized;
 
 namespace ProducerEditor.Views
 {
@@ -18,14 +17,19 @@ namespace ProducerEditor.Views
 			MinimumSize = new Size(640, 480);
 			Text = String.Format(@"Последнии 20 заказов по производителю ""{0}""", producer.Name);
 			var offersTable = new VirtualTable(new TemplateManager<List<OrderView>, OrderView>(
-												() => {
-													return Row.Headers("Дата заказа", "Поставщик", "Аптека",  "Наименование", "Производитель");
-												},
-												order => {
-													return Row.Cells(order.WriteTime, order.Supplier, order.Drugstore, order.ProductSynonym, order.ProducerSynonym);
-												}));
+			                                   	() => Row.Headers(new Header("Дата заказа").Sortable("WriteTime"),
+																  new Header("Поставщик").Sortable("Supplier"),
+																  new Header("Аптека").Sortable("Drugstore"),
+																  new Header("Наименование").Sortable("ProductSynonym"),
+																  new Header("Производитель").Sortable("ProducerSynonym")),
+												order => Row.Cells(order.WriteTime,
+												                   order.Supplier,
+												                   order.Drugstore,
+												                   order.ProductSynonym,
+												                   order.ProducerSynonym)));
 			offersTable.TemplateManager.Source = orders;
-			offersTable.RegisterBehavior(new ToolTipBehavior());
+			offersTable.RegisterBehavior(new ToolTipBehavior(),
+			                             new SortInList());
 			Controls.Add(offersTable.Host);
 		}
 	}

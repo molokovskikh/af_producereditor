@@ -14,7 +14,9 @@ namespace ProducerEditor.Models
 		public virtual string Name { get; set; }
 
 		[Property]
-		public virtual bool Hidden { get; set; }
+		public virtual byte Hidden { get; set; }
+
+		public virtual long HasOffers { get; set;}
 	}
 
 	[ActiveRecord(Table = "farm.SynonymFirmCr")]
