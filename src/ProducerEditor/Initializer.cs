@@ -9,7 +9,7 @@ using Environment=NHibernate.Cfg.Environment;
 
 namespace ProducerEditor
 {
-	public class Initialezer
+	public class Initializer
 	{
 		public static void Initialize()
 		{

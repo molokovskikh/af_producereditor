@@ -78,7 +78,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Controller.cs" />
-    <Compile Include="Initialezer.cs" />
+    <Compile Include="Initializer.cs" />
     <Compile Include="Views\MainView.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -92,6 +92,9 @@
     <Compile Include="Program.cs">
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Views\ProductsAndProducersView.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <None Include="App.config" />
     <None Include="App.release.config" />
   </ItemGroup>

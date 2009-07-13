@@ -17,7 +17,7 @@ namespace ProducerEditor
 
 		public IList<Producer> GetAllProducers()
 		{
-			return WithSession(s => s.CreateSQLQuery(@"
+			producers = WithSession(s => s.CreateSQLQuery(@"
 select cfc.CodeFirmCr as Id,
 cfc.FirmCr as Name,
 cfc.Hidden,
@@ -29,6 +29,7 @@ group by cfc.CodeFirmCr
 order by cfc.FirmCr")
 			                 	.SetResultTransformer(Transformers.AliasToBean(typeof(Producer)))
 			                 	.List<Producer>()).ToList();
+			return producers;
 		}
 
 		public void Update(Producer producer)
@@ -114,6 +115,43 @@ group by sfc.SynonymFirmCrCode")
 		public List<Producer> SearchProducer(string text)
 		{
 			return producers.Where(p => p.Name.Contains((text ?? "").ToUpper())).ToList();
+		}
+
+		public List<ProductAndProducer> FindRelativeProductsAndProducers(Producer producer)
+		{
+			return WithSession(s => s.CreateSQLQuery(@"
+drop temporary table if exists ProductsAndProducers;
+create temporary table ProductsAndProducers engine 'memory'
+select
+ol.ProductId, ol.CodeFirmCr
+from orders.orderslist ol
+  join orders.orderslist sibling on ol.ProductId = sibling.ProductId
+where sibling.CodeFirmCr = :ProducerId and ol.CodeFirmCr is not null
+group by ol.ProductId, ol.CodeFirmCr
+union
+select
+c.ProductId, c.CodeFirmCr
+from farm.core0 c
+  join farm.core0 sibling on c.ProductId = sibling.ProductId
+where sibling.CodeFirmCr = :ProducerId and c.CodeFirmCr is not null
+group by c.ProductId, c.CodeFirmCr;
+
+select cast(concat(cn.Name, ' ', cf.Form, ' ', ifnull(group_concat(distinct pv.Value ORDER BY prop.PropertyName, pv.Value SEPARATOR ', '), '')) as CHAR) as Product,
+       cfc.FirmCr as Producer
+from ProductsAndProducers pap
+  join catalogs.Products as p on p.id = pap.productid
+	  join Catalogs.Catalog as c on p.catalogid = c.id
+    	JOIN Catalogs.CatalogNames cn on cn.id = c.nameid
+    	JOIN Catalogs.CatalogForms cf on cf.id = c.formid
+  LEFT JOIN Catalogs.ProductProperties pp on pp.ProductId = p.Id
+	  LEFT JOIN Catalogs.PropertyValues pv on pv.id = pp.PropertyValueId
+    	LEFT JOIN Catalogs.Properties prop on prop.Id = pv.PropertyId
+  join farm.CatalogFirmCr cfc on cfc.CodeFirmCr = pap.CodeFirmCr
+group by pap.ProductId, pap.CodeFirmCr
+order by cfc.FirmCr;")
+			.SetParameter("ProducerId", producer.Id)
+			.SetResultTransformer(Transformers.AliasToBean(typeof(ProductAndProducer)))
+			.List<ProductAndProducer>()).ToList();
 		}
 
 		public List<OrderView> FindOrders(Producer producer)

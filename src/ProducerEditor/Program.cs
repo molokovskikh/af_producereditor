@@ -17,9 +17,11 @@ namespace ProducerEditor
 				XmlConfigurator.Configure();
 				Application.EnableVisualStyles();
 				Application.SetCompatibleTextRenderingDefault(false);
-				Initialezer.Initialize();
+				Initializer.Initialize();
 				Application.Run(new MainView());
+#if !DEBUG
 				Application.ThreadException += (sender, e) => HandleException(e.Exception);
+#endif
 			}
 			catch (Exception e)
 			{

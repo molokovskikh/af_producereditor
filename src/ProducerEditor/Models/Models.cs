@@ -46,6 +46,12 @@ namespace ProducerEditor.Models
 		}
 	}
 
+	public class ProductAndProducer
+	{
+		public string Producer { get; set; }
+		public string Product { get; set; }
+	}
+
 	public class OrderView
 	{
 		public string Supplier { get; set; }

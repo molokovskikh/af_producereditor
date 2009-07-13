@@ -14,7 +14,7 @@ namespace ProducerEditor.Tests
 		[Test]
 		public void Check_active_record_configuration()
 		{
-			Initialezer.Initialize();
+			Initializer.Initialize();
 			var p = Producer.Find(2575u);
 			Console.Write(p);
 		}
@@ -23,7 +23,7 @@ namespace ProducerEditor.Tests
 		public void Check_speed()
 		{
 			XmlConfigurator.Configure();
-			Initialezer.Initialize();
+			Initializer.Initialize();
 			var controller = new Controller();
 			Test(controller);
 			Test(controller);

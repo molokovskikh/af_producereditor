@@ -47,6 +47,16 @@ namespace ProducerEditor.Views
 
 	public static class Extentions
 	{
+		public static ToolStrip Edit(this ToolStrip toolStrip, string name)
+		{
+			var edit = new ToolStripTextBox
+			           	{
+			           		Name = name
+			           	};
+			toolStrip.Items.Add(edit);
+			return toolStrip;
+		}
+
 		public static ToolStrip Button(this ToolStrip toolStrip, string label, Action onclick)
 		{
 			var button = new ToolStripButton
@@ -77,21 +87,17 @@ namespace ProducerEditor.Views
 			MinimumSize = new Size(640, 480);
 			var toolStrip = new ToolStrip();
 			toolStrip
+				.Edit("SearchText")
+				.Button("Поиск", () => SearchProducer(toolStrip))
+				.Separator()
 				.Button("Переименовать", ShowRenameView)
 				.Button("Объединить", ShowJoinView)
 				.Separator()
-				.Button("Заказы", () => {
-				                  	var producer = producerTable.Selected<Producer>();
-				                  	if (producer == null)
-				                  		return;
-				                  	new OrdersView(_controller.FindOrders(producer), producer).ShowDialog();
-				                  })
-				.Button("Предложения", () => {
-				                       	var producer = producerTable.Selected<Producer>();
-				                       	if (producer == null)
-				                       		return;
-										new OffersView(_controller.FindOffers(producer), producer).ShowDialog();
-				                       });
+				.Button("Продукты", ShowProducers);
+			((ToolStripTextBox) toolStrip.Items["SearchText"]).KeyDown += (sender, args) => {
+																			if (args.KeyCode == Keys.Enter)
+																				SearchProducer(toolStrip);
+			                                                              };
 
 			var split = new SplitContainer
 			            	{
@@ -108,6 +114,10 @@ namespace ProducerEditor.Views
 			                                 	}));
 			producerTable.RegisterBehavior(new RowSelectionBehavior(),
 			                               new ToolTipBehavior());
+			producerTable.Host.KeyDown += (sender, args) => {
+											if (args.KeyCode == Keys.Enter)
+												ShowProducers();
+			                              };
 			var behavior = producerTable.Behavior<IRowSelectionBehavior>();
 			behavior.SelectedRowChanged += (oldRow, newRow) => SelectedProducerChanged(behavior.Selected<Producer>());
 
@@ -136,6 +146,30 @@ namespace ProducerEditor.Views
 			split.SplitterDistance = (int) (Size.Height*0.6);
 			Shown += (sender, args) => producerTable.Host.Focus();
 			UpdateProducers();
+		}
+
+		private void ShowProducers()
+		{
+			var producer = producerTable.Selected<Producer>();
+			if (producer == null)
+				return;
+			new ProductsAndProducersView(producer, _controller.FindRelativeProductsAndProducers(producer)).ShowDialog();
+		}
+
+		private void SearchProducer(ToolStrip toolStrip)
+		{
+			var producers = _controller.SearchProducer(toolStrip.Items["SearchText"].Text);
+			if (producers.Count > 0)
+			{
+				producerTable.TemplateManager.Source = producers;
+				producerTable.Host.Focus();
+			}
+			else
+			{
+				MessageBox.Show("По вашему запросу ничеого не найдено", "Результаты поиска",
+								MessageBoxButtons.OK,
+								MessageBoxIcon.Warning);
+			}
 		}
 
 		private void ShowRenameView()
