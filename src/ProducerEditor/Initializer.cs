@@ -15,8 +15,13 @@ namespace ProducerEditor
 		{
 			StylesHolder
 				.Instance
+				.RegisterStyleForDomElement<Cell>()
+				.SetInherit(StyleElementType.CustomBackgroundDraw);
+
+			StylesHolder
+				.Instance
 				.RegisterClass("WithoutOffers")
-				.Set(StyleElementType.BackgroundColor, Color.FromArgb(231, 231, 200));
+				.Set(StyleElementType.CustomBackgroundDraw, Predefine.MixWith(Color.FromArgb(153, 231, 231, 200)));
 
 			var config = new InPlaceConfigurationSource();
 			config.Add(typeof (ActiveRecordBase),

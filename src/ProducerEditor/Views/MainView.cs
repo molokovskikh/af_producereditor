@@ -86,12 +86,14 @@ namespace ProducerEditor.Views
 			Text = "Редактор каталога производителей";
 			MinimumSize = new Size(640, 480);
 			var toolStrip = new ToolStrip();
+			
 			toolStrip
 				.Edit("SearchText")
 				.Button("Поиск", () => SearchProducer(toolStrip))
 				.Separator()
 				.Button("Переименовать", ShowRenameView)
 				.Button("Объединить", ShowJoinView)
+				.Button("Удалить", Delete)
 				.Separator()
 				.Button("Продукты", ShowProducers);
 			((ToolStripTextBox) toolStrip.Items["SearchText"]).KeyDown += (sender, args) => {
@@ -117,17 +119,19 @@ namespace ProducerEditor.Views
 			producerTable.Host.KeyDown += (sender, args) => {
 											if (args.KeyCode == Keys.Enter)
 												ShowProducers();
+											else if (args.KeyCode == Keys.Delete)
+												Delete();
 			                              };
 			var behavior = producerTable.Behavior<IRowSelectionBehavior>();
 			behavior.SelectedRowChanged += (oldRow, newRow) => SelectedProducerChanged(behavior.Selected<Producer>());
 
 			synonymsTable = new VirtualTable(new TemplateManager<List<SynonymView>, SynonymView>(
-			                                 	() => Row.Headers(new Header("Синоним").Sortable("Synonym"),
+			                                 	() => Row.Headers(new Header("Синоним").Sortable("Name"),
 																  new Header("Поставщик").Sortable("Supplier"),
 																  new Header("Регион").Sortable("Region"),
 			                                 	                  new Header("Сегмент").Sortable("Segment")),
 			                                 	synonym => {
-			                                 		var row = Row.Cells(synonym.Synonym,
+			                                 		var row = Row.Cells(synonym.Name,
 			                                 		                    synonym.Supplier,
 			                                 		                    synonym.Region,
 			                                 		                    synonym.SegmentAsString());
@@ -136,7 +140,12 @@ namespace ProducerEditor.Views
 			                                 			return row;
 			                                 		}));
 			synonymsTable.RegisterBehavior(new ToolTipBehavior(),
-										   new SortInList());
+										   new SortInList(),
+										   new RowSelectionBehavior());
+			synonymsTable.Host.KeyDown += (sender, args) => {
+											if (args.KeyCode == Keys.Delete)
+												Delete();
+			                              };
 
 			InputLanguageHelper.SetToRussian();
 			split.Panel1.Controls.Add(producerTable.Host);
@@ -146,6 +155,30 @@ namespace ProducerEditor.Views
 			split.SplitterDistance = (int) (Size.Height*0.6);
 			Shown += (sender, args) => producerTable.Host.Focus();
 			UpdateProducers();
+		}
+
+		private void Delete()
+		{
+			if (producerTable.Host.Focused)
+			{
+				var producer = producerTable.Selected<Producer>();
+				if (producer == null)
+					return;
+				_controller.Delete(producer);
+				((IList<Producer>)producerTable.TemplateManager.Source).Remove(producer);
+				_controller.Producers.Remove(producer);
+				SelectedProducerChanged(producer);
+				producerTable.RebuildViewPort();
+			}
+			else if (synonymsTable.Host.Focused)
+			{
+				var synonym = synonymsTable.Selected<SynonymView>();
+				if (synonym == null)
+					return;
+				_controller.Delete(synonym);
+				((IList<SynonymView>)synonymsTable.TemplateManager.Source).Remove(synonym);
+				synonymsTable.RebuildViewPort();
+			}
 		}
 
 		private void ShowProducers()

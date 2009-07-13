@@ -13,11 +13,11 @@ namespace ProducerEditor
 {
 	public class Controller
 	{
-		private List<Producer> producers;
+		public List<Producer> Producers { get; private set;}
 
 		public IList<Producer> GetAllProducers()
 		{
-			producers = WithSession(s => s.CreateSQLQuery(@"
+			Producers = WithSession(s => s.CreateSQLQuery(@"
 select cfc.CodeFirmCr as Id,
 cfc.FirmCr as Name,
 cfc.Hidden,
@@ -29,7 +29,7 @@ group by cfc.CodeFirmCr
 order by cfc.FirmCr")
 			                 	.SetResultTransformer(Transformers.AliasToBean(typeof(Producer)))
 			                 	.List<Producer>()).ToList();
-			return producers;
+			return Producers;
 		}
 
 		public void Update(Producer producer)
@@ -59,7 +59,7 @@ where CodeFirmCr = :SourceId")
 					session.Delete(source);
 					transaction.Commit();
 				}
-				producers.Remove(source);
+				Producers.Remove(source);
 			}));
 		}
 
@@ -67,7 +67,8 @@ where CodeFirmCr = :SourceId")
 		{
 			return WithSession(
 				session => session.CreateSQLQuery(@"
-select sfc.Synonym,
+select sfc.Synonym as Name,
+sfc.SynonymFirmCrCode as Id,
 cd.ShortName as Supplier,
 cd.FirmSegment as Segment,
 r.Region,
@@ -114,7 +115,7 @@ group by sfc.SynonymFirmCrCode")
 
 		public List<Producer> SearchProducer(string text)
 		{
-			return producers.Where(p => p.Name.Contains((text ?? "").ToUpper())).ToList();
+			return Producers.Where(p => p.Name.Contains((text ?? "").ToUpper())).ToList();
 		}
 
 		public List<ProductAndProducer> FindRelativeProductsAndProducers(Producer producer)
@@ -208,6 +209,14 @@ limit 50")
 					action();
 				}
 			}
+		}
+
+		public void Delete(object instance)
+		{
+			if (instance is SynonymView)
+				InMaster(() => ProducerSynonym.Find(((SynonymView)instance).Id).Delete());
+			else if (instance is Producer)
+				InMaster(() => Producer.Find(((Producer)instance).Id).Delete());
 		}
 	}
 }

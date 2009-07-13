@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Castle.ActiveRecord;
 using Castle.ActiveRecord.Linq;
 
@@ -16,6 +17,12 @@ namespace ProducerEditor.Models
 		[Property]
 		public virtual byte Hidden { get; set; }
 
+		[HasMany(Inverse = true, Cascade = ManyRelationCascadeEnum.Delete, Lazy = true, ColumnKey = "CodeFirmCr")]
+		public virtual IList<ProducerSynonym> Synonyms { get; set; }
+
+		[HasMany(Inverse = true, Cascade = ManyRelationCascadeEnum.Delete, Lazy = true, ColumnKey = "ProducerId")]
+		public virtual IList<ProducerEquivalent> Equivalents { get; set; }
+
 		public virtual long HasOffers { get; set;}
 	}
 
@@ -32,9 +39,8 @@ namespace ProducerEditor.Models
 		public virtual Producer Producer { get; set; }
 	}
 
-	public class SynonymView
+	public class SynonymView : ProducerSynonym
 	{
-		public string Synonym { get; set; }
 		public string Supplier { get; set; }
 		public string Region { get; set; }
 		public byte Segment { get; set; }
