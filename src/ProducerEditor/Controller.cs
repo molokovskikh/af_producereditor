@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Configuration;
 using System.Linq;
+using System.Reflection;
 using Castle.ActiveRecord;
 using Castle.ActiveRecord.Framework.Scopes;
 using MySql.Data.MySqlClient;
@@ -113,6 +114,38 @@ group by sfc.SynonymFirmCrCode")
 			}
 		}
 
+		public static void SetupParametersForTriggerLogging(string user, string host)
+		{
+			WithSession(session => SetupParametersForTriggerLogging(new { InUser = user, InHost = host }, session));
+		}
+
+		public static void SetupParametersForTriggerLogging(object parameters)
+		{
+			WithSession(session => SetupParametersForTriggerLogging(parameters, session));
+		}
+
+		private static void SetupParametersForTriggerLogging(object parameters, ISession session)
+		{
+			using (var command = session.Connection.CreateCommand())
+			{
+				foreach (var property in parameters.GetType().GetProperties(BindingFlags.GetProperty
+																					 | BindingFlags.Public
+																					 | BindingFlags.Instance))
+				{
+					var value = property.GetValue(parameters, null);
+					command.CommandText += String.Format(" SET @{0} = ?{0}; ", property.Name);
+					var parameter = command.CreateParameter();
+					parameter.Value = value;
+					parameter.ParameterName = "?" + property.Name;
+					command.Parameters.Add(parameter);
+				}
+				if (command.Parameters.Count == 0)
+					return;
+
+				command.ExecuteNonQuery();
+			}
+		}
+
 		public List<Producer> SearchProducer(string text)
 		{
 			return Producers.Where(p => p.Name.Contains((text ?? "").ToUpper())).ToList();
@@ -213,10 +246,13 @@ limit 50")
 
 		public void Delete(object instance)
 		{
-			if (instance is SynonymView)
-				InMaster(() => ProducerSynonym.Find(((SynonymView)instance).Id).Delete());
-			else if (instance is Producer)
-				InMaster(() => Producer.Find(((Producer)instance).Id).Delete());
+			InMaster(() => {
+			         		SetupParametersForTriggerLogging(Environment.UserName, Environment.MachineName);
+			         		if (instance is SynonymView)
+			         			InMaster(() => ProducerSynonym.Find(((SynonymView) instance).Id).Delete());
+			         		else if (instance is Producer)
+			         			InMaster(() => Producer.Find(((Producer) instance).Id).Delete());
+			         });
 		}
 	}
 }

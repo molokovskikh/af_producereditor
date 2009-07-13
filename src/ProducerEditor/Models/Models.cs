@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Reflection;
 using Castle.ActiveRecord;
 using Castle.ActiveRecord.Linq;
+using NHibernate;
 
 namespace ProducerEditor.Models
 {
@@ -17,10 +19,10 @@ namespace ProducerEditor.Models
 		[Property]
 		public virtual byte Hidden { get; set; }
 
-		[HasMany(Inverse = true, Cascade = ManyRelationCascadeEnum.Delete, Lazy = true, ColumnKey = "CodeFirmCr")]
+		[HasMany(Inverse = true, Lazy = true, Cascade = ManyRelationCascadeEnum.Delete, ColumnKey = "CodeFirmCr")]
 		public virtual IList<ProducerSynonym> Synonyms { get; set; }
 
-		[HasMany(Inverse = true, Cascade = ManyRelationCascadeEnum.Delete, Lazy = true, ColumnKey = "ProducerId")]
+		[HasMany(Inverse = true, Lazy = true, Cascade = ManyRelationCascadeEnum.Delete, ColumnKey = "ProducerId")]
 		public virtual IList<ProducerEquivalent> Equivalents { get; set; }
 
 		public virtual long HasOffers { get; set;}
