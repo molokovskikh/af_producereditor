@@ -154,13 +154,20 @@ group by sfc.SynonymFirmCrCode")
 		public List<ProductAndProducer> FindRelativeProductsAndProducers(Producer producer)
 		{
 			return WithSession(s => s.CreateSQLQuery(@"
+drop temporary table if exists ProductFromOrders;
+create temporary table ProductFromOrders engine 'memory'
+select productid
+from orders.orderslist
+where CodeFirmCr = :ProducerId
+group by ProductId;
+
 drop temporary table if exists ProductsAndProducers;
 create temporary table ProductsAndProducers engine 'memory'
 select
 ol.ProductId, ol.CodeFirmCr
 from orders.orderslist ol
-  join orders.orderslist sibling on ol.ProductId = sibling.ProductId
-where sibling.CodeFirmCr = :ProducerId and ol.CodeFirmCr is not null
+  join ProductFromOrders p on ol.ProductId = p.ProductId
+where ol.CodeFirmCr is not null
 group by ol.ProductId, ol.CodeFirmCr
 union
 select
