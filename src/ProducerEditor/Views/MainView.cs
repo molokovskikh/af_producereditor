@@ -186,7 +186,8 @@ namespace ProducerEditor.Views
 			var producer = producerTable.Selected<Producer>();
 			if (producer == null)
 				return;
-			new ProductsAndProducersView(producer, _controller.FindRelativeProductsAndProducers(producer)).ShowDialog();
+			int ordersCount, offersCount;
+			new ProductsAndProducersView(producer, _controller.FindRelativeProductsAndProducers(producer, out ordersCount, out offersCount), offersCount, ordersCount).ShowDialog();
 		}
 
 		private void SearchProducer(ToolStrip toolStrip)

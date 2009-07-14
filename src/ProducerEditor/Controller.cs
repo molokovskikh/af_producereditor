@@ -151,9 +151,13 @@ group by sfc.SynonymFirmCrCode")
 			return Producers.Where(p => p.Name.Contains((text ?? "").ToUpper())).ToList();
 		}
 
-		public List<ProductAndProducer> FindRelativeProductsAndProducers(Producer producer)
+		public List<ProductAndProducer> FindRelativeProductsAndProducers(Producer producer, out int  ordersCount, out int offersCount)
 		{
-			return WithSession(s => s.CreateSQLQuery(@"
+			//что бы сделать компилятор счастливей
+			var innerOrdersCount = 0;
+			var innerOffersCont = 0;
+			var result = WithSession(s => {
+			                   	var productsAndProducers = s.CreateSQLQuery(@"
 drop temporary table if exists ProductFromOrders;
 create temporary table ProductFromOrders engine 'memory'
 select productid
@@ -190,9 +194,23 @@ from ProductsAndProducers pap
   join farm.CatalogFirmCr cfc on cfc.CodeFirmCr = pap.CodeFirmCr
 group by pap.ProductId, pap.CodeFirmCr
 order by cfc.FirmCr;")
-			.SetParameter("ProducerId", producer.Id)
-			.SetResultTransformer(Transformers.AliasToBean(typeof(ProductAndProducer)))
-			.List<ProductAndProducer>()).ToList();
+			                   		.SetParameter("ProducerId", producer.Id)
+			                   		.SetResultTransformer(Transformers.AliasToBean(typeof (ProductAndProducer)))
+			                   		.List<ProductAndProducer>();
+								innerOffersCont  = (int)s.CreateSQLQuery(@"
+select count(*)
+from farm.core0
+where CodeFirmCr = :ProducerId").SetParameter("ProducerId", producer.Id).UniqueResult<Int64>();
+
+								innerOrdersCount = (int)s.CreateSQLQuery(@"
+select count(*)
+from orders.orderslist
+where CodeFirmCr = :ProducerId").SetParameter("ProducerId", producer.Id).UniqueResult<Int64>();
+			                   	return productsAndProducers;
+			                   }).ToList();
+			offersCount = innerOffersCont;
+			ordersCount = innerOrdersCount;
+			return result;
 		}
 
 		public List<OrderView> FindOrders(Producer producer)
