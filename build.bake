@@ -1,0 +1,49 @@
+﻿import System
+import System.IO
+import ICSharpCode.SharpZipLib.Zip from "lib/ICSharpCode.SharpZipLib.dll"
+import System.Net.Mail
+import System.Threading
+
+project = "ProducerEditor"
+projectFile = Path.GetFullPath("src/${project}/${project}.csproj")
+output = Path.GetFullPath("./build/");
+	
+def Clean(path as String):
+	if not Exist(path):
+		MkDir(path)
+	else:
+		Rm("${path}*", true)
+
+Task @default, [@build]
+
+
+Task @build, [@clean]:
+	MsBuild(projectFile,
+			Parameters : { "OutDir" : output + "\\" ,
+						   "Configuration" : "release"},
+			FrameworkVersion : "3.5").Execute()
+	Cp("src/${project}/App.release.config", "${output}/${project}.exe.config", true)
+	Rm(FileSet("*.*", 
+			   BaseDirectory : output,
+			   Excludes : ["*.dll", "*.exe", "*.config"]))
+Task @clean:
+	MsBuild(projectFile,
+			Target : "clean",
+			Parameters : { "Configuration" : "release" },
+			FrameworkVersion : "3.5").Execute()
+	Clean(output)
+
+Task @deploy, [@build]:
+	zip = FastZip()
+	zip.CreateZip("ProducerEditor.zip", output, true, null)
+	
+	client = SmtpClient("mail.adc.analit.net")
+	message = MailMessage(
+		From : MailAddress("r.kvasov@analit.net"),
+		Subject : "Редактор производителей"
+	)
+	message.To.Add(MailAddress("emk@analit.net"))
+	message.Attachments.Add(Attachment("ProducerEditor.zip"))
+	client.Send(message)
+	#Thread.Sleep(500)
+	#Rm("ProducerEditor.zip")
