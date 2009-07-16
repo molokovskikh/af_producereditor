@@ -1,8 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Drawing;
-using System.Globalization;
-using System.Linq;
 using System.Windows.Forms;
 using ProducerEditor.Models;
 using Subway.Dom;
@@ -13,93 +11,32 @@ using Subway.VirtualTable.Behaviors.Specialized;
 
 namespace ProducerEditor.Views
 {
-	public class InputLanguageHelper
-	{
-		public static void SetToRussian()
-		{
-			TryToSetKeyboardLayout(CultureInfo.GetCultureInfo("ru-RU"));
-		}
-
-		public static void SetToEnglish()
-		{
-			TryToSetKeyboardLayout(CultureInfo.GetCultureInfo("en-US"));
-		}
-
-		private static void TryToSetKeyboardLayout(CultureInfo culture)
-		{
-			if (Application.CurrentInputLanguage.Culture.Equals(culture))
-				return;
-
-			InputLanguage russianInputLanguage = null;
-			foreach (InputLanguage inputLanguage in InputLanguage.InstalledInputLanguages)
-			{
-				if (inputLanguage.Culture.Equals(culture))
-				{
-					russianInputLanguage = inputLanguage;
-					break;
-				}
-			}
-
-			if (russianInputLanguage != null)
-				Application.CurrentInputLanguage = russianInputLanguage;
-		}
-	}
-
-	public static class Extentions
-	{
-		public static ToolStrip Edit(this ToolStrip toolStrip, string name)
-		{
-			var edit = new ToolStripTextBox
-			           	{
-			           		Name = name
-			           	};
-			toolStrip.Items.Add(edit);
-			return toolStrip;
-		}
-
-		public static ToolStrip Button(this ToolStrip toolStrip, string label, Action onclick)
-		{
-			var button = new ToolStripButton
-			             	{
-			             		Text = label
-			             	};
-			button.Click += (sender, args) => onclick();
-			toolStrip.Items.Add(button);
-			return toolStrip;
-		}
-
-		public static ToolStrip Separator(this ToolStrip toolStrip)
-		{
-			toolStrip.Items.Add(new ToolStripSeparator());
-			return toolStrip;
-		}
-	}
-
 	public class MainView : Form
 	{
 		private readonly Controller _controller = new Controller();
 		private readonly VirtualTable producerTable;
 		private readonly VirtualTable synonymsTable;
+		private ToolStrip toolStrip;
 
 		public MainView()
 		{
 			Text = "Редактор каталога производителей";
 			MinimumSize = new Size(640, 480);
-			var toolStrip = new ToolStrip();
-			
-			toolStrip
+
+			toolStrip = new ToolStrip()
 				.Edit("SearchText")
-				.Button("Поиск", () => SearchProducer(toolStrip))
+				.Button("Поиск", SearchProducer)
 				.Separator()
-				.Button("Переименовать", ShowRenameView)
-				.Button("Объединить", ShowJoinView)
-				.Button("Удалить", Delete)
+				.Button("Переименовать (F2)", ShowRenameView)
+				.Button("Объединить (F3)", ShowJoinView)
+				.Button("Удалить (Delete)", Delete)
 				.Separator()
-				.Button("Продукты", ShowProducers);
-			((ToolStripTextBox) toolStrip.Items["SearchText"]).KeyDown += (sender, args) => {
-																			if (args.KeyCode == Keys.Enter)
-																				SearchProducer(toolStrip);
-			                                                              };
+				.Button("Продукты (Enter)", ShowProducers);
+			var searchText = ((ToolStripTextBox) toolStrip.Items["SearchText"]);
+			searchText.KeyDown += (sender, args) => {
+			                      	if (args.KeyCode == Keys.Enter)
+			                      		SearchProducer();
+			                      };
 
 			var split = new SplitContainer
 			            	{
@@ -114,14 +51,31 @@ namespace ProducerEditor.Views
 														row.AddClass("WithoutOffers");
 			                                 		return row;
 			                                 	}));
+			producerTable.CellSpacing = 1;
 			producerTable.RegisterBehavior(new RowSelectionBehavior(),
 			                               new ToolTipBehavior());
 			producerTable.Host.KeyDown += (sender, args) => {
-											if (args.KeyCode == Keys.Enter)
-												ShowProducers();
-											else if (args.KeyCode == Keys.Delete)
-												Delete();
+			                              	if (args.KeyCode == Keys.Enter && String.IsNullOrEmpty(searchText.Text))
+			                              		ShowProducers();
+			                              	else if (args.KeyCode == Keys.Enter)
+			                              		SearchProducer();
+			                              	else if (args.KeyCode == Keys.Escape)
+			                              		searchText.Text = "";
+			                              	else if (args.KeyCode == Keys.Delete)
+			                              		Delete();
+			                              	else if (args.KeyCode == Keys.Tab)
+			                              		synonymsTable.Host.Focus();
+											else if (args.KeyCode == Keys.F2)
+												ShowRenameView();
+											else if (args.KeyCode == Keys.F3)
+												ShowJoinView();
 			                              };
+			producerTable.Host.KeyPress += (sender, args) =>
+											{
+												if (Char.IsLetterOrDigit(args.KeyChar))
+													searchText.Text += args.KeyChar;
+											};
+
 			var behavior = producerTable.Behavior<IRowSelectionBehavior>();
 			behavior.SelectedRowChanged += (oldRow, newRow) => SelectedProducerChanged(behavior.Selected<Producer>());
 
@@ -139,12 +93,15 @@ namespace ProducerEditor.Views
 															row.AddClass("WithoutOffers");
 			                                 			return row;
 			                                 		}));
+			synonymsTable.CellSpacing = 1;
 			synonymsTable.RegisterBehavior(new ToolTipBehavior(),
 										   new SortInList(),
 										   new RowSelectionBehavior());
 			synonymsTable.Host.KeyDown += (sender, args) => {
 											if (args.KeyCode == Keys.Delete)
 												Delete();
+											if (args.KeyCode == Keys.Escape)
+												producerTable.Host.Focus();
 			                              };
 
 			InputLanguageHelper.SetToRussian();
@@ -186,13 +143,15 @@ namespace ProducerEditor.Views
 			var producer = producerTable.Selected<Producer>();
 			if (producer == null)
 				return;
-			int ordersCount, offersCount;
-			new ProductsAndProducersView(producer, _controller.FindRelativeProductsAndProducers(producer, out ordersCount, out offersCount), offersCount, ordersCount).ShowDialog();
+			new ProductsAndProducersView(_controller, producer, _controller.FindRelativeProductsAndProducers(producer)).ShowDialog();
+			producerTable.RebuildViewPort();
 		}
 
-		private void SearchProducer(ToolStrip toolStrip)
+		private void SearchProducer()
 		{
-			var producers = _controller.SearchProducer(toolStrip.Items["SearchText"].Text);
+			var text = toolStrip.Items["SearchText"];
+			var producers = _controller.SearchProducer(text.Text);
+			text.Text = "";
 			if (producers.Count > 0)
 			{
 				producerTable.TemplateManager.Source = producers;
@@ -211,7 +170,7 @@ namespace ProducerEditor.Views
 			var producer = producerTable.Selected<Producer>();
 			if (producer == null)
 				return;
-			var rename = new RenameForm(_controller, producer);
+			var rename = new RenameView(_controller, producer);
 			if (rename.ShowDialog() != DialogResult.Cancel)
 			{
 				producerTable.RebuildViewPort();
@@ -221,14 +180,11 @@ namespace ProducerEditor.Views
 		private void ShowJoinView()
 		{
 			var producer = producerTable.Selected<Producer>();
-			if (producer == null)
-				return;
-			var rename = new JoinForm(_controller, producer);
-			if (rename.ShowDialog() != DialogResult.Cancel)
-			{
-				producerTable.RebuildViewPort();
-				SelectedProducerChanged(producerTable.Selected<Producer>());
-			}
+			_controller.Join(new[] {producer},
+			                 () => {
+			                 	producerTable.RebuildViewPort();
+			                 	SelectedProducerChanged(producerTable.Selected<Producer>());
+			                 });
 		}
 
 		private void SelectedProducerChanged(Producer producer)
@@ -240,158 +196,6 @@ namespace ProducerEditor.Views
 		{
 			var producers = _controller.GetAllProducers();
 			producerTable.TemplateManager.Source = producers;
-		}
-	}
-
-	public class JoinForm : Dialog
-	{
-		public JoinForm(Controller controller, Producer producer)
-		{
-			Text = "Объединение производителей";
-			Height = 400;
-			((Button) AcceptButton).Text = "Объединить";
-			var producersTable = new VirtualTable(new TemplateManager<List<Producer>, Producer>(
-			                                      	() => Row.Headers("Производитель"),
-			                                      	p => Row.Cells(p.Name)
-			                                      	));
-			var toolStrip = new ToolStrip();
-			var text = new ToolStripTextBox();
-			text.KeyDown += (sender, args) =>
-			                	{
-/*									if (args.KeyCode == Keys.Enter)
-									{
-										DoSearch(controller, text, producersTable);
-										args.Handled = true;
-										args.SuppressKeyPress = true;
-									}*/
-			                	};
-			toolStrip.Items.Add(text);
-			var button = new ToolStripButton
-			             	{
-			             		Text = "Поиск"
-			             	};
-			button.Click += (sender, args) => DoSearch(producer, controller, text, producersTable);
-			toolStrip.Items.Add(button);
-			producersTable.CellSpacing = 1;
-			producersTable.RegisterBehavior(new RowSelectionBehavior(),
-			                                new ToolTipBehavior());
-			table.RowCount = 2;
-			table.RowStyles.Add(new RowStyle());
-			table.Controls.Add(toolStrip, 0, 0);
-			table.Controls.Add(producersTable.Host, 0, 1);
-			Closing += (sender, args) =>
-			           	{
-			           		if (DialogResult == DialogResult.Cancel)
-			           			return;
-
-			           		var p = producersTable.Selected<Producer>();
-			           		if (p == null)
-			           		{
-			           			MessageBox.Show("Не выбран производитель для объединения",
-			           			                "Не выбран производитель",
-			           			                MessageBoxButtons.OK,
-			           			                MessageBoxIcon.Warning);
-			           			args.Cancel = true;
-			           			return;
-			           		}
-
-			           		controller.Join(producer, p);
-			           	};
-			Shown += (sender, args) => text.Focus();
-		}
-
-		private void DoSearch(Producer source, Controller controller, ToolStripTextBox text, VirtualTable producersTable)
-		{
-			var producers = controller.SearchProducer(text.Text).Where(p => p.Id != source.Id).ToList();
-			if (producers.Count > 0)
-			{
-				producersTable.TemplateManager.Source = producers;
-				producersTable.Host.Focus();
-			}
-			else
-			{
-				MessageBox.Show("По вашему запросу ничеого не найдено", "Результаты поиска",
-				                MessageBoxButtons.OK,
-				                MessageBoxIcon.Warning);
-			}
-		}
-	}
-
-	public class RenameForm : Dialog
-	{
-		public RenameForm(Controller controller, Producer producer)
-		{
-			var errorProvider = new ErrorProvider();
-			var newName = new TextBox
-			              	{
-			              		Text = producer.Name,
-			              		Width = 200,
-			              	};
-			table.Controls.Add(newName, 0, 0);
-			Text = "Переименование производителя";
-			Closing += (sender, args) =>
-			           	{
-			           		if (DialogResult == DialogResult.Cancel)
-			           			return;
-			           		if (String.IsNullOrEmpty(newName.Text.Trim()))
-			           		{
-			           			errorProvider.SetError(newName, "Название производителя не может быть пустым");
-			           			errorProvider.SetIconAlignment(newName, ErrorIconAlignment.MiddleRight);
-			           			args.Cancel = true;
-			           			return;
-			           		}
-			           		producer.Name = newName.Text;
-			           		controller.Update(producer);
-			           	};
-		}
-	}
-
-	public class Dialog : Form
-	{
-		protected TableLayoutPanel table;
-
-		public Dialog()
-		{
-			AcceptButton = new Button
-			               	{
-			               		DialogResult = DialogResult.OK,
-			               		Text = "Сохранить", 
-			               		AutoSize = true,
-			               	};
-			CancelButton = new Button
-			               	{
-			               		DialogResult = DialogResult.Cancel,
-			               		Text = "Отмена",
-			               		AutoSize = true,
-			               	};
-			FormBorderStyle = FormBorderStyle.FixedSingle;
-			MaximizeBox = false;
-			MinimizeBox = false;
-			ShowInTaskbar = false;
-			StartPosition = FormStartPosition.CenterParent;
-			var flow = new FlowLayoutPanel
-			           	{
-			           		AutoSize = true,
-			           		Dock = DockStyle.Bottom,
-			           		FlowDirection = FlowDirection.RightToLeft
-			           	};
-			flow.Controls.Add((Control) AcceptButton);
-			flow.Controls.Add((Control) CancelButton);
-			table = new TableLayoutPanel
-			        	{
-			        		//AutoSize = true,
-			        		RowCount = 1,
-			        		ColumnCount = 1,
-			        		Dock = DockStyle.Fill
-			        	};
-			table.RowStyles.Add(new RowStyle());
-			table.ColumnStyles.Add(new ColumnStyle());
-
-			Controls.Add(table);
-			Controls.Add(flow);
-			AutoSize = true;
-			Height = 80;
-			//AutoSizeMode = AutoSizeMode.GrowAndShrink;
 		}
 	}
 }

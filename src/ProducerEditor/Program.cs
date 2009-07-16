@@ -11,9 +11,10 @@ namespace ProducerEditor
 		[STAThread]
 		public static void Main()
 		{
-
+#if !DEBUG
 			try
 			{
+#endif
 				XmlConfigurator.Configure();
 				Application.EnableVisualStyles();
 				Application.SetCompatibleTextRenderingDefault(false);
@@ -21,12 +22,12 @@ namespace ProducerEditor
 				Application.Run(new MainView());
 #if !DEBUG
 				Application.ThreadException += (sender, e) => HandleException(e.Exception);
-#endif
 			}
 			catch (Exception e)
 			{
 				HandleException(e);
 			}
+#endif
 		}
 
 		private static void HandleException(Exception exception)

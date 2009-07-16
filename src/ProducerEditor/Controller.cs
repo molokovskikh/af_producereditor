@@ -3,12 +3,14 @@ using System.Collections.Generic;
 using System.Configuration;
 using System.Linq;
 using System.Reflection;
+using System.Windows.Forms;
 using Castle.ActiveRecord;
 using Castle.ActiveRecord.Framework.Scopes;
 using MySql.Data.MySqlClient;
 using NHibernate;
 using NHibernate.Transform;
 using ProducerEditor.Models;
+using ProducerEditor.Views;
 
 namespace ProducerEditor
 {
@@ -33,34 +35,74 @@ order by cfc.FirmCr")
 			return Producers;
 		}
 
+		public void OfferForProducerId(uint producerId)
+		{
+			var offers = FindOffers(0, producerId);
+			new OffersView(offers).ShowDialog();
+		}
+
+		public void OffersForCatalogId(uint catalogId)
+		{
+			var offers = FindOffers(catalogId, 0);
+			new OffersView(offers).ShowDialog();
+		}
+
 		public void Update(Producer producer)
 		{
 			producer.Name = producer.Name.ToUpper();
 			InMaster(producer.Update);
 		}
 
-		public void Join(Producer source, Producer target)
+		public void Join(Producer[] producers, Action update)
+		{
+			if (producers == null || producers.Length == 0 || producers[0] == null)
+				return;
+			var rename = new JoinView(this, producers);
+			if (rename.ShowDialog() != DialogResult.Cancel)
+			{
+				update();
+			}
+		}
+
+		public void DoJoin(Producer[] sources, Producer target)
 		{
 			InMaster(() => WithSession(session => {
-				var producerEquivalent = new ProducerEquivalent
-											{
-												Name = source.Name,
-												Producer = target,
-											};
 				using (var transaction = session.BeginTransaction())
 				{
+					foreach (var source in sources)
+					{
+
 					session.CreateSQLQuery(@"
 update farm.SynonymFirmCr
 set CodeFirmCr = :TargetId
-where CodeFirmCr = :SourceId")
+where CodeFirmCr = :SourceId
+;
+
+update farm.core0
+set CodeFirmCr = :TargetId
+where CodeFirmCr = :SourceId
+;
+
+update orders.orderslist
+set CodeFirmCr = :TargetId
+where CodeFirmCr = :SourceId
+;")
 						.SetParameter("SourceId", source.Id)
 						.SetParameter("TargetId", target.Id)
 						.ExecuteUpdate();
-					session.Save(producerEquivalent);
-					session.Delete(source);
+						session.Save(new ProducerEquivalent
+						             	{
+						             		Name = source.Name,
+						             		Producer = target,
+						             	});
+						source.Delete();
+					}
 					transaction.Commit();
 				}
-				Producers.Remove(source);
+			    foreach (var source in sources)
+			    {
+					Producers.Remove(source);
+			    }
 			}));
 		}
 
@@ -151,11 +193,8 @@ group by sfc.SynonymFirmCrCode")
 			return Producers.Where(p => p.Name.Contains((text ?? "").ToUpper())).ToList();
 		}
 
-		public List<ProductAndProducer> FindRelativeProductsAndProducers(Producer producer, out int  ordersCount, out int offersCount)
+		public List<ProductAndProducer> FindRelativeProductsAndProducers(Producer producer)
 		{
-			//что бы сделать компилятор счастливей
-			var innerOrdersCount = 0;
-			var innerOffersCont = 0;
 			var result = WithSession(s => {
 			                   	var productsAndProducers = s.CreateSQLQuery(@"
 drop temporary table if exists ProductFromOrders;
@@ -168,48 +207,46 @@ group by ProductId;
 drop temporary table if exists ProductsAndProducers;
 create temporary table ProductsAndProducers engine 'memory'
 select
-ol.ProductId, ol.CodeFirmCr
+ol.ProductId, ol.CodeFirmCr, 0 as OffersCount, 0 as OrdersCount, 0 as ExistsInRls
 from orders.orderslist ol
   join ProductFromOrders p on ol.ProductId = p.ProductId
 where ol.CodeFirmCr is not null
 group by ol.ProductId, ol.CodeFirmCr
 union
 select
-c.ProductId, c.CodeFirmCr
+c.ProductId, c.CodeFirmCr, 0 as OffersCount, 0 as OrdersCount, 0 as ExistsInRls
 from farm.core0 c
   join farm.core0 sibling on c.ProductId = sibling.ProductId
 where sibling.CodeFirmCr = :ProducerId and c.CodeFirmCr is not null
 group by c.ProductId, c.CodeFirmCr;
 
-select cast(concat(cn.Name, ' ', cf.Form, ' ', ifnull(group_concat(distinct pv.Value ORDER BY prop.PropertyName, pv.Value SEPARATOR ', '), '')) as CHAR) as Product,
-       cfc.FirmCr as Producer
+update ProductsAndProducers pap
+set pap.OffersCount = (select count(*) from farm.core0 c where c.CodeFirmCr = pap.CodeFirmCr and c.ProductId = pap.ProductId),
+    pap.OrdersCount = (select count(*) from orders.orderslist ol where ol.CodeFirmCr = pap.CodeFirmCr and ol.ProductId = pap.ProductId);
+
+update ProductsAndProducers pap
+set ExistsInRls = exists(select * from farm.core0 c where c.CodeFirmCr = pap.CodeFirmCr and c.ProductId = pap.ProductId and c.PriceCode = 1864);
+
+select p.CatalogId,
+	   concat(cn.Name, ' ', cf.Form) as Product,
+	   cfc.CodeFirmCr as ProducerId,
+       cfc.FirmCr as Producer,
+	   pap.OrdersCount,
+	   pap.OffersCount,
+	   pap.ExistsInRls
 from ProductsAndProducers pap
   join catalogs.Products as p on p.id = pap.productid
 	  join Catalogs.Catalog as c on p.catalogid = c.id
     	JOIN Catalogs.CatalogNames cn on cn.id = c.nameid
     	JOIN Catalogs.CatalogForms cf on cf.id = c.formid
-  LEFT JOIN Catalogs.ProductProperties pp on pp.ProductId = p.Id
-	  LEFT JOIN Catalogs.PropertyValues pv on pv.id = pp.PropertyValueId
-    	LEFT JOIN Catalogs.Properties prop on prop.Id = pv.PropertyId
   join farm.CatalogFirmCr cfc on cfc.CodeFirmCr = pap.CodeFirmCr
 group by pap.ProductId, pap.CodeFirmCr
-order by cfc.FirmCr;")
+order by p.Id;")
 			                   		.SetParameter("ProducerId", producer.Id)
 			                   		.SetResultTransformer(Transformers.AliasToBean(typeof (ProductAndProducer)))
 			                   		.List<ProductAndProducer>();
-								innerOffersCont  = (int)s.CreateSQLQuery(@"
-select count(*)
-from farm.core0
-where CodeFirmCr = :ProducerId").SetParameter("ProducerId", producer.Id).UniqueResult<Int64>();
-
-								innerOrdersCount = (int)s.CreateSQLQuery(@"
-select count(*)
-from orders.orderslist
-where CodeFirmCr = :ProducerId").SetParameter("ProducerId", producer.Id).UniqueResult<Int64>();
 			                   	return productsAndProducers;
 			                   }).ToList();
-			offersCount = innerOffersCont;
-			ordersCount = innerOrdersCount;
 			return result;
 		}
 
@@ -236,25 +273,35 @@ limit 20")
 					.List<OrderView>()).ToList();
 		}
 
-		public List<OfferView> FindOffers(Producer producer)
+		public List<OfferView> FindOffers(uint catalogId, uint producerId)
 		{
-			return WithSession(s => s.CreateSQLQuery(@"
+			return WithSession(s => {
+			                   	string filter;
+								if (catalogId != 0)
+									filter = "p.CatalogId = :CatalogId";
+								else
+									filter = "c.CodeFirmCr = :ProducerId";
+			                   	var query = s.CreateSQLQuery(String.Format(@"
 select cd.ShortName as Supplier, 
 cd.FirmSegment as Segment,
 s.Synonym as ProductSynonym, 
 sfc.Synonym as ProducerSynonym
 from farm.core0 c
+  join catalogs.Products p on p.Id = c.ProductId
   join farm.SynonymArchive s on s.SynonymCode = c.SynonymCode
   join farm.SynonymFirmCr sfc on sfc.SynonymFirmCrCode = c.SynonymFirmCrCode
   join usersettings.PricesData pd on pd.PriceCode = c.PriceCode
     join usersettings.ClientsData cd on cd.FirmCode = pd.FirmCode
-where c.CodeFirmCr = :ProducerId
+where {0}
 group by c.Id
-order by cd.FirmCode
-limit 50")
-			                        	.SetParameter("ProducerId", producer.Id)
-			                        	.SetResultTransformer(Transformers.AliasToBean(typeof (OfferView)))
-			                        	.List<OfferView>()).ToList();
+order by cd.FirmCode", filter))
+			                   		.SetResultTransformer(Transformers.AliasToBean(typeof (OfferView)));
+			                   	if (catalogId != 0)
+			                   		query.SetParameter("CatalogId", catalogId);
+			                   	else
+			                   		query.SetParameter("ProducerId", producerId);
+			                   	return query.List<OfferView>();
+			                   }).ToList();
 		}
 
 		public void InMaster(Action action)
@@ -274,9 +321,9 @@ limit 50")
 			InMaster(() => {
 			         		SetupParametersForTriggerLogging(Environment.UserName, Environment.MachineName);
 			         		if (instance is SynonymView)
-			         			InMaster(() => ProducerSynonym.Find(((SynonymView) instance).Id).Delete());
+			         			ProducerSynonym.Find(((SynonymView) instance).Id).Delete();
 			         		else if (instance is Producer)
-			         			InMaster(() => Producer.Find(((Producer) instance).Id).Delete());
+			         			Producer.Find(((Producer) instance).Id).Delete();
 			         });
 		}
 	}

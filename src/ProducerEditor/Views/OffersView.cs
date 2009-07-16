@@ -4,6 +4,7 @@ using System.Drawing;
 using System.Windows.Forms;
 using ProducerEditor.Models;
 using Subway.Dom;
+using Subway.Helpers;
 using Subway.VirtualTable;
 using Subway.VirtualTable.Behaviors;
 using Subway.VirtualTable.Behaviors.Specialized;
@@ -12,10 +13,11 @@ namespace ProducerEditor.Views
 {
 	public class OffersView : Form
 	{
-		public OffersView(List<OfferView> offers, Producer producer)
+		public OffersView(List<OfferView> offers)
 		{
 			MinimumSize = new Size(640, 480);
-			Text = String.Format(@"Предложения производителя ""{0}""", producer.Name);
+			KeyPreview = true;
+			Text = "Предложения";
 			var offersTable = new VirtualTable(new TemplateManager<List<OfferView>, OfferView>(
 												() => Row.Headers(new Header("Поставщик").Sortable("Supplier"),
 			                                   	                  new Header("Сегмент").Sortable("Segment"),
@@ -25,10 +27,12 @@ namespace ProducerEditor.Views
 			                                   	                   offer.SegmentAsString(),
 			                                   	                   offer.ProductSynonym,
 			                                   	                   offer.ProducerSynonym)));
+			offersTable.CellSpacing = 1;
 			offersTable.RegisterBehavior(new ToolTipBehavior(),
 			                             new SortInList());
 			offersTable.TemplateManager.Source = offers;
 			Controls.Add(offersTable.Host);
+			this.InputMap().KeyDown(Keys.Escape, Close);
 		}
 	}
 }

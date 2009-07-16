@@ -20,8 +20,19 @@ namespace ProducerEditor
 
 			StylesHolder
 				.Instance
+				.RegisterClass("CheckBoxColumn")
+				.Set(StyleElementType.Width, 20)
+				.Set(StyleElementType.IsFixed, true);
+
+			StylesHolder
+				.Instance
 				.RegisterClass("WithoutOffers")
 				.Set(StyleElementType.CustomBackgroundDraw, Predefine.MixWith(Color.FromArgb(153, 231, 231, 200)));
+
+			StylesHolder
+				.Instance
+				.RegisterClass("NotExistsInRls")
+				.Set(StyleElementType.CustomBackgroundDraw, Predefine.MixWith(Color.FromArgb(153, 231, 216, 201)));
 
 			var config = new InPlaceConfigurationSource();
 			config.Add(typeof (ActiveRecordBase),

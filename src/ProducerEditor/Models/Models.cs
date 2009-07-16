@@ -56,8 +56,14 @@ namespace ProducerEditor.Models
 
 	public class ProductAndProducer
 	{
+		public bool Selected { get; set; }
+		public long ExistsInRls { get; set; }
+		public uint ProducerId { get; set; }
 		public string Producer { get; set; }
+		public uint CatalogId { get; set; }
 		public string Product { get; set; }
+		public long OrdersCount { get; set; }
+		public long OffersCount { get; set; }
 	}
 
 	public class OrderView

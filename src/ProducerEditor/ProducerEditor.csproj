@@ -79,6 +79,12 @@
   <ItemGroup>
     <Compile Include="Controller.cs" />
     <Compile Include="Initializer.cs" />
+    <Compile Include="Views\Helpers.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Views\JoinView.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="Views\MainView.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -95,10 +101,17 @@
     <Compile Include="Views\ProductsAndProducersView.cs">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="Views\RenameView.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <None Include="App.config" />
     <None Include="App.release.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Common.Tools\Common.Tools\Common.Tools.csproj">
+      <Project>{72AFCFE8-C9E9-45FA-9698-BEE896A517A3}</Project>
+      <Name>Common.Tools</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Subway\src\Subway\Subway.csproj">
       <Project>{C6AA1C77-7848-4555-AEFE-6025DF0AA6F1}</Project>
       <Name>Subway</Name>
