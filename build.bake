@@ -6,7 +6,7 @@ import System.Threading
 
 project = "ProducerEditor"
 projectFile = Path.GetFullPath("src/${project}/${project}.csproj")
-output = Path.GetFullPath("./build/");
+output = Path.GetFullPath("./build/${project}");
 	
 def Clean(path as String):
 	if not Exist(path):
@@ -35,7 +35,7 @@ Task @clean:
 
 Task @deploy, [@build]:
 	zip = FastZip()
-	zip.CreateZip("ProducerEditor.zip", output, true, null)
+	zip.CreateZip("build/ProducerEditor.zip", output, true, null)
 	
 	client = SmtpClient("mail.adc.analit.net")
 	message = MailMessage(
@@ -43,7 +43,7 @@ Task @deploy, [@build]:
 		Subject : "Редактор производителей"
 	)
 	message.To.Add(MailAddress("emk@analit.net"))
-	message.Attachments.Add(Attachment("ProducerEditor.zip"))
+	message.Attachments.Add(Attachment("build/ProducerEditor.zip"))
 	client.Send(message)
 	#Thread.Sleep(500)
 	#Rm("ProducerEditor.zip")
