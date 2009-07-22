@@ -4,6 +4,8 @@ using System.Drawing;
 using System.Windows.Forms;
 using ProducerEditor.Models;
 using Subway.Dom;
+using Subway.Dom.Styles;
+using Subway.Helpers;
 using Subway.VirtualTable;
 using Subway.VirtualTable.Behaviors;
 using Subway.VirtualTable.Behaviors.Selection;
@@ -17,6 +19,10 @@ namespace ProducerEditor.Views
 		private readonly VirtualTable producerTable;
 		private readonly VirtualTable synonymsTable;
 		private ToolStrip toolStrip;
+
+		private static List<int> _widths = new List<int>{
+			100, 100, 100, 100
+		};
 
 		public MainView()
 		{
@@ -82,10 +88,26 @@ namespace ProducerEditor.Views
 			behavior.SelectedRowChanged += (oldRow, newRow) => SelectedProducerChanged(behavior.Selected<Producer>());
 
 			synonymsTable = new VirtualTable(new TemplateManager<List<SynonymView>, SynonymView>(
-			                                 	() => Row.Headers(new Header("Синоним").Sortable("Name"),
-																  new Header("Поставщик").Sortable("Supplier"),
-																  new Header("Регион").Sortable("Region"),
-			                                 	                  new Header("Сегмент").Sortable("Segment")),
+			                                 	() =>{
+			                                 		var row = Row.Headers();
+													var header = new Header("Синоним").Sortable("Name");
+													header.InlineStyle.Set(StyleElementType.Width, _widths[0]);
+													row.Append(header);
+
+													header = new Header("Поставщик").Sortable("Supplier");
+													header.InlineStyle.Set(StyleElementType.Width, _widths[1]);
+													row.Append(header);
+
+													header = new Header("Регион").Sortable("Region");
+													header.InlineStyle.Set(StyleElementType.Width, _widths[2]);
+													row.Append(header);
+
+													header = new Header("Сегмент").Sortable("Segment");
+													header.InlineStyle.Set(StyleElementType.Width, _widths[3]);
+													row.Append(header);
+
+													return row;
+			                                 	},
 			                                 	synonym => {
 			                                 		var row = Row.Cells(synonym.Name,
 			                                 		                    synonym.Supplier,
@@ -98,6 +120,7 @@ namespace ProducerEditor.Views
 			synonymsTable.CellSpacing = 1;
 			synonymsTable.RegisterBehavior(new ToolTipBehavior(),
 										   new SortInList(),
+										   new ColumnResizeBehavior(),
 										   new RowSelectionBehavior());
 			synonymsTable.Host.KeyDown += (sender, args) => {
 											if (args.KeyCode == Keys.Delete)
@@ -105,6 +128,19 @@ namespace ProducerEditor.Views
 											if (args.KeyCode == Keys.Escape)
 												producerTable.Host.Focus();
 			                              };
+			synonymsTable.Behavior<ColumnResizeBehavior>().ColumnResized += column => {
+				var element = column;
+				do
+				{
+					_widths[synonymsTable.Columns.IndexOf(element)] = element.ReadonlyStyle.Get(StyleElementType.Width);
+					var node = synonymsTable.Columns.Find(element).Next;
+					if (node != null)
+						element = (Column) node.Value;
+					else
+						element = null;
+				}
+				while(element != null);
+			};
 
 			InputLanguageHelper.SetToRussian();
 			split.Panel1.Controls.Add(producerTable.Host);
@@ -113,6 +149,7 @@ namespace ProducerEditor.Views
 			Controls.Add(toolStrip);
 			split.SplitterDistance = (int) (Size.Height*0.6);
 			Shown += (sender, args) => producerTable.Host.Focus();
+			synonymsTable.TemplateManager.ResetColumns();
 			UpdateProducers();
 		}
 

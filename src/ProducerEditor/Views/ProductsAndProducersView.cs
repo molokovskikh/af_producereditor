@@ -7,6 +7,7 @@ using Common.Tools;
 using ProducerEditor.Models;
 using Subway.Dom;
 using Subway.Dom.Input;
+using Subway.Dom.Styles;
 using Subway.Helpers;
 using Subway.VirtualTable;
 using Subway.VirtualTable.Behaviors;
@@ -22,6 +23,10 @@ namespace ProducerEditor.Views
 		private List<ProductAndProducer> _productAndProducers;
 		private VirtualTable productsAndProducers;
 
+		private static List<int> _widths = new List<int>{
+			100, 100, 100, 100
+		};
+
 		public ProductsAndProducersView(Controller controller, Producer producer, List<ProductAndProducer> productAndProducers)
 		{
 			_controller = controller;
@@ -29,6 +34,7 @@ namespace ProducerEditor.Views
 			_productAndProducers = productAndProducers;
 
 			MinimumSize = new Size(640, 480);
+			Size = new Size(640, 480);
 			Text = "Продукты";
 			KeyPreview = true;
 			KeyDown += (sender, args) => {
@@ -37,11 +43,26 @@ namespace ProducerEditor.Views
 			           };
 
 			productsAndProducers = new VirtualTable(new TemplateManager<List<ProductAndProducer>, ProductAndProducer>(
-												() => Row.Headers(new Header().AddClass("CheckBoxColumn"),
-																  new Header("Продукт").Sortable("Product"),
-			                                   	                  new Header("Производитель").Sortable("Producer"),
-																  new Header("Количество предложений").Sortable("OffersCount"),
-																  new Header("Количество заказов").Sortable("OrdersCount")),
+												() => { 
+													var row = Row.Headers(new Header().AddClass("CheckBoxColumn"));
+
+													var header = new Header("Продукт").Sortable("Product");
+													header.InlineStyle.Set(StyleElementType.Width, _widths[0]);
+													row.Append(header);
+
+													header = new Header("Производитель").Sortable("Producer");
+													header.InlineStyle.Set(StyleElementType.Width, _widths[1]);
+													row.Append(header);
+
+													header = new Header("Количество предложений").Sortable("OffersCount");
+													header.InlineStyle.Set(StyleElementType.Width, _widths[2]);
+													row.Append(header);
+
+													header = new Header("Количество заказов").Sortable("OrdersCount");
+													header.InlineStyle.Set(StyleElementType.Width, _widths[3]);
+													row.Append(header);
+													return row;
+												},
 												offer =>
 												{
 													var row = Row.Cells(offer.Product,
@@ -60,6 +81,7 @@ namespace ProducerEditor.Views
 			productsAndProducers.RegisterBehavior(new ToolTipBehavior(),
 			                             new SortInList(),
 			                             new RowSelectionBehavior(),
+										 new ColumnResizeBehavior(),
 			                             new InputSupport(input => {
 			                                              	var row = (Row) input.Parent.Parent;
 			                                              	var productAndProducer = productsAndProducers.Translate<ProductAndProducer>(row);
@@ -69,6 +91,19 @@ namespace ProducerEditor.Views
 															productsAndProducers.RebuildViewPort();
 			                                              }));
 			productsAndProducers.TemplateManager.Source = productAndProducers;
+			productsAndProducers.Behavior<ColumnResizeBehavior>().ColumnResized += column => {
+				var element = column;
+				do
+				{
+					_widths[productsAndProducers.Columns.IndexOf(element) - 1] = element.ReadonlyStyle.Get(StyleElementType.Width);
+					var node = productsAndProducers.Columns.Find(element).Next;
+					if (node != null)
+						element = (Column) node.Value;
+					else
+						element = null;
+				}
+				while(element != null);
+			};
 			productsAndProducers.Host.InputMap()
 				.KeyDown(Keys.F3, Join)
 				.KeyDown(Keys.F4, ShowOffersForProducerId)
@@ -80,6 +115,7 @@ namespace ProducerEditor.Views
 				.Button("Предложения для производителя (F4)", ShowOffersForProducerId)
 				.Button("Предложения для продукта (F5)", ShowOffersForCatalogId);
 
+			productsAndProducers.TemplateManager.ResetColumns();
 			Controls.Add(productsAndProducers.Host);
 			Controls.Add(toolStrip);
 		}
