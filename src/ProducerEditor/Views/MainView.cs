@@ -59,8 +59,10 @@ namespace ProducerEditor.Views
 			                              		ShowProducers();
 			                              	else if (args.KeyCode == Keys.Enter)
 			                              		SearchProducer();
-			                              	else if (args.KeyCode == Keys.Escape)
+											else if (args.KeyCode == Keys.Escape && !String.IsNullOrEmpty(searchText.Text))
 			                              		searchText.Text = "";
+											else if (args.KeyCode == Keys.Escape && String.IsNullOrEmpty(searchText.Text))
+												ReseteFilter();
 			                              	else if (args.KeyCode == Keys.Delete)
 			                              		Delete();
 			                              	else if (args.KeyCode == Keys.Tab)
@@ -121,6 +123,9 @@ namespace ProducerEditor.Views
 				var producer = producerTable.Selected<Producer>();
 				if (producer == null)
 					return;
+				if (MessageBox.Show(String.Format("Удалить производителя \"{0}\"", producer.Name), "Удаление производителя", MessageBoxButtons.OKCancel, MessageBoxIcon.Question) == DialogResult.Cancel)
+					return;
+
 				_controller.Delete(producer);
 				((IList<Producer>)producerTable.TemplateManager.Source).Remove(producer);
 				_controller.Producers.Remove(producer);
@@ -145,6 +150,13 @@ namespace ProducerEditor.Views
 				return;
 			new ProductsAndProducersView(_controller, producer, _controller.FindRelativeProductsAndProducers(producer)).ShowDialog();
 			producerTable.RebuildViewPort();
+		}
+
+		private void ReseteFilter()
+		{
+			var producers = _controller.SearchProducer(null);
+			producerTable.TemplateManager.Source = producers;
+			producerTable.Host.Focus();
 		}
 
 		private void SearchProducer()
