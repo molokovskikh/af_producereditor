@@ -192,7 +192,7 @@ namespace ProducerEditor.Views
 		private void ShowJoinView()
 		{
 			var producer = producerTable.Selected<Producer>();
-			_controller.Join(new[] {producer},
+			_controller.Join(producer,
 			                 () => {
 			                 	producerTable.RebuildViewPort();
 			                 	SelectedProducerChanged(producerTable.Selected<Producer>());

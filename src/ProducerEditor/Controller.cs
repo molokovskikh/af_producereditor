@@ -53,11 +53,11 @@ order by cfc.FirmCr")
 			InMaster(producer.Update);
 		}
 
-		public void Join(Producer[] producers, Action update)
+		public void Join(Producer producer, Action update)
 		{
-			if (producers == null || producers.Length == 0 || producers[0] == null)
+			if (producer == null)
 				return;
-			var rename = new JoinView(this, producers);
+			var rename = new JoinView(this, producer);
 			if (rename.ShowDialog() != DialogResult.Cancel)
 			{
 				update();
