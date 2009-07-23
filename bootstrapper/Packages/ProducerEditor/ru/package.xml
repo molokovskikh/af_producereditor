@@ -1,0 +1,10 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Package xmlns="http://schemas.microsoft.com/developer/2004/01/bootstrapper" Name="DisplayName" Culture="Culture">
+
+  <Strings>
+    <String Name="DisplayName">Редактор производителей</String>
+    <String Name="Culture">ru</String>
+	<String Name="GeneralFailure">При попытке установки Редактора производителей произошёл сбой.</String>
+  </Strings>  
+  
+</Package>

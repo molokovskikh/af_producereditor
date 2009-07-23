@@ -16,6 +16,10 @@ namespace ProducerEditor
 			{
 #endif
 				XmlConfigurator.Configure();
+				var installer = new Installer.Installer();
+				if (installer.Update())
+					return;
+
 				Application.EnableVisualStyles();
 				Application.SetCompatibleTextRenderingDefault(false);
 				Initializer.Initialize();

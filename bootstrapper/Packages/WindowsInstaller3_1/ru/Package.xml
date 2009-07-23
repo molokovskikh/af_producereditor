@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Package xmlns="http://schemas.microsoft.com/developer/2004/01/bootstrapper" Name="DisplayName" Culture="Culture">
+
+    <!-- Defines a localizable string table for error messages-->
+    <Strings>
+        <String Name="DisplayName">Установщик Windows 3.1</String>
+        <String Name="Culture">ru</String>
+        <String Name="AdminRequired">Для установки установщика Windows версии 3.1 требуются права администратора. Свяжитесь с вашим системным администратором.</String>
+        <String Name="InvalidPlatform">Установка установщика Windows 3.1 требует Windows 2000 с пакетом обновления 3 (SP3) или более поздним. Свяжитесь с поставщиком приложения.</String>
+        <String Name="InvalidPlatformArchitecture">Установщик Windows 3.1 не поддерживается 64-разрядными операционными системами. Свяжитесь с поставщиком приложения.</String>
+        <String Name="GeneralFailure">При попытке установки установщика Windows 3.1 произошёл сбой.</String>
+        <String Name="Msi31Exe">http://go.microsoft.com/fwlink/?LinkId=49256</String>
+    </Strings>
+
+</Package>

@@ -1,0 +1,28 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+
+<Product
+  xmlns="http://schemas.microsoft.com/developer/2004/01/bootstrapper"
+  ProductCode="ProducerEditor"
+>
+  <!-- Defines list of files to be copied on build -->
+  <PackageFiles CopyAllPackageFiles="true">
+  </PackageFiles>
+
+  <RelatedProducts>
+    <DependsOnProduct Code="Microsoft.Net.Client.3.5" />
+  </RelatedProducts>
+
+	<Commands Reboot="Immediate">
+	
+		<Command PackageFile="Installer.exe" EstimatedInstalledBytes="2097152" EstimatedInstallSeconds="60" EstimatedTempBytes="2097152">
+
+			<ExitCodes>
+				<ExitCode Value="0" Result="Success" />
+				<DefaultExitCode Result="Fail" String="GeneralFailure" FormatMessageFromSystem="true" />
+			</ExitCodes>
+			
+		</Command>
+
+	</Commands>
+
+</Product>

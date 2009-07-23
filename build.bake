@@ -1,12 +1,31 @@
 ﻿import System
 import System.IO
-import ICSharpCode.SharpZipLib.Zip from "lib/ICSharpCode.SharpZipLib.dll"
+import System.Xml
+import System.Security.Cryptography.X509Certificates
 import System.Net.Mail
 import System.Threading
+import Microsoft.Build.Tasks from "Microsoft.Build.Tasks.v3.5"
+import Microsoft.Build.Utilities.TaskItem from "Microsoft.Build.Utilities.v3.5" as TaskItem
+import ICSharpCode.SharpZipLib.Zip from "lib/ICSharpCode.SharpZipLib.dll"
+
+def Clean(path as String):
+	if not Exist(path):
+		MkDir(path)
+	else:
+		Rm("${path}*", true)
+
+def GeneratePublishPage(file as string, version as string, projectName as string):
+	template = System.IO.File.ReadAllText("publish.htm.template")
+	result = template.Replace("{version}", version)
+	result = result.Replace("{name}", projectName)
+	System.IO.File.AppendAllText(file, result)	
 
 project = "ProducerEditor"
 projectFile = Path.GetFullPath("src/${project}/${project}.csproj")
 output = Path.GetFullPath("./build/${project}");
+version = "0.1"
+deploymentUrl = "http://publish.analit.net/ProducerEditor/"
+deployDir = "\\\\acdcserv\\publish\\ProducerEditor"
 	
 def Clean(path as String):
 	if not Exist(path):
@@ -14,8 +33,7 @@ def Clean(path as String):
 	else:
 		Rm("${path}*", true)
 
-Task @default, [@build]
-
+Task @default, [@buildDeployPackage]
 
 Task @build, [@clean]:
 	MsBuild(projectFile,
@@ -33,7 +51,7 @@ Task @clean:
 			FrameworkVersion : "3.5").Execute()
 	Clean(output)
 
-Task @deploy, [@build]:
+/*Task @deploy, [@buildDeployPackage]:
 	zip = FastZip()
 	zip.CreateZip("build/ProducerEditor.zip", output, true, null)
 	
@@ -44,6 +62,101 @@ Task @deploy, [@build]:
 	)
 	message.To.Add(MailAddress("emk@analit.net"))
 	message.Attachments.Add(Attachment("build/ProducerEditor.zip"))
-	client.Send(message)
-	#Thread.Sleep(500)
-	#Rm("ProducerEditor.zip")
+	client.Send(message)*/
+
+Task @buildDeployPackage, [@build, @buildInstaller, @cleanDeployPackage]:
+	output = Path.GetFullPath("build/${project}.Setup/")
+	source = Path.GetFullPath("build/${project}/")
+	certPath = Path.GetFullPath("lib/CodeSign.pfx")
+	password = "зфыыцщкв"
+	
+	items = (TaskItem("${project}", {"Visible" : "false", "Install" : "true"}),
+			 TaskItem("Microsoft.Net.Client.3.5", {"Visible" : "false", "Install" : "true"}),
+			 TaskItem("Microsoft.Windows.Installer.3.1", {"Visible" : "false", "Install" : "true"}))
+	bootstrapper = Path.GetFullPath("build/bootstrapper/")
+		
+	Cp(FileSet("**/*.*", BaseDirectory : Path.GetFullPath("bootstrapper")), bootstrapper, true)
+	
+	installer = "build/Installer/"
+	Cp(FileSet("*.*", BaseDirectory : installer), "build/bootstrapper/Packages/${project}")
+
+	config = XmlDocument()
+	config.Load("${source}/${project}.exe.config")
+	namespaceManager = XmlNamespaceManager(config.NameTable)
+	namespaceManager.AddNamespace("n", "urn:schemas-microsoft-com:asm.v1");
+	config.SelectSingleNode("configuration/runtime/n:assemblyBinding/n:probing", namespaceManager).Attributes["privatePath"].Value = version
+	config.Save("${source}/${project}.exe.config")
+	
+	FastZip().CreateZip(Path.Combine(Path.GetFullPath("build/bootstrapper/Packages/${project}"), "${project}.zip"), source, false, null)
+	
+	updateFiles = ""
+	packageFiles = ""
+	for file in FileSet("*.*", BaseDirectory : "build/bootstrapper/Packages/${project}", Excludes : ["product.xml"]).Files:
+		filename = Path.GetFileName(file)
+		updateFiles += "<file>${deploymentUrl}${project}/${filename}</file>"
+		packageFiles += "<PackageFile Name=\"${filename}\" />"
+	
+	product = XmlDocument()
+	product.Load("build/bootstrapper/Packages/${project}/product.xml")
+	namespaceManager = XmlNamespaceManager(product.NameTable)
+	namespaceManager.AddNamespace("n", "http://schemas.microsoft.com/developer/2004/01/bootstrapper");
+	product.SelectSingleNode("//n:Product/n:PackageFiles", namespaceManager).InnerXml = packageFiles
+	product.Save("build/bootstrapper/Packages/${project}/product.xml")
+
+	config = XmlDocument()
+	config.Load("build/bootstrapper/Packages/${project}/Installer.exe.config")
+	config.SelectSingleNode("configuration/appSettings/add[@key=\"Application\"]").Attributes["value"].Value = project
+	config.SelectSingleNode("configuration/appSettings/add[@key=\"Version\"]").Attributes["value"].Value = version
+	config.SelectSingleNode("configuration/appSettings/add[@key=\"UpdateUri\"]").Attributes["value"].Value = Path.Combine(deploymentUrl, "update.xml")
+	config.Save("build/bootstrapper/Packages/${project}/Installer.exe.config")
+
+	update = XmlDocument()
+	update.InnerXml = """<?xml version="1.0" encoding="utf-8"?>
+<update>
+	<version>${version}</version>
+	<files>
+		${updateFiles}
+	</files>
+</update>"""
+	update.Save("build/${project}.Setup/update.xml")
+	
+	GenerateBootstrapper(ApplicationName : project,
+						 ApplicationRequiresElevation : false,
+						 OutputPath : output,
+						 Path : bootstrapper,
+						 BootstrapperItems : items,
+						 ComponentsLocation : "Absolute",
+						 ComponentsUrl : deploymentUrl,
+						 CopyComponents : true,
+						 Culture : "ru").Execute()
+	Mv("${output}setup.exe", "${output}${project}.Setup.exe")
+	
+	cert = X509Certificate2(System.IO.File.ReadAllBytes(certPath), password)	
+	Sh("signtool sign /sha1 ${cert.Thumbprint} ${output}${project}.Setup.exe").Execute()
+	
+	GeneratePublishPage("${output}/publish.htm", version, project)
+		
+Task @buildInstaller:
+	projectFile = Path.GetFullPath("src/Installer/Installer.csproj")
+	output = Path.GetFullPath("build/Installer/")
+	MsBuild(projectFile,
+			Parameters : { "OutDir" : output,
+						   "Configuration" : "release" },
+			FrameworkVersion : "3.5").Execute()
+	Rm(FileSet("*.*", Excludes : ["*.dll", "*.exe", "*.config"], BaseDirectory : output))
+	
+Task @cleanDeployPackage:
+	Clean("build/${project}.Setup")
+	Clean("build/bootstrapper")
+	
+Task @deploy, [@buildDeployPackage, @cleanDeployDir]:
+	Cp(FileSet("**/*.*", BaseDirectory : "build/${project}.Setup"), deployDir)
+	
+Task @cleanDeployDir:
+	path = deployDir
+	if not Exist(path):
+		MkDir(path)
+	else:
+		Rm(FileSet("**/*.*", BaseDirectory : path, Excludes : ["**/web.config"]), true)
+		for dir in Directory.GetDirectories(path):
+			Directory.Delete(dir, true)

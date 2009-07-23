@@ -112,7 +112,11 @@
       <Project>{72AFCFE8-C9E9-45FA-9698-BEE896A517A3}</Project>
       <Name>Common.Tools</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Subway\src\Subway\Subway.csproj">
+    <ProjectReference Include="..\Installer\Installer.csproj">
+      <Project>{723F5C11-CFB0-4B43-80D7-CDC096BD4EC2}</Project>
+      <Name>Installer</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Subway\trunk\src\Subway\Subway.csproj">
       <Project>{C6AA1C77-7848-4555-AEFE-6025DF0AA6F1}</Project>
       <Name>Subway</Name>
     </ProjectReference>

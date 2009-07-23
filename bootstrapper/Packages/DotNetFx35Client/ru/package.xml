@@ -1,0 +1,64 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+
+<Package
+  xmlns="http://schemas.microsoft.com/developer/2004/01/bootstrapper"
+  Name="DisplayName"
+  Culture="Culture"
+>
+
+	<InstallChecks>
+		<RegistryCheck Property="DotNetFxClient35InstallSuccess"
+                   Key="HKLM\SOFTWARE\Microsoft\NET Framework Setup\DotNetClient\v3.5"
+                   Value="Install" />
+	</InstallChecks>
+
+	<Commands Reboot="Defer">
+		<Command PackageFile="DotNetFx35ClientSetup.exe"
+             Arguments=' /lang:enu /passive /norestart /quiet'
+             EstimatedInstalledBytes="260000000"
+             EstimatedTempBytes="80000000">
+
+			<!-- These checks determine whether the package is to be installed -->
+			<InstallConditions>
+				<!-- This indicates the .Net Framework is already installed -->
+				<BypassIf Property="DotNetFxClient35InstallSuccess" Compare="ValueEqualTo" Value="1"/>
+
+				<!-- Block install if user does not have admin privileges -->
+				<FailIf Property="AdminUser" Compare="ValueEqualTo" Value="false" String="AdminRequired"/>
+
+				<!-- Block install on Windows 95 -->
+				<FailIf Property="Version9x" Compare="ValueExists" String="InvalidPlatformWin9x"/>
+
+				<!-- Block install on less than Windows XP SP2 -->
+				<FailIf Property="VersionNT" Compare="VersionLessThan" Value="5.1.2" String="InvalidPlatformWinNT"/>
+
+				<!-- Block install on W2K3 with no service pack -->
+				<FailIf Property="VersionNT" Compare="VersionEqualTo" Value="5.2.0" String="InvalidPlatformWinNT"/>
+
+				<!-- Block install on IA64 platform -->
+				<FailIf Property="ProcessorArchitecture" Compare="ValueEqualTo" Value="IA64" String="InvalidPlatformArchitecture" />
+			</InstallConditions>
+
+			<ExitCodes>
+				<ExitCode Value="0" Result="Success"/>
+				<ExitCode Value="1602" Result="Fail" String="UserCancelled"/>
+				<ExitCode Value="3010" Result="SuccessReboot"/>
+				<DefaultExitCode Result="Fail" FormatMessageFromSystem="true" String="GeneralFailure" />
+			</ExitCodes>
+
+		</Command>
+	</Commands>
+
+  <Strings>
+    <String Name="DisplayName">Профиль клиента .NET Framework</String>
+    <String Name="Culture">ru</String>
+    <String Name="AdminRequired">Для установки профиля клиента .NET Framework требуются права администратора. Обратитесь к своему системному администратору.</String>
+    <String Name="InvalidPlatformWin9x">Установка профиля клиента .NET Framework не поддерживается операционной системой Windows 95. Обратитесь к поставщику приложения.</String>
+    <String Name="InvalidPlatformWinNT">Для установки профиля клиента .NET Framework требуется операционная система Windows XP SP2, Windows 2003 SP1, Windows Vista или более поздней версии. Обратитесь к поставщику приложения.</String>
+    <String Name="InvalidPlatformArchitecture">Эта версия профиля клиента .NET Framework не поддерживается операционной системой на основе архитектуры IA-64. Обратитесь к поставщику приложения.</String>
+    <String Name="UserCancelled">Установка отменена пользователем. Профиль клиента .NET Framework не установлен.</String>
+    <String Name="GeneralFailure">При попытке установки профиля клиента .NET Framework произошёл сбой.</String>
+    <String Name="DotNetFXClient35Exe">http://go.microsoft.com/fwlink/?LinkId=119637</String>
+  </Strings>
+
+</Package>
