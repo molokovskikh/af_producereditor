@@ -16,6 +16,7 @@ namespace ProducerEditor
 {
 	public class Controller
 	{
+		private readonly Mailer _mailer = new Mailer();
 		public List<Producer> Producers { get; private set;}
 
 		public IList<Producer> GetAllProducers()
@@ -319,12 +320,15 @@ order by cd.FirmCode", filter))
 		public void Delete(object instance)
 		{
 			InMaster(() => {
-			         		SetupParametersForTriggerLogging(Environment.UserName, Environment.MachineName);
-			         		if (instance is SynonymView)
-			         			ProducerSynonym.Find(((SynonymView) instance).Id).Delete();
-			         		else if (instance is Producer)
-			         			Producer.Find(((Producer) instance).Id).Delete();
-			         });
+				SetupParametersForTriggerLogging(Environment.UserName, Environment.MachineName);
+				if (instance is SynonymView)
+					ProducerSynonym.Find(((SynonymView) instance).Id).Delete();
+				else if (instance is Producer)
+					Producer.Find(((Producer) instance).Id).Delete();
+			});
+
+			if (instance is SynonymView)
+				_mailer.SynonymWasDeleted((SynonymView) instance);
 		}
 	}
 }
