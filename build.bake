@@ -7,6 +7,7 @@ import System.Threading
 import Microsoft.Build.Tasks from "Microsoft.Build.Tasks.v3.5"
 import Microsoft.Build.Utilities.TaskItem from "Microsoft.Build.Utilities.v3.5" as TaskItem
 import ICSharpCode.SharpZipLib.Zip from "lib/ICSharpCode.SharpZipLib.dll"
+import Bake.Win32.Helper
 
 def Clean(path as String):
 	if not Exist(path):
@@ -23,7 +24,7 @@ def GeneratePublishPage(file as string, version as string, projectName as string
 project = "ProducerEditor"
 projectFile = Path.GetFullPath("src/${project}/${project}.csproj")
 output = Path.GetFullPath("./build/${project}");
-version = "0.1"
+version = "0.2"
 deploymentUrl = "http://publish.analit.net/ProducerEditor/"
 deployDir = "\\\\acdcserv\\publish\\ProducerEditor"
 	
@@ -50,19 +51,6 @@ Task @clean:
 			Parameters : { "Configuration" : "release" },
 			FrameworkVersion : "3.5").Execute()
 	Clean(output)
-
-/*Task @deploy, [@buildDeployPackage]:
-	zip = FastZip()
-	zip.CreateZip("build/ProducerEditor.zip", output, true, null)
-	
-	client = SmtpClient("mail.adc.analit.net")
-	message = MailMessage(
-		From : MailAddress("r.kvasov@analit.net"),
-		Subject : "Редактор производителей"
-	)
-	message.To.Add(MailAddress("emk@analit.net"))
-	message.Attachments.Add(Attachment("build/ProducerEditor.zip"))
-	client.Send(message)*/
 
 Task @buildDeployPackage, [@build, @buildInstaller, @cleanDeployPackage]:
 	output = Path.GetFullPath("build/${project}.Setup/")
@@ -132,7 +120,7 @@ Task @buildDeployPackage, [@build, @buildInstaller, @cleanDeployPackage]:
 	Mv("${output}setup.exe", "${output}${project}.Setup.exe")
 	
 	cert = X509Certificate2(System.IO.File.ReadAllBytes(certPath), password)	
-	Sh("signtool sign /sha1 ${cert.Thumbprint} ${output}${project}.Setup.exe").Execute()
+	Sh("\"${Sdk().Path()}/signtool\" sign /sha1 ${cert.Thumbprint} ${output}${project}.Setup.exe").Execute()
 	
 	GeneratePublishPage("${output}/publish.htm", version, project)
 		
