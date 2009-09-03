@@ -1,4 +1,4 @@
-using System;
+п»їusing System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -15,12 +15,12 @@ namespace ProducerEditor.Views
 	{
 		public JoinView(Controller controller, Producer producer)
 		{
-			Text = "Объединение производителей";
+			Text = "РћР±СЉРµРґРёРЅРµРЅРёРµ РїСЂРѕРёР·РІРѕРґРёС‚РµР»РµР№";
 			Width = 400;
 			Height = 500;
-			((Button) AcceptButton).Text = "Объединить";
+			((Button) AcceptButton).Text = "РћР±СЉРµРґРёРЅРёС‚СЊ";
 			var producersTable = new VirtualTable(new TemplateManager<List<Producer>, Producer>(
-			                                      	() => Row.Headers("Производитель"),
+			                                      	() => Row.Headers("РџСЂРѕРёР·РІРѕРґРёС‚РµР»СЊ"),
 			                                      	p => Row.Cells(p.Name)
 			                                      	));
 			producersTable.CellSpacing = 1;
@@ -36,7 +36,7 @@ namespace ProducerEditor.Views
 			};
 			toolStrip.Items.Add(text);
 			var button = new ToolStripButton {
-				Text = "Поиск"
+				Text = "РџРѕРёСЃРє"
 			};
 			button.Click += (sender, args) => DoSearch(producer, controller, text, producersTable);
 			toolStrip.Items.Add(button);
@@ -46,12 +46,17 @@ namespace ProducerEditor.Views
 
 
 			table.Controls.Add(new Label { 
-				Padding = new Padding(0, 5, 0, 5),
+				Padding = new Padding(0, 5, 0, 0),
 				AutoSize = true,
-				Text = String.Format("Объединить выбранного производителя с {0}", producer.Name)
+				Text = String.Format("РћР±СЉРµРґРёРЅРёС‚СЊ РІС‹Р±СЂР°РЅРЅРѕРіРѕ РїСЂРѕРёР·РІРѕРґРёС‚РµР»СЏ СЃ {0}.", producer.Name)
 			}, 0, 0);
-			table.Controls.Add(toolStrip, 0, 1);
-			table.Controls.Add(producersTable.Host, 0, 2);
+			table.Controls.Add(new Label { 
+				Padding = new Padding(0, 0, 0, 5),
+				AutoSize = true,
+				Text = "Р’С‹Р±СЂР°РЅРЅС‹Р№ РїСЂРѕР·РІРѕРґРёС‚РµР»СЊ Р±СѓРґРµС‚ СѓРґР°Р»РµРЅ."
+			}, 0, 1);
+			table.Controls.Add(toolStrip, 0, 2);
+			table.Controls.Add(producersTable.Host, 0, 3);
 			Closing += (o, a) => {
 				if (DialogResult == DialogResult.Cancel)
 					return;
@@ -59,7 +64,7 @@ namespace ProducerEditor.Views
 				var p = producersTable.Selected<Producer>();
 				if (p == null)
 				{
-					MessageBox.Show("Не выбран производитель для объединения", "Не выбран производитель", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+					MessageBox.Show("РќРµ РІС‹Р±СЂР°РЅ РїСЂРѕРёР·РІРѕРґРёС‚РµР»СЊ РґР»СЏ РѕР±СЉРµРґРёРЅРµРЅРёСЏ", "РќРµ РІС‹Р±СЂР°РЅ РїСЂРѕРёР·РІРѕРґРёС‚РµР»СЊ", MessageBoxButtons.OK, MessageBoxIcon.Warning);
 					a.Cancel = true;
 					return;
 				}
@@ -79,7 +84,7 @@ namespace ProducerEditor.Views
 			}
 			else
 			{
-				MessageBox.Show("По вашему запросу ничеого не найдено", "Результаты поиска",
+				MessageBox.Show("РџРѕ РІР°С€РµРјСѓ Р·Р°РїСЂРѕСЃСѓ РЅРёС‡РµРѕРіРѕ РЅРµ РЅР°Р№РґРµРЅРѕ", "Р РµР·СѓР»СЊС‚Р°С‚С‹ РїРѕРёСЃРєР°",
 				                MessageBoxButtons.OK,
 				                MessageBoxIcon.Warning);
 			}

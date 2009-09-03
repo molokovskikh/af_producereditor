@@ -1,4 +1,4 @@
-using System;
+п»їusing System;
 using System.Linq;
 using System.Windows.Forms;
 using ProducerEditor.Models;
@@ -15,13 +15,13 @@ namespace ProducerEditor.Views
 				Width = 200,
 			};
 			table.Controls.Add(newName, 0, 0);
-			Text = "Переименование производителя";
+			Text = "РџРµСЂРµРёРјРµРЅРѕРІР°РЅРёРµ РїСЂРѕРёР·РІРѕРґРёС‚РµР»СЏ";
 			Closing += (sender, args) => {
 				if (DialogResult == DialogResult.Cancel)
 					return;
 				if (String.IsNullOrEmpty(newName.Text.Trim()))
 				{
-					errorProvider.SetError(newName, "Название производителя не может быть пустым");
+					errorProvider.SetError(newName, "РќР°Р·РІР°РЅРёРµ РїСЂРѕРёР·РІРѕРґРёС‚РµР»СЏ РЅРµ РјРѕР¶РµС‚ Р±С‹С‚СЊ РїСѓСЃС‚С‹Рј");
 					errorProvider.SetIconAlignment(newName, ErrorIconAlignment.MiddleRight);
 					args.Cancel = true;
 					return;
@@ -29,7 +29,7 @@ namespace ProducerEditor.Views
 				var existsProducer = controller.Producers.Where(p => p.Name.ToLower() == newName.Text.Trim() && p.Id != producer.Id).FirstOrDefault();
 				if (existsProducer != null)
 				{
-					errorProvider.SetError(newName, "Такой производитель уже существует");
+					errorProvider.SetError(newName, "РўР°РєРѕР№ РїСЂРѕРёР·РІРѕРґРёС‚РµР»СЊ СѓР¶Рµ СЃСѓС‰РµСЃС‚РІСѓРµС‚");
 					errorProvider.SetIconAlignment(newName, ErrorIconAlignment.MiddleRight);
 					args.Cancel = true;
 					return;

@@ -1,4 +1,4 @@
-using System;
+п»їusing System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Forms;
@@ -26,18 +26,18 @@ namespace ProducerEditor.Views
 
 		public MainView()
 		{
-			Text = "Редактор каталога производителей";
+			Text = "Р РµРґР°РєС‚РѕСЂ РєР°С‚Р°Р»РѕРіР° РїСЂРѕРёР·РІРѕРґРёС‚РµР»РµР№";
 			MinimumSize = new Size(640, 480);
 
 			toolStrip = new ToolStrip()
 				.Edit("SearchText")
-				.Button("Поиск", SearchProducer)
+				.Button("РџРѕРёСЃРє", SearchProducer)
 				.Separator()
-				.Button("Переименовать (F2)", ShowRenameView)
-				.Button("Объединить (F3)", ShowJoinView)
-				.Button("Удалить (Delete)", Delete)
+				.Button("РџРµСЂРµРёРјРµРЅРѕРІР°С‚СЊ (F2)", ShowRenameView)
+				.Button("РћР±СЉРµРґРёРЅРёС‚СЊ (F3)", ShowJoinView)
+				.Button("РЈРґР°Р»РёС‚СЊ (Delete)", Delete)
 				.Separator()
-				.Button("Продукты (Enter)", ShowProducers);
+				.Button("РџСЂРѕРґСѓРєС‚С‹ (Enter)", ShowProducers);
 			var searchText = ((ToolStripTextBox) toolStrip.Items["SearchText"]);
 			searchText.KeyDown += (sender, args) => {
 			                      	if (args.KeyCode == Keys.Enter)
@@ -50,7 +50,7 @@ namespace ProducerEditor.Views
 			            		Orientation = Orientation.Horizontal
 			            	};
 			producerTable = new VirtualTable(new TemplateManager<List<Producer>, Producer>(
-			                                 	() => Row.Headers("Производитель"), 
+			                                 	() => Row.Headers("РџСЂРѕРёР·РІРѕРґРёС‚РµР»СЊ"), 
 			                                 	producer => {
 			                                 		var row = Row.Cells(producer.Name);
 													if (producer.HasOffers == 0)
@@ -90,19 +90,19 @@ namespace ProducerEditor.Views
 			synonymsTable = new VirtualTable(new TemplateManager<List<SynonymView>, SynonymView>(
 			                                 	() =>{
 			                                 		var row = Row.Headers();
-													var header = new Header("Синоним").Sortable("Name");
+													var header = new Header("РЎРёРЅРѕРЅРёРј").Sortable("Name");
 													header.InlineStyle.Set(StyleElementType.Width, _widths[0]);
 													row.Append(header);
 
-													header = new Header("Поставщик").Sortable("Supplier");
+													header = new Header("РџРѕСЃС‚Р°РІС‰РёРє").Sortable("Supplier");
 													header.InlineStyle.Set(StyleElementType.Width, _widths[1]);
 													row.Append(header);
 
-													header = new Header("Регион").Sortable("Region");
+													header = new Header("Р РµРіРёРѕРЅ").Sortable("Region");
 													header.InlineStyle.Set(StyleElementType.Width, _widths[2]);
 													row.Append(header);
 
-													header = new Header("Сегмент").Sortable("Segment");
+													header = new Header("РЎРµРіРјРµРЅС‚").Sortable("Segment");
 													header.InlineStyle.Set(StyleElementType.Width, _widths[3]);
 													row.Append(header);
 
@@ -160,7 +160,7 @@ namespace ProducerEditor.Views
 				var producer = producerTable.Selected<Producer>();
 				if (producer == null)
 					return;
-				if (MessageBox.Show(String.Format("Удалить производителя \"{0}\"", producer.Name), "Удаление производителя", MessageBoxButtons.OKCancel, MessageBoxIcon.Question) == DialogResult.Cancel)
+				if (MessageBox.Show(String.Format("РЈРґР°Р»РёС‚СЊ РїСЂРѕРёР·РІРѕРґРёС‚РµР»СЏ \"{0}\"", producer.Name), "РЈРґР°Р»РµРЅРёРµ РїСЂРѕРёР·РІРѕРґРёС‚РµР»СЏ", MessageBoxButtons.OKCancel, MessageBoxIcon.Question) == DialogResult.Cancel)
 					return;
 
 				_controller.Delete(producer);
@@ -208,7 +208,7 @@ namespace ProducerEditor.Views
 			}
 			else
 			{
-				MessageBox.Show("По вашему запросу ничеого не найдено", "Результаты поиска",
+				MessageBox.Show("РџРѕ РІР°С€РµРјСѓ Р·Р°РїСЂРѕСЃСѓ РЅРёС‡РµРѕРіРѕ РЅРµ РЅР°Р№РґРµРЅРѕ", "Р РµР·СѓР»СЊС‚Р°С‚С‹ РїРѕРёСЃРєР°",
 								MessageBoxButtons.OK,
 								MessageBoxIcon.Warning);
 			}

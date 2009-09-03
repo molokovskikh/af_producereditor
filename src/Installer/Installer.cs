@@ -39,7 +39,10 @@ namespace Installer
 			if (appSettings["Version"] == null)
 			{
 				var conf = ConfigurationManager.OpenExeConfiguration(Assembly.GetExecutingAssembly().Location);
-				_version = conf.AppSettings.Settings["Version"].Value;
+				var version = conf.AppSettings.Settings["Version"];
+				if (version == null || String.IsNullOrEmpty(version.Value))
+					throw new Exception("В конфигурационном файле инсталятора нет настройки версии");
+				_version = version.Value;
 				_application = conf.AppSettings.Settings["Application"].Value;
 				_publisher = conf.AppSettings.Settings["Publisher"].Value;
 				_updateUri = conf.AppSettings.Settings["UpdateUri"].Value;

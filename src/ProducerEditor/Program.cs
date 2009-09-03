@@ -16,16 +16,21 @@ namespace ProducerEditor
 			{
 #endif
 				XmlConfigurator.Configure();
+#if !DEBUG
 				var installer = new Installer.Installer();
 				if (installer.Update())
 					return;
+#endif
 
 				Application.EnableVisualStyles();
 				Application.SetCompatibleTextRenderingDefault(false);
 				Initializer.Initialize();
-				Application.Run(new MainView());
 #if !DEBUG
 				Application.ThreadException += (sender, e) => HandleException(e.Exception);
+#endif
+
+				Application.Run(new MainView());
+#if !DEBUG
 			}
 			catch (Exception e)
 			{
