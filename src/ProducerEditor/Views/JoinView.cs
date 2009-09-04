@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
 using ProducerEditor.Models;
 using Subway.Dom;
+using Subway.Helpers;
 using Subway.VirtualTable;
 using Subway.VirtualTable.Behaviors;
 using Subway.VirtualTable.Behaviors.Selection;
@@ -18,32 +18,27 @@ namespace ProducerEditor.Views
 			Text = "Объединение производителей";
 			Width = 400;
 			Height = 500;
-			((Button) AcceptButton).Text = "Объединить";
+			var accept = ((Button) AcceptButton);
+			accept.Text = "Объединить";
+			AcceptButton = null;
 			var producersTable = new VirtualTable(new TemplateManager<List<Producer>, Producer>(
-			                                      	() => Row.Headers("Производитель"),
-			                                      	p => Row.Cells(p.Name)
-			                                      	));
+				() => Row.Headers("Производитель"),
+				p => Row.Cells(p.Name)
+			));
+			
 			producersTable.CellSpacing = 1;
 			var toolStrip = new ToolStrip();
-			var text = new ToolStripTextBox();
-			text.KeyDown += (sender, args) => {
-				/*if (args.KeyCode == Keys.Enter)
-				{
-				DoSearch(controller, text, producersTable);
-				args.Handled = true;
-				args.SuppressKeyPress = true;
-				}*/
-			};
-			toolStrip.Items.Add(text);
-			var button = new ToolStripButton {
+			var searchText = new ToolStripTextBox();
+
+			toolStrip.Items.Add(searchText);
+			var searchButton = new ToolStripButton {
 				Text = "Поиск"
 			};
-			button.Click += (sender, args) => DoSearch(producer, controller, text, producersTable);
-			toolStrip.Items.Add(button);
+			
+			toolStrip.Items.Add(searchButton);
 			producersTable.CellSpacing = 1;
 			producersTable.RegisterBehavior(new RowSelectionBehavior(),
 			                                new ToolTipBehavior());
-
 
 			table.Controls.Add(new Label { 
 				Padding = new Padding(0, 5, 0, 0),
@@ -57,21 +52,27 @@ namespace ProducerEditor.Views
 			}, 0, 1);
 			table.Controls.Add(toolStrip, 0, 2);
 			table.Controls.Add(producersTable.Host, 0, 3);
-			Closing += (o, a) => {
-				if (DialogResult == DialogResult.Cancel)
-					return;
 
-				var p = producersTable.Selected<Producer>();
-				if (p == null)
-				{
-					MessageBox.Show("Не выбран производитель для объединения", "Не выбран производитель", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-					a.Cancel = true;
-					return;
-				}
+			Shown += (sender, args) => searchText.Focus();
+			searchButton.Click += (sender, args) => DoSearch(producer, controller, searchText, producersTable);
+			searchText.InputMap().KeyDown(Keys.Enter, () => DoSearch(producer, controller, searchText, producersTable));
 
-				controller.DoJoin(new[] { p }, producer);
-			};
-			Shown += (sender, args) => text.Focus();
+			accept.InputMap().Click(() => Join(producersTable, controller, producer));
+			producersTable.Host.InputMap().KeyDown(Keys.Enter, () => Join(producersTable, controller, producer));
+		}
+
+		private void Join(VirtualTable producersTable, Controller controller, Producer producer)
+		{
+			var p = producersTable.Selected<Producer>();
+			if (p == null)
+			{
+				MessageBox.Show("Не выбран производитель для объединения", "Не выбран производитель", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+				return;
+			}
+
+			controller.DoJoin(new[] { p }, producer);
+			DialogResult = DialogResult.OK;
+			Close();
 		}
 
 		private void DoSearch(Producer source, Controller controller, ToolStripTextBox text, VirtualTable producersTable)

@@ -61,62 +61,61 @@ namespace ProducerEditor.Views
 			producerTable.RegisterBehavior(new RowSelectionBehavior(),
 			                               new ToolTipBehavior());
 			producerTable.Host.KeyDown += (sender, args) => {
-			                              	if (args.KeyCode == Keys.Enter && String.IsNullOrEmpty(searchText.Text))
-			                              		ShowProducers();
-			                              	else if (args.KeyCode == Keys.Enter)
-			                              		SearchProducer();
-											else if (args.KeyCode == Keys.Escape && !String.IsNullOrEmpty(searchText.Text))
-			                              		searchText.Text = "";
-											else if (args.KeyCode == Keys.Escape && String.IsNullOrEmpty(searchText.Text))
-												ReseteFilter();
-			                              	else if (args.KeyCode == Keys.Delete)
-			                              		Delete();
-			                              	else if (args.KeyCode == Keys.Tab)
-			                              		synonymsTable.Host.Focus();
-											else if (args.KeyCode == Keys.F2)
-												ShowRenameView();
-											else if (args.KeyCode == Keys.F3)
-												ShowJoinView();
-			                              };
-			producerTable.Host.KeyPress += (sender, args) =>
-											{
-												if (Char.IsLetterOrDigit(args.KeyChar))
-													searchText.Text += args.KeyChar;
-											};
+				if (args.KeyCode == Keys.Enter && String.IsNullOrEmpty(searchText.Text))
+					ShowProducers();
+				else if (args.KeyCode == Keys.Enter)
+					SearchProducer();
+				else if (args.KeyCode == Keys.Escape && !String.IsNullOrEmpty(searchText.Text))
+					searchText.Text = "";
+				else if (args.KeyCode == Keys.Escape && String.IsNullOrEmpty(searchText.Text))
+					ReseteFilter();
+				else if (args.KeyCode == Keys.Delete)
+					Delete();
+				else if (args.KeyCode == Keys.Tab)
+					synonymsTable.Host.Focus();
+				else if (args.KeyCode == Keys.F2)
+					ShowRenameView();
+				else if (args.KeyCode == Keys.F3)
+					ShowJoinView();
+			};
+			producerTable.Host.KeyPress += (sender, args) => {
+				if (Char.IsLetterOrDigit(args.KeyChar))
+					searchText.Text += args.KeyChar;
+			};
 
 			var behavior = producerTable.Behavior<IRowSelectionBehavior>();
 			behavior.SelectedRowChanged += (oldRow, newRow) => SelectedProducerChanged(behavior.Selected<Producer>());
 
 			synonymsTable = new VirtualTable(new TemplateManager<List<SynonymView>, SynonymView>(
-			                                 	() =>{
-			                                 		var row = Row.Headers();
-													var header = new Header("Синоним").Sortable("Name");
-													header.InlineStyle.Set(StyleElementType.Width, _widths[0]);
-													row.Append(header);
+				() =>{
+					var row = Row.Headers();
+					var header = new Header("Синоним").Sortable("Name");
+					header.InlineStyle.Set(StyleElementType.Width, _widths[0]);
+					row.Append(header);
 
-													header = new Header("Поставщик").Sortable("Supplier");
-													header.InlineStyle.Set(StyleElementType.Width, _widths[1]);
-													row.Append(header);
+					header = new Header("Поставщик").Sortable("Supplier");
+					header.InlineStyle.Set(StyleElementType.Width, _widths[1]);
+					row.Append(header);
 
-													header = new Header("Регион").Sortable("Region");
-													header.InlineStyle.Set(StyleElementType.Width, _widths[2]);
-													row.Append(header);
+					header = new Header("Регион").Sortable("Region");
+					header.InlineStyle.Set(StyleElementType.Width, _widths[2]);
+					row.Append(header);
 
-													header = new Header("Сегмент").Sortable("Segment");
-													header.InlineStyle.Set(StyleElementType.Width, _widths[3]);
-													row.Append(header);
+					header = new Header("Сегмент").Sortable("Segment");
+					header.InlineStyle.Set(StyleElementType.Width, _widths[3]);
+					row.Append(header);
 
-													return row;
-			                                 	},
-			                                 	synonym => {
-			                                 		var row = Row.Cells(synonym.Name,
-			                                 		                    synonym.Supplier,
-			                                 		                    synonym.Region,
-			                                 		                    synonym.SegmentAsString());
-			                                 			if (synonym.HaveOffers == 0)
-															row.AddClass("WithoutOffers");
-			                                 			return row;
-			                                 		}));
+					return row;
+				},
+				synonym => {
+					var row = Row.Cells(synonym.Name,
+										synonym.Supplier,
+										synonym.Region,
+										synonym.SegmentAsString());
+						if (synonym.HaveOffers == 0)
+							row.AddClass("WithoutOffers");
+						return row;
+				}));
 			synonymsTable.CellSpacing = 1;
 			synonymsTable.RegisterBehavior(new ToolTipBehavior(),
 										   new SortInList(),
@@ -135,7 +134,7 @@ namespace ProducerEditor.Views
 					_widths[synonymsTable.Columns.IndexOf(element)] = element.ReadonlyStyle.Get(StyleElementType.Width);
 					var node = synonymsTable.Columns.Find(element).Next;
 					if (node != null)
-						element = (Column) node.Value;
+						element = node.Value;
 					else
 						element = null;
 				}

@@ -73,7 +73,8 @@ order by cfc.FirmCr")
 					foreach (var source in sources)
 					{
 
-					session.CreateSQLQuery(@"
+						session.CreateSQLQuery(
+							@"
 update farm.SynonymFirmCr
 set CodeFirmCr = :TargetId
 where CodeFirmCr = :SourceId
@@ -88,22 +89,20 @@ update orders.orderslist
 set CodeFirmCr = :TargetId
 where CodeFirmCr = :SourceId
 ;")
-						.SetParameter("SourceId", source.Id)
-						.SetParameter("TargetId", target.Id)
-						.ExecuteUpdate();
+							.SetParameter("SourceId", source.Id)
+							.SetParameter("TargetId", target.Id)
+							.ExecuteUpdate();
 						session.Save(new ProducerEquivalent
-						             	{
-						             		Name = source.Name,
-						             		Producer = target,
-						             	});
+						{
+							Name = source.Name,
+							Producer = target,
+						});
 						source.Delete();
 					}
 					transaction.Commit();
 				}
-			    foreach (var source in sources)
-			    {
+				foreach (var source in sources)
 					Producers.Remove(source);
-			    }
 			}));
 		}
 
