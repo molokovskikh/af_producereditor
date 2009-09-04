@@ -1,5 +1,5 @@
 bin
 obj
 build/
-trunk/src/Subway/
-trunk/src/Common.Tools/
+src/Subway/
+src/Common.Tools/
