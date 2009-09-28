@@ -13,7 +13,7 @@ namespace ProducerEditor.Views
 {
 	public class JoinView : Dialog
 	{
-		public JoinView(Controller controller, Producer producer)
+		public JoinView(MainController controller, Producer producer)
 		{
 			Text = "Объединение производителей";
 			Width = 400;
@@ -61,7 +61,7 @@ namespace ProducerEditor.Views
 			producersTable.Host.InputMap().KeyDown(Keys.Enter, () => Join(producersTable, controller, producer));
 		}
 
-		private void Join(VirtualTable producersTable, Controller controller, Producer producer)
+		private void Join(VirtualTable producersTable, MainController controller, Producer producer)
 		{
 			var p = producersTable.Selected<Producer>();
 			if (p == null)
@@ -75,7 +75,7 @@ namespace ProducerEditor.Views
 			Close();
 		}
 
-		private void DoSearch(Producer source, Controller controller, ToolStripTextBox text, VirtualTable producersTable)
+		private void DoSearch(Producer source, MainController controller, ToolStripTextBox text, VirtualTable producersTable)
 		{
 			var producers = controller.SearchProducer(text.Text).Where(p => source.Id != p.Id).ToList();
 			if (producers.Count > 0)

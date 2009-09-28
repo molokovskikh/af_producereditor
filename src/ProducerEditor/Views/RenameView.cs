@@ -7,7 +7,7 @@ namespace ProducerEditor.Views
 {
 	public class RenameView : Dialog
 	{
-		public RenameView(Controller controller, Producer producer)
+		public RenameView(MainController controller, Producer producer)
 		{
 			var errorProvider = new ErrorProvider();
 			var newName = new TextBox {

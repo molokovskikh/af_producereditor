@@ -18,48 +18,44 @@ namespace ProducerEditor.Views
 {
 	public class ProductsAndProducersView : Form
 	{
-		private Controller _controller;
-		private Producer _producer;
-		private List<ProductAndProducer> _productAndProducers;
+		private MainController controller;
+		private Producer producer;
+		private List<ProductAndProducer> productAndProducers;
 		private VirtualTable productsAndProducers;
 
-		private static List<int> _widths = new List<int>{
-			100, 100, 100, 100
-		};
-
-		public ProductsAndProducersView(Controller controller, Producer producer, List<ProductAndProducer> productAndProducers)
+		public ProductsAndProducersView(MainController controller, Producer producer, List<ProductAndProducer> productAndProducers)
 		{
-			_controller = controller;
-			_producer = producer;
-			_productAndProducers = productAndProducers;
+			this.controller = controller;
+			this.producer = producer;
+			this.productAndProducers = productAndProducers;
 
 			MinimumSize = new Size(640, 480);
 			Size = new Size(640, 480);
 			Text = "Продукты";
 			KeyPreview = true;
 			KeyDown += (sender, args) => {
-			           	if (args.KeyCode == Keys.Escape)
-			           		Close();
-			           };
+				if (args.KeyCode == Keys.Escape)
+					Close();
+			};
 
 			productsAndProducers = new VirtualTable(new TemplateManager<List<ProductAndProducer>, ProductAndProducer>(
 												() => { 
 													var row = Row.Headers(new Header().AddClass("CheckBoxColumn"));
 
 													var header = new Header("Продукт").Sortable("Product");
-													header.InlineStyle.Set(StyleElementType.Width, _widths[0]);
+													header.InlineStyle.Set(StyleElementType.Width, WidthHolder.ProductsAndProducersWidths[0]);
 													row.Append(header);
 
 													header = new Header("Производитель").Sortable("Producer");
-													header.InlineStyle.Set(StyleElementType.Width, _widths[1]);
+													header.InlineStyle.Set(StyleElementType.Width, WidthHolder.ProductsAndProducersWidths[1]);
 													row.Append(header);
 
 													header = new Header("Количество предложений").Sortable("OffersCount");
-													header.InlineStyle.Set(StyleElementType.Width, _widths[2]);
+													header.InlineStyle.Set(StyleElementType.Width, WidthHolder.ProductsAndProducersWidths[2]);
 													row.Append(header);
 
 													header = new Header("Количество заказов").Sortable("OrdersCount");
-													header.InlineStyle.Set(StyleElementType.Width, _widths[3]);
+													header.InlineStyle.Set(StyleElementType.Width, WidthHolder.ProductsAndProducersWidths[3]);
 													row.Append(header);
 													return row;
 												},
@@ -91,19 +87,7 @@ namespace ProducerEditor.Views
 															productsAndProducers.RebuildViewPort();
 			                                              }));
 			productsAndProducers.TemplateManager.Source = productAndProducers;
-			productsAndProducers.Behavior<ColumnResizeBehavior>().ColumnResized += column => {
-				var element = column;
-				do
-				{
-					_widths[productsAndProducers.Columns.IndexOf(element) - 1] = element.ReadonlyStyle.Get(StyleElementType.Width);
-					var node = productsAndProducers.Columns.Find(element).Next;
-					if (node != null)
-						element = (Column) node.Value;
-					else
-						element = null;
-				}
-				while(element != null);
-			};
+			productsAndProducers.Behavior<ColumnResizeBehavior>().ColumnResized += column => WidthHolder.Update(productsAndProducers, column, WidthHolder.ProductsAndProducersWidths);
 			productsAndProducers.Host.InputMap()
 				.KeyDown(Keys.F3, Join)
 				.KeyDown(Keys.F4, ShowOffersForProducerId)
@@ -124,25 +108,25 @@ namespace ProducerEditor.Views
 		{
 			var productAndProducer = productsAndProducers.Selected<ProductAndProducer>();
 			if (productAndProducer != null)
-				_controller.OffersForCatalogId(productAndProducer.CatalogId);
+				controller.OffersForCatalogId(productAndProducer.CatalogId);
 		}
 
 		public void ShowOffersForProducerId()
 		{
 			var productAndProducer = productsAndProducers.Selected<ProductAndProducer>();
 			if (productAndProducer != null)
-				_controller.OfferForProducerId(productAndProducer.ProducerId);
+				controller.OfferForProducerId(productAndProducer.ProducerId);
 		}
 
 		private void Join()
 		{
-			_controller.DoJoin(_productAndProducers
+			controller.DoJoin(productAndProducers
 			                   	.Where(p => p.Selected)
 			                   	.Select(p => new Producer {Id = p.ProducerId, Name = p.Producer})
 			                   	.GroupBy(p => p.Id)
-			                   	.Select(g => g.First()).ToArray(), _producer);
+			                   	.Select(g => g.First()).ToArray(), producer);
 
-			productsAndProducers.TemplateManager.Source = _controller.FindRelativeProductsAndProducers(_producer);
+			productsAndProducers.TemplateManager.Source = controller.FindRelativeProductsAndProducers(producer);
 		}
 	}
 }

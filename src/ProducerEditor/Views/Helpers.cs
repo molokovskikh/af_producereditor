@@ -1,6 +1,12 @@
 ﻿using System;
+using System.Configuration;
 using System.Globalization;
+using System.Reflection;
 using System.Windows.Forms;
+using Castle.ActiveRecord;
+using Castle.ActiveRecord.Framework.Scopes;
+using MySql.Data.MySqlClient;
+using NHibernate;
 
 namespace ProducerEditor.Views
 {
@@ -108,10 +114,103 @@ namespace ProducerEditor.Views
 			return toolStrip;
 		}
 
+		public static ToolStrip Host(this ToolStrip toolStrip, Control control)
+		{
+			var host = new ToolStripControlHost(control);
+			toolStrip.Items.Add(host);
+			return toolStrip;
+		}
+
+		public static ToolStrip Label(this ToolStrip toolStrip, string label)
+		{
+			toolStrip.Items.Add(new ToolStripLabel
+			{
+				Text = label
+			});
+			return toolStrip;
+		}
+
 		public static ToolStrip Separator(this ToolStrip toolStrip)
 		{
 			toolStrip.Items.Add(new ToolStripSeparator());
 			return toolStrip;
 		}
+	}
+
+	public class With
+	{
+		public static void Master(Action action)
+		{
+			using (var connection = new MySqlConnection(ConfigurationManager.ConnectionStrings["Master"].ConnectionString))
+			{
+				connection.Open();
+				using(new DifferentDatabaseScope(connection))
+				{
+					SetupParametersForTriggerLogging(Environment.UserName, Environment.MachineName);
+					action();
+				}
+			}
+		}
+
+		public static T Session<T>(Func<ISession, T> action)
+		{
+			var sessionHolder = ActiveRecordMediator.GetSessionFactoryHolder();
+			var session = sessionHolder.CreateSession(typeof(ActiveRecordBase));
+			try
+			{
+				return action(session);
+			}
+			finally
+			{
+				sessionHolder.ReleaseSession(session);
+			}
+		}
+
+		public static void Session(Action<ISession> action)
+		{
+			var sessionHolder = ActiveRecordMediator.GetSessionFactoryHolder();
+			var session = sessionHolder.CreateSession(typeof(ActiveRecordBase));
+			try
+			{
+				action(session);
+			}
+			finally
+			{
+				sessionHolder.ReleaseSession(session);
+			}
+		}
+
+		private static void SetupParametersForTriggerLogging(object parameters, ISession session)
+		{
+			using (var command = session.Connection.CreateCommand())
+			{
+				foreach (var property in parameters.GetType().GetProperties(BindingFlags.GetProperty
+																					 | BindingFlags.Public
+																					 | BindingFlags.Instance))
+				{
+					var value = property.GetValue(parameters, null);
+					command.CommandText += String.Format(" SET @{0} = ?{0}; ", property.Name);
+					var parameter = command.CreateParameter();
+					parameter.Value = value;
+					parameter.ParameterName = "?" + property.Name;
+					command.Parameters.Add(parameter);
+				}
+				if (command.Parameters.Count == 0)
+					return;
+
+				command.ExecuteNonQuery();
+			}
+		}
+
+		public static void SetupParametersForTriggerLogging(string user, string host)
+		{
+			Session(session => SetupParametersForTriggerLogging(new { InUser = user, InHost = host }, session));
+		}
+
+		public static void SetupParametersForTriggerLogging(object parameters)
+		{
+			Session(session => SetupParametersForTriggerLogging(parameters, session));
+		}
+
 	}
 }

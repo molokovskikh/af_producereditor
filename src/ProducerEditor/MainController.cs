@@ -1,27 +1,22 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Configuration;
 using System.Linq;
-using System.Reflection;
 using System.Windows.Forms;
-using Castle.ActiveRecord;
-using Castle.ActiveRecord.Framework.Scopes;
-using MySql.Data.MySqlClient;
-using NHibernate;
 using NHibernate.Transform;
 using ProducerEditor.Models;
 using ProducerEditor.Views;
 
 namespace ProducerEditor
 {
-	public class Controller
+	public class MainController
 	{
 		private readonly Mailer _mailer = new Mailer();
+
 		public List<Producer> Producers { get; private set;}
 
 		public IList<Producer> GetAllProducers()
 		{
-			Producers = WithSession(s => s.CreateSQLQuery(@"
+			Producers = With.Session(s =>s.CreateSQLQuery(@"
 select cfc.CodeFirmCr as Id,
 cfc.FirmCr as Name,
 cfc.Hidden,
@@ -31,8 +26,8 @@ from farm.CatalogFirmCr cfc
 where cfc.Hidden = 0
 group by cfc.CodeFirmCr
 order by cfc.FirmCr")
-			                 	.SetResultTransformer(Transformers.AliasToBean(typeof(Producer)))
-			                 	.List<Producer>()).ToList();
+						.SetResultTransformer(Transformers.AliasToBean(typeof (Producer)))
+						.List<Producer>()).ToList();
 			return Producers;
 		}
 
@@ -51,7 +46,7 @@ order by cfc.FirmCr")
 		public void Update(Producer producer)
 		{
 			producer.Name = producer.Name.ToUpper();
-			InMaster(producer.Update);
+			With.Master(producer.Update);
 		}
 
 		public void Join(Producer producer, Action update)
@@ -67,7 +62,7 @@ order by cfc.FirmCr")
 
 		public void DoJoin(Producer[] sources, Producer target)
 		{
-			InMaster(() => WithSession(session => {
+			With.Master(() => With.Session(session => {
 				using (var transaction = session.BeginTransaction())
 				{
 					foreach (var source in sources)
@@ -108,7 +103,7 @@ where CodeFirmCr = :SourceId
 
 		public IList<SynonymView> Synonyms(Producer producer)
 		{
-			return WithSession(
+			return With.Session(
 				session => session.CreateSQLQuery(@"
 select sfc.Synonym as Name,
 sfc.SynonymFirmCrCode as Id,
@@ -128,66 +123,6 @@ group by sfc.SynonymFirmCrCode")
 				           	.List<SynonymView>().ToList());
 		}
 
-		private static T WithSession<T>(Func<ISession, T> action)
-		{
-			var sessionHolder = ActiveRecordMediator.GetSessionFactoryHolder();
-			var session = sessionHolder.CreateSession(typeof(ActiveRecordBase));
-			try
-			{
-				return action(session);
-			}
-			finally
-			{
-				sessionHolder.ReleaseSession(session);
-			}
-		}
-
-		private static void WithSession(Action<ISession> action)
-		{
-			var sessionHolder = ActiveRecordMediator.GetSessionFactoryHolder();
-			var session = sessionHolder.CreateSession(typeof(ActiveRecordBase));
-			try
-			{
-				action(session);
-			}
-			finally
-			{
-				sessionHolder.ReleaseSession(session);
-			}
-		}
-
-		public static void SetupParametersForTriggerLogging(string user, string host)
-		{
-			WithSession(session => SetupParametersForTriggerLogging(new { InUser = user, InHost = host }, session));
-		}
-
-		public static void SetupParametersForTriggerLogging(object parameters)
-		{
-			WithSession(session => SetupParametersForTriggerLogging(parameters, session));
-		}
-
-		private static void SetupParametersForTriggerLogging(object parameters, ISession session)
-		{
-			using (var command = session.Connection.CreateCommand())
-			{
-				foreach (var property in parameters.GetType().GetProperties(BindingFlags.GetProperty
-																					 | BindingFlags.Public
-																					 | BindingFlags.Instance))
-				{
-					var value = property.GetValue(parameters, null);
-					command.CommandText += String.Format(" SET @{0} = ?{0}; ", property.Name);
-					var parameter = command.CreateParameter();
-					parameter.Value = value;
-					parameter.ParameterName = "?" + property.Name;
-					command.Parameters.Add(parameter);
-				}
-				if (command.Parameters.Count == 0)
-					return;
-
-				command.ExecuteNonQuery();
-			}
-		}
-
 		public List<Producer> SearchProducer(string text)
 		{
 			return Producers.Where(p => p.Name.Contains((text ?? "").ToUpper())).ToList();
@@ -195,8 +130,10 @@ group by sfc.SynonymFirmCrCode")
 
 		public List<ProductAndProducer> FindRelativeProductsAndProducers(Producer producer)
 		{
-			var result = WithSession(s => {
-			                   	var productsAndProducers = s.CreateSQLQuery(@"
+			var result = With.Session(s => {
+				var productsAndProducers =
+					s.CreateSQLQuery(
+						@"
 drop temporary table if exists ProductFromOrders;
 create temporary table ProductFromOrders engine 'memory'
 select productid
@@ -242,17 +179,17 @@ from ProductsAndProducers pap
   join farm.CatalogFirmCr cfc on cfc.CodeFirmCr = pap.CodeFirmCr
 group by pap.ProductId, pap.CodeFirmCr
 order by p.Id;")
-			                   		.SetParameter("ProducerId", producer.Id)
-			                   		.SetResultTransformer(Transformers.AliasToBean(typeof (ProductAndProducer)))
-			                   		.List<ProductAndProducer>();
-			                   	return productsAndProducers;
-			                   }).ToList();
+						.SetParameter("ProducerId", producer.Id)
+						.SetResultTransformer(Transformers.AliasToBean(typeof (ProductAndProducer)))
+						.List<ProductAndProducer>();
+				return productsAndProducers;
+			}).ToList();
 			return result;
 		}
 
 		public List<OrderView> FindOrders(Producer producer)
 		{
-			return WithSession(s => s.CreateSQLQuery(@"
+			return With.Session(s => s.CreateSQLQuery(@"
 select oh.WriteTime,
 drugstore.ShortName as Drugstore,
 supplier.ShortName as Supplier,
@@ -275,13 +212,15 @@ limit 20")
 
 		public List<OfferView> FindOffers(uint catalogId, uint producerId)
 		{
-			return WithSession(s => {
-			                   	string filter;
-								if (catalogId != 0)
-									filter = "p.CatalogId = :CatalogId";
-								else
-									filter = "c.CodeFirmCr = :ProducerId";
-			                   	var query = s.CreateSQLQuery(String.Format(@"
+			return With.Session(s => {
+				string filter;
+				if (catalogId != 0)
+					filter = "p.CatalogId = :CatalogId";
+				else
+					filter = "c.CodeFirmCr = :ProducerId";
+				var query = s.CreateSQLQuery(
+					String.Format(
+						@"
 select cd.ShortName as Supplier, 
 cd.FirmSegment as Segment,
 s.Synonym as ProductSynonym, 
@@ -294,32 +233,20 @@ from farm.core0 c
     join usersettings.ClientsData cd on cd.FirmCode = pd.FirmCode
 where {0}
 group by c.Id
-order by cd.FirmCode", filter))
-			                   		.SetResultTransformer(Transformers.AliasToBean(typeof (OfferView)));
-			                   	if (catalogId != 0)
-			                   		query.SetParameter("CatalogId", catalogId);
-			                   	else
-			                   		query.SetParameter("ProducerId", producerId);
-			                   	return query.List<OfferView>();
-			                   }).ToList();
-		}
-
-		public void InMaster(Action action)
-		{
-			using (var connection = new MySqlConnection(ConfigurationManager.ConnectionStrings["Master"].ConnectionString))
-			{
-				connection.Open();
-				using(new DifferentDatabaseScope(connection))
-				{
-					action();
-				}
-			}
+order by cd.FirmCode",
+						filter))
+					.SetResultTransformer(Transformers.AliasToBean(typeof (OfferView)));
+				if (catalogId != 0)
+					query.SetParameter("CatalogId", catalogId);
+				else
+					query.SetParameter("ProducerId", producerId);
+				return query.List<OfferView>();
+			}).ToList();
 		}
 
 		public void Delete(object instance)
 		{
-			InMaster(() => {
-				SetupParametersForTriggerLogging(Environment.UserName, Environment.MachineName);
+			With.Master(() => {
 				if (instance is SynonymView)
 					ProducerSynonym.Find(((SynonymView) instance).Id).Delete();
 				else if (instance is Producer)
@@ -332,6 +259,18 @@ order by cd.FirmCode", filter))
 		{
 			Delete(view);
 			_mailer.SynonymWasDeleted(view, producer);
+		}
+
+		public void ShowSynonymReport()
+		{
+			var items = SynonymReportItem.Load(DateTime.Today.AddDays(-1), DateTime.Today);
+			ShowDialog<SynonymReport>(items, DateTime.Today.AddDays(-1), DateTime.Today);
+		}
+
+		private void ShowDialog<T>(params object[] args)
+		{
+			var form = (Form) Activator.CreateInstance(typeof (T), args);
+			form.ShowDialog();
 		}
 	}
 }

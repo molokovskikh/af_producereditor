@@ -77,7 +77,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Controller.cs" />
+    <Compile Include="MainController.cs" />
     <Compile Include="Initializer.cs" />
     <Compile Include="Mailer.cs" />
     <Compile Include="Views\Helpers.cs">
@@ -103,6 +103,9 @@
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Views\RenameView.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Views\SynonymReport.cs">
       <SubType>Form</SubType>
     </Compile>
     <None Include="App.config" />
