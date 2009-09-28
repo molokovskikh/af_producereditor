@@ -173,7 +173,8 @@ namespace ProducerEditor.Views
 				var synonym = synonymsTable.Selected<SynonymView>();
 				if (synonym == null)
 					return;
-				_controller.Delete(synonym);
+				var producer = producerTable.Selected<Producer>();
+				_controller.DeleteSynonym(synonym, producer);
 				((IList<SynonymView>)synonymsTable.TemplateManager.Source).Remove(synonym);
 				synonymsTable.RebuildViewPort();
 			}

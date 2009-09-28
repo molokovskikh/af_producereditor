@@ -326,8 +326,12 @@ order by cd.FirmCode", filter))
 					Producer.Find(((Producer) instance).Id).Delete();
 			});
 
-			if (instance is SynonymView)
-				_mailer.SynonymWasDeleted((SynonymView) instance);
+		}
+
+		public void DeleteSynonym(SynonymView view, Producer producer)
+		{
+			Delete(view);
+			_mailer.SynonymWasDeleted(view, producer);
 		}
 	}
 }
