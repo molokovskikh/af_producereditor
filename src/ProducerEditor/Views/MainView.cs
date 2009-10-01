@@ -19,7 +19,7 @@ namespace ProducerEditor.Views
 		public static List<int> ProducerWidths = Enumerable.Repeat(100, 4).ToList();
 		public static List<int> OffersWidths = Enumerable.Repeat(100, 4).ToList();
 		public static List<int> ReportWidths = Enumerable.Repeat(100, 6).ToList();
-		public static List<int> ProductsAndProducersWidths = Enumerable.Repeat(100, 4).ToList();
+		public static List<int> ProductsAndProducersWidths = Enumerable.Repeat(100, 5).ToList();
 
 		public static void Update(VirtualTable table, Column column, List<int> widths)
 		{
