@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Configuration;
 using System.Net.Mail;
-using ProducerEditor.Models;
 
-namespace ProducerEditor
+namespace ProducerEditor.Service
 {
 	public class Mailer
 	{
@@ -16,17 +15,17 @@ namespace ProducerEditor
 			_synonymDeleteNotificationMail = ConfigurationManager.AppSettings["SynonymDeleteNotificationMail"];
 		}
 
-		public void SynonymWasDeleted(SynonymView synonymView, Producer producer)
+		public void SynonymWasDeleted(ProducerSynonym synonym)
 		{
 			var smtp = new SmtpClient(_smtpServer);
 			smtp.Send("tech@analit.net",
 			          _synonymDeleteNotificationMail,
 			          "Удален синоним производителя",
 			          String.Format(@"Синоним: {0}
-Производитель: {3}
-Поставщик: {1}
-Регион: {2}
-", synonymView.Name, synonymView.Supplier, synonymView.Region, producer.Name));
+Производитель: {1}
+Поставщик: {2}
+Регион: {3}
+", synonym.Name, synonym.Producer.Name, synonym.Price.Supplier.ShortName, synonym.Price.Supplier.Region.Name));
 		}
 	}
 }

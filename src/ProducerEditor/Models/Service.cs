@@ -14,5 +14,8 @@ namespace ProducerEditor.Service
 	{
 		[OperationContract]
 		List<Offer> GetOffers(uint producerSynonymId);
+
+		[OperationContract]
+		void DeleteProducerSynonym(uint producerSynonymId);
 	}
 }

@@ -10,6 +10,7 @@ using log4net;
 using log4net.Config;
 using NHibernate;
 using NHibernate.Cfg;
+using NHibernate.Mapping.Attributes;
 using Environment=NHibernate.Cfg.Environment;
 
 namespace ProducerEditor.Service
@@ -62,6 +63,7 @@ namespace ProducerEditor.Service
 				.AddFacility<WcfFacility>()
 				.Register(
 					Component.For<ISessionFactory>().Instance(factory),
+					Component.For<Mailer>(),
 
 					Component.For<IServiceBehavior>().Instance(debug),
 					Component.For<IServiceBehavior>().Instance(metadata),
@@ -83,10 +85,11 @@ namespace ProducerEditor.Service
 					{Environment.Dialect, "NHibernate.Dialect.MySQLDialect"},
 					{Environment.ConnectionDriver, "NHibernate.Driver.MySqlDataDriver"},
 					{Environment.ConnectionProvider, "NHibernate.Connection.DriverConnectionProvider"},
-					{Environment.ConnectionStringName, "Main"},
+					{Environment.ConnectionStringName, "Master"},
 					{Environment.ProxyFactoryFactoryClass,"NHibernate.ByteCode.Castle.ProxyFactoryFactory, NHibernate.ByteCode.Castle"},
 					{Environment.Hbm2ddlKeyWords, "none"}
 				})
+				.AddInputStream(HbmSerializer.Default.Serialize(typeof(Supplier).Assembly))
 				.BuildSessionFactory();
 		}
 

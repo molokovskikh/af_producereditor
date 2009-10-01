@@ -12,8 +12,6 @@ namespace ProducerEditor
 {
 	public class MainController
 	{
-		private readonly Mailer _mailer = new Mailer();
-
 		public List<Producer> Producers { get; private set;}
 
 		public IList<Producer> GetAllProducers()
@@ -56,9 +54,7 @@ order by p.Name")
 				return;
 			var rename = new JoinView(this, producer);
 			if (rename.ShowDialog() != DialogResult.Cancel)
-			{
 				update();
-			}
 		}
 
 		public void DoJoin(Producer[] sources, Producer target)
@@ -189,17 +185,14 @@ order by cd.FirmCode",
 		public void Delete(object instance)
 		{
 			With.Master(() => {
-				if (instance is SynonymView)
-					ProducerSynonym.Find(((SynonymView) instance).Id).Delete();
-				else if (instance is Producer)
+				if (instance is Producer)
 					Producer.Find(((Producer) instance).Id).Delete();
 			});
 		}
 
 		public void DeleteSynonym(SynonymView view, Producer producer)
 		{
-			Delete(view);
-			_mailer.SynonymWasDeleted(view, producer);
+			WithService(s => s.DeleteProducerSynonym(view.Id));
 		}
 
 		public void ShowSynonymReport()
@@ -213,8 +206,11 @@ order by cd.FirmCode",
 			if (synonym == null)
 				return;
 
-			var service = CreateChanel();
-			var offers = service.GetOffers(synonym.Id);
+			IList<Offer> offers = null;
+			WithService(s => {
+				offers = s.GetOffers(synonym.Id);
+			});
+		
 			ShowDialog<OffersBySynonym>(offers);
 		}
 
@@ -232,7 +228,7 @@ order by cd.FirmCode",
 			form.ShowDialog();
 		}
 
-		private ProducerService CreateChanel()
+		private void WithService(Action<ProducerService> action)
 		{
 			var binding = new BasicHttpBinding
 			{
@@ -243,7 +239,7 @@ order by cd.FirmCode",
 			};
 			var endpoint = new EndpointAddress(Settings.Default.EndpointAddress + "ProducerService.svc");
 			var factory = new ChannelFactory<ProducerService>(binding, endpoint);
-			return factory.CreateChannel();
+			action(factory.CreateChannel());
 		}
 	}
 }
