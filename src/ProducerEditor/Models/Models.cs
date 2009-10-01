@@ -1,26 +1,24 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using Castle.ActiveRecord;
 using Castle.ActiveRecord.Linq;
-using NHibernate;
 using NHibernate.Transform;
 using ProducerEditor.Views;
 
 namespace ProducerEditor.Models
 {
-	[ActiveRecord(Table = "farm.CatalogFirmCr")]
+	[ActiveRecord(Table = "Catalogs.Producers")]
 	public class Producer : ActiveRecordLinqBase<Producer>
 	{
-		[PrimaryKey(Column = "CodeFirmCr")]
+		[PrimaryKey(Column = "Id")]
 		public virtual uint Id { get; set; }
 
-		[Property(Column = "FirmCr")]
+		[Property]
 		public virtual string Name { get; set; }
 
-		[Property]
-		public virtual byte Hidden { get; set; }
+/*		[Property]
+		public virtual byte Hidden { get; set; }*/
 
 		[HasMany(Inverse = true, Lazy = true, Cascade = ManyRelationCascadeEnum.Delete, ColumnKey = "CodeFirmCr")]
 		public virtual IList<ProducerSynonym> Synonyms { get; set; }
@@ -73,7 +71,7 @@ SELECT sfcl.OperatorName as User,
        cd.ShortName as Price,
        r.Region,
        sfc.Synonym,
-       cfc.FirmCr as Producer,
+       pr.Name as Producer,
        (select group_concat(distinct concat(cn.Name, ' ', cf.Form) separator ', ')
         from farm.core0 c
           left join catalogs.products p on p.id = c.productid
@@ -86,7 +84,7 @@ FROM logs.SynonymFirmCrLogs sfcl
     join usersettings.pricesdata pd on pd.pricecode = sfc.pricecode
       join usersettings.clientsdata cd on pd.FirmCode = cd.FirmCode
         join farm.Regions r on r.RegionCode = cd.RegionCode
-    join farm.CatalogFirmCr cfc on cfc.CodeFirmCr = sfc.CodeFirmCr
+    join Catalogs.Producers pr on pr.Id = sfc.CodeFirmCr
 where sfcl.Operation = 0 and sfcl.LogTime between :begin and :end
 group by sfc.SynonymFirmCrCode;")
 					.SetParameter("begin", begin)

@@ -17,15 +17,13 @@ namespace ProducerEditor
 		public IList<Producer> GetAllProducers()
 		{
 			Producers = With.Session(s =>s.CreateSQLQuery(@"
-select cfc.CodeFirmCr as Id,
-cfc.FirmCr as Name,
-cfc.Hidden,
+select p.Id,
+p.Name,
 c.Id != 0 as HasOffers
-from farm.CatalogFirmCr cfc
-	left join farm.core0 c on c.CodeFirmCr = cfc.CodeFirmCr
-where cfc.Hidden = 0
-group by cfc.CodeFirmCr
-order by cfc.FirmCr")
+from Catalogs.Producers p
+	left join farm.core0 c on c.CodeFirmCr = p.Id
+group by p.Id
+order by p.Name")
 						.SetResultTransformer(Transformers.AliasToBean(typeof (Producer)))
 						.List<Producer>()).ToList();
 			return Producers;
@@ -166,8 +164,8 @@ set ExistsInRls = exists(select * from farm.core0 c where c.CodeFirmCr = pap.Cod
 
 select p.CatalogId,
 	   concat(cn.Name, ' ', cf.Form) as Product,
-	   cfc.CodeFirmCr as ProducerId,
-       cfc.FirmCr as Producer,
+	   pr.Id as ProducerId,
+       pr.Name as Producer,
 	   pap.OrdersCount,
 	   pap.OffersCount,
 	   pap.ExistsInRls
@@ -176,7 +174,7 @@ from ProductsAndProducers pap
 	  join Catalogs.Catalog as c on p.catalogid = c.id
     	JOIN Catalogs.CatalogNames cn on cn.id = c.nameid
     	JOIN Catalogs.CatalogForms cf on cf.id = c.formid
-  join farm.CatalogFirmCr cfc on cfc.CodeFirmCr = pap.CodeFirmCr
+  join Catalogs.Producers pr on pr.Id = pap.CodeFirmCr
 group by pap.ProductId, pap.CodeFirmCr
 order by p.Id;")
 						.SetParameter("ProducerId", producer.Id)
