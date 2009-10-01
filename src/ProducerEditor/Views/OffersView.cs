@@ -19,30 +19,31 @@ namespace ProducerEditor.Views
 			KeyPreview = true;
 			Text = "Предложения";
 			var offersTable = new VirtualTable(new TemplateManager<List<OfferView>, OfferView>(
-												() => { 
-													var row = Row.Headers(); 
+				() => { 
+					var row = Row.Headers(); 
 
-													var header = new Header("Поставщик").Sortable("Supplier");
-													header.InlineStyle.Set(StyleElementType.Width, WidthHolder.OffersWidths[0]);
-													row.Append(header);
+					var header = new Header("Поставщик").Sortable("Supplier");
+					header.InlineStyle.Set(StyleElementType.Width, WidthHolder.OffersWidths[0]);
+					row.Append(header);
 
-			                                   	    header = new Header("Сегмент").Sortable("Segment");
-													header.InlineStyle.Set(StyleElementType.Width, WidthHolder.OffersWidths[1]);
-													row.Append(header);
+					header = new Header("Сегмент").Sortable("Segment");
+					header.InlineStyle.Set(StyleElementType.Width, WidthHolder.OffersWidths[1]);
+					row.Append(header);
 
-													header = new Header("Наименование").Sortable("ProductSynonym");
-													header.InlineStyle.Set(StyleElementType.Width, WidthHolder.OffersWidths[2]);
-													row.Append(header);
+					header = new Header("Наименование").Sortable("ProductSynonym");
+					header.InlineStyle.Set(StyleElementType.Width, WidthHolder.OffersWidths[2]);
+					row.Append(header);
 
-													header = new Header("Производитель").Sortable("ProducerSynonym");
-													header.InlineStyle.Set(StyleElementType.Width, WidthHolder.OffersWidths[3]);
-													row.Append(header);
-													return row;
-												},
-			                                   	offer => Row.Cells(offer.Supplier,
-			                                   	                   offer.SegmentAsString(),
-			                                   	                   offer.ProductSynonym,
-			                                   	                   offer.ProducerSynonym)));
+					header = new Header("Производитель").Sortable("ProducerSynonym");
+					header.InlineStyle.Set(StyleElementType.Width, WidthHolder.OffersWidths[3]);
+					row.Append(header);
+					return row;
+				},
+				offer => Row.Cells(offer.Supplier,
+							offer.SegmentAsString(),
+							offer.ProductSynonym,
+							offer.ProducerSynonym)));
+
 			offersTable.CellSpacing = 1;
 			offersTable.RegisterBehavior(new ToolTipBehavior(),
 			                             new ColumnResizeBehavior(),
