@@ -8,6 +8,7 @@ import Microsoft.Build.Tasks from "Microsoft.Build.Tasks.v3.5"
 import Microsoft.Build.Utilities.TaskItem from "Microsoft.Build.Utilities.v3.5" as TaskItem
 import ICSharpCode.SharpZipLib.Zip from "lib/ICSharpCode.SharpZipLib.dll"
 import Bake.Win32.Helper
+import file from lib.bake
 
 def Clean(path as String):
 	if not Exist(path):
