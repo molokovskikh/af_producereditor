@@ -17,6 +17,9 @@ namespace ProducerEditor.Models
 		[Property]
 		public virtual string Name { get; set; }
 
+		[Property]
+		public virtual bool Checked { get; set; }
+
 /*		[Property]
 		public virtual byte Hidden { get; set; }*/
 

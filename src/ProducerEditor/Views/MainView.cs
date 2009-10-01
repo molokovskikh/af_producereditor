@@ -5,12 +5,15 @@ using System.Linq;
 using System.Windows.Forms;
 using ProducerEditor.Models;
 using Subway.Dom;
+using Subway.Dom.Base;
+using Subway.Dom.Input;
 using Subway.Dom.Styles;
 using Subway.Helpers;
 using Subway.VirtualTable;
 using Subway.VirtualTable.Behaviors;
 using Subway.VirtualTable.Behaviors.Selection;
 using Subway.VirtualTable.Behaviors.Specialized;
+using Common.Tools;
 
 namespace ProducerEditor.Views
 {
@@ -45,6 +48,8 @@ namespace ProducerEditor.Views
 		private readonly VirtualTable synonymsTable;
 		private readonly ToolStrip toolStrip;
 
+		private uint BookmarkProducerId = Settings.Default.BookmarkProducerId;
+
 		public MainView()
 		{
 			Text = "Редактор каталога производителей";
@@ -61,6 +66,10 @@ namespace ProducerEditor.Views
 				.Button("Продукты (Enter)", ShowProducers)
 				.Button("Отчет о сопоставлениях (F9)", () => controller.ShowSynonymReport());
 
+			var bookmarksToolStrip = new ToolStrip()
+				.Button("К закаладке", () => MoveToBookmark())
+				.Button("Установить закладку", () => SetBookmark());
+
 			var searchText = ((ToolStripTextBox) toolStrip.Items["SearchText"]);
 			searchText.KeyDown += (sender, args) => {
 				if (args.KeyCode == Keys.Enter)
@@ -73,16 +82,24 @@ namespace ProducerEditor.Views
 				Orientation = Orientation.Horizontal
 			};
 			producerTable = new VirtualTable(new TemplateManager<List<Producer>, Producer>(
-				() => Row.Headers("Производитель"), 
+				() => Row.Headers(new Header("Проверен").AddClass("CheckBoxColumn1"), "Производитель"), 
 				producer => {
-					var row = Row.Cells(producer.Name);
+					var row = Row.Cells(new CheckBoxInput(producer.Checked), producer.Name);
 					if (producer.HasOffers == 0)
 						row.AddClass("WithoutOffers");
+					if (producer.Id == BookmarkProducerId)
+						((IDomElementWithChildren)row.Children.Last()).Prepend(new TextBlock {Class = "BookmarkGlyph"});
 					return row;
 				}));
 			producerTable.CellSpacing = 1;
 			producerTable.RegisterBehavior(new RowSelectionBehavior(),
-			                               new ToolTipBehavior());
+				new ToolTipBehavior(),
+				new InputSupport(input => {
+					var row = (Row)input.Parent.Parent;
+					var producer = producerTable.Translate<Producer>(row);
+					producer.Checked = ((CheckBoxInput) input).Checked;
+					controller.Update(producer);
+				}));
 			producerTable.Host.KeyDown += (sender, args) => {
 				if (args.KeyCode == Keys.Enter && String.IsNullOrEmpty(searchText.Text))
 					ShowProducers();
@@ -158,11 +175,26 @@ namespace ProducerEditor.Views
 			split.Panel1.Controls.Add(producerTable.Host);
 			split.Panel2.Controls.Add(synonymsTable.Host);
 			Controls.Add(split);
+			Controls.Add(bookmarksToolStrip);
 			Controls.Add(toolStrip);
 			split.SplitterDistance = (int) (Size.Height*0.6);
 			Shown += (sender, args) => producerTable.Host.Focus();
 			synonymsTable.TemplateManager.ResetColumns();
 			UpdateProducers();
+		}
+
+		private void SetBookmark()
+		{
+			BookmarkProducerId = producerTable.Behavior<IRowSelectionBehavior>().Selected<Producer>().Id;
+			Settings.Default.BookmarkProducerId = BookmarkProducerId;
+			Settings.Default.Save();
+			producerTable.RebuildViewPort();
+		}
+
+		private void MoveToBookmark()
+		{
+			ReseteFilter();
+			producerTable.Behavior<IRowSelectionBehavior>().MoveSelectionAt(controller.Producers.IndexOf(p => p.Id == BookmarkProducerId));
 		}
 
 		private void Delete()

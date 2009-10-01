@@ -77,9 +77,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Infrastructure\UserDataSettingProvider.cs" />
     <Compile Include="MainController.cs" />
     <Compile Include="Initializer.cs" />
     <Compile Include="Mailer.cs" />
+    <Compile Include="Settings.cs" />
     <Compile Include="Views\Helpers.cs">
       <SubType>Form</SubType>
     </Compile>

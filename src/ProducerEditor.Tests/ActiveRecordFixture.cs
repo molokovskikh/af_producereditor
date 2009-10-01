@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Linq;
+using Castle.ActiveRecord;
 using NUnit.Framework;
 using ProducerEditor.Models;
 
@@ -18,6 +20,24 @@ namespace ProducerEditor.Tests
 		{
 			var p = Producer.Find(2575u);
 			Console.Write(p);
+		}
+
+		[Test]
+		public void Set_checked_property()
+		{
+			Producer producer;
+			using(new SessionScope())
+			{
+				producer = Producer.Queryable.Where(p => !p.Checked).First();
+				producer.Checked = true;
+				producer.Update();
+			}
+
+			using (new SessionScope())
+			{
+				var reloadedProducer = Producer.Find(producer.Id);
+				Assert.That(reloadedProducer.Checked);
+			}
 		}
 
 		[Test]

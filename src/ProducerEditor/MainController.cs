@@ -19,6 +19,7 @@ namespace ProducerEditor
 			Producers = With.Session(s =>s.CreateSQLQuery(@"
 select p.Id,
 p.Name,
+p.Checked,
 c.Id != 0 as HasOffers
 from Catalogs.Producers p
 	left join farm.core0 c on c.CodeFirmCr = p.Id
@@ -250,7 +251,6 @@ order by cd.FirmCode",
 				else if (instance is Producer)
 					Producer.Find(((Producer) instance).Id).Delete();
 			});
-
 		}
 
 		public void DeleteSynonym(SynonymView view, Producer producer)
