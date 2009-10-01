@@ -2,7 +2,9 @@
 using System.Linq;
 using Castle.ActiveRecord;
 using NUnit.Framework;
-using ProducerEditor.Models;
+using ProducerEditor.Service;
+using ProducerEditor.Views;
+using Producer = ProducerEditor.Models.Producer;
 
 namespace ProducerEditor.Tests
 {
@@ -43,7 +45,9 @@ namespace ProducerEditor.Tests
 		[Test]
 		public void Load_synonym_report()
 		{
-			SynonymReportItem.Load(DateTime.Today.AddDays(-1), DateTime.Today);
+			With.Session(s => {
+				SynonymReportItem.Load(s, DateTime.Today.AddDays(-1), DateTime.Today);
+			});
 		}
 	}
 }

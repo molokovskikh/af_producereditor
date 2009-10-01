@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
 using System.Windows.Forms;
 using ProducerEditor.Models;
 using Subway.Dom;
@@ -14,7 +15,7 @@ namespace ProducerEditor.Views
 {
 	public class SynonymReport : Form
 	{
-		public SynonymReport(List<SynonymReportItem> items, DateTime begin, DateTime end)
+		public SynonymReport(MainController controller, IList<SynonymReportItem> items, DateTime begin, DateTime end)
 		{
 			Text = "Отчет о сопоставлениях";
 			var report = new VirtualTable(new TemplateManager<List<SynonymReportItem>, SynonymReportItem>(
@@ -55,7 +56,7 @@ namespace ProducerEditor.Views
 			report.RegisterBehavior(new ToolTipBehavior(),
 			                        new ColumnResizeBehavior(),
 			                        new SortInList());
-			report.TemplateManager.Source = items;
+			report.TemplateManager.Source = items.ToList();
 			report.Behavior<ColumnResizeBehavior>().ColumnResized += column => WidthHolder.Update(report, column, WidthHolder.ReportWidths);
 			report.TemplateManager.ResetColumns();
 
@@ -82,7 +83,13 @@ namespace ProducerEditor.Views
 				.Host(beginPeriodCalendar)
 				.Label("По")
 				.Host(endPeriodCalendar)
-				.Button("Обновить", () => report.TemplateManager.Source = SynonymReportItem.Load(beginPeriodCalendar.Value, endPeriodCalendar.Value));
+				.Button("Обновить", () => {
+					IList<SynonymReportItem> reportItems = null;
+					controller.WithService(s => {
+						reportItems = s.GetSynonymReport(beginPeriodCalendar.Value, endPeriodCalendar.Value);
+					});
+					report.TemplateManager.Source = reportItems.ToList();
+				});
 
 			MinimumSize = new Size(640, 480);
 			KeyPreview = true;

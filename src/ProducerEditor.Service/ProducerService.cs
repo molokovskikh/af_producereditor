@@ -173,5 +173,14 @@ where c.SynonymFirmCrCode = :producerSynonymId")
 				transaction.Commit();
 			}
 		}
+
+		[OperationContract]
+		public IList<SynonymReportItem> GetSynonymReport(DateTime begin, DateTime end)
+		{
+			if (begin.Date == end.Date)
+				begin = begin.AddDays(-1);
+			using(var session = _factory.OpenSession())
+				return SynonymReportItem.Load(session, begin, end);
+		}
 	}
 }

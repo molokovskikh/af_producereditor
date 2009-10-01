@@ -5,7 +5,6 @@ using System.ServiceModel;
 using System.Windows.Forms;
 using NHibernate.Transform;
 using ProducerEditor.Models;
-using ProducerEditor.Service;
 using ProducerEditor.Views;
 
 namespace ProducerEditor
@@ -197,8 +196,11 @@ order by cd.FirmCode",
 
 		public void ShowSynonymReport()
 		{
-			var items = SynonymReportItem.Load(DateTime.Today.AddDays(-1), DateTime.Today);
-			ShowDialog<SynonymReport>(items, DateTime.Today.AddDays(-1), DateTime.Today);
+			IList<SynonymReportItem> items = null;
+			WithService(s => {
+				items = s.GetSynonymReport(DateTime.Today.AddDays(-1), DateTime.Today);
+			});
+			ShowDialog<SynonymReport>(this, items, DateTime.Today.AddDays(-1), DateTime.Today);
 		}
 
 		public void ShowOffersBySynonym(ProducerSynonym synonym)
@@ -228,7 +230,7 @@ order by cd.FirmCode",
 			form.ShowDialog();
 		}
 
-		private void WithService(Action<ProducerService> action)
+		public void WithService(Action<ProducerService> action)
 		{
 			var binding = new BasicHttpBinding
 			{

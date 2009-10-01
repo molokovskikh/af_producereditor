@@ -2,7 +2,6 @@
 using System.Drawing;
 using System.Windows.Forms;
 using ProducerEditor.Models;
-using ProducerEditor.Service;
 using Subway.Dom;
 using Subway.Dom.Styles;
 using Subway.Helpers;
