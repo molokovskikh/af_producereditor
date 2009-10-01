@@ -1,0 +1,2 @@
+﻿<%@ ServiceHost Service="ProducerService"
+				Factory="Castle.Facilities.WcfIntegration.DefaultServiceHostFactory, Castle.Facilities.WcfIntegration" %>

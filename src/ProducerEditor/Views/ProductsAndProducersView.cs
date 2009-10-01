@@ -126,7 +126,7 @@ namespace ProducerEditor.Views
 			                   	.GroupBy(p => p.Id)
 			                   	.Select(g => g.First()).ToArray(), producer);
 
-			productsAndProducers.TemplateManager.Source = controller.FindRelativeProductsAndProducers(producer);
+			productsAndProducers.TemplateManager.Source = ProductAndProducer.FindRelativeProductsAndProducers(producer);
 		}
 	}
 }

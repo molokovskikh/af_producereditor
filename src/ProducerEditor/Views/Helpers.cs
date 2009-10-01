@@ -114,6 +114,19 @@ namespace ProducerEditor.Views
 			return toolStrip;
 		}
 
+		public static ToolStrip Button(this ToolStrip toolStrip, string name, string label, Action onclick)
+		{
+			var button = new ToolStripButton
+			{
+				Text = label,
+				Name = name
+			};
+			button.Click += (sender, args) => onclick();
+			toolStrip.Items.Add(button);
+			return toolStrip;
+		}
+
+
 		public static ToolStrip Host(this ToolStrip toolStrip, Control control)
 		{
 			var host = new ToolStripControlHost(control);

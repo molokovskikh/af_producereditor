@@ -19,5 +19,13 @@ namespace ProducerEditor
 			get { return (uint)this["BookmarkProducerId"]; }
 			set { this["BookmarkProducerId"] = value; }
 		}
+
+		[ApplicationScopedSetting]
+		public string EndpointAddress
+		{
+			get { return (string)this["EndpointAddress"]; }
+			set { this["EndpointAddress"] = value; }
+		}
+
 	}
 }

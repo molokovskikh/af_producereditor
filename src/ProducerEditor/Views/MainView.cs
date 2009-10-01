@@ -23,6 +23,7 @@ namespace ProducerEditor.Views
 		public static List<int> OffersWidths = Enumerable.Repeat(100, 4).ToList();
 		public static List<int> ReportWidths = Enumerable.Repeat(100, 6).ToList();
 		public static List<int> ProductsAndProducersWidths = Enumerable.Repeat(100, 5).ToList();
+		public static List<int> OffersBySynonymView = Enumerable.Repeat(100, 2).ToList();
 
 		public static void Update(VirtualTable table, Column column, List<int> widths)
 		{
@@ -163,12 +164,12 @@ namespace ProducerEditor.Views
 										   new SortInList(),
 										   new ColumnResizeBehavior(),
 										   new RowSelectionBehavior());
-			synonymsTable.Host.KeyDown += (sender, args) => {
-				if (args.KeyCode == Keys.Delete)
-					Delete();
-				if (args.KeyCode == Keys.Escape)
-					producerTable.Host.Focus();
-			};
+			synonymsTable.Host
+				.InputMap()
+				.KeyDown(Keys.Enter, ShowProducers)
+				.KeyDown(Keys.Delete, Delete)
+				.KeyDown(Keys.Escape, () => producerTable.Host.Focus());
+
 			synonymsTable.Behavior<ColumnResizeBehavior>().ColumnResized += column => WidthHolder.Update(synonymsTable, column, WidthHolder.ProducerWidths);
 
 			InputLanguageHelper.SetToRussian();
@@ -227,11 +228,17 @@ namespace ProducerEditor.Views
 
 		private void ShowProducers()
 		{
-			var producer = producerTable.Selected<Producer>();
-			if (producer == null)
-				return;
-			new ProductsAndProducersView(controller, producer, controller.FindRelativeProductsAndProducers(producer)).ShowDialog();
-			producerTable.RebuildViewPort();
+			if (producerTable.Host.Focused)
+			{
+				var producer = producerTable.Selected<Producer>();
+				controller.ShowProductsAndProducers(producer);
+				producerTable.RebuildViewPort();
+			}
+			else
+			{
+				var synonym = synonymsTable.Selected<ProducerSynonym>();
+				controller.ShowOffersBySynonym(synonym);
+			}
 		}
 
 		private void ReseteFilter()

@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.ServiceModel;
 using System.Windows.Forms;
 using NHibernate.Transform;
 using ProducerEditor.Models;
+using ProducerEditor.Service;
 using ProducerEditor.Views;
 
 namespace ProducerEditor
@@ -127,65 +129,6 @@ group by sfc.SynonymFirmCrCode")
 			return Producers.Where(p => p.Name.Contains((text ?? "").ToUpper())).ToList();
 		}
 
-		public List<ProductAndProducer> FindRelativeProductsAndProducers(Producer producer)
-		{
-			var result = With.Session(s => {
-				var productsAndProducers =
-					s.CreateSQLQuery(
-						@"
-drop temporary table if exists ProductFromOrders;
-create temporary table ProductFromOrders engine 'memory'
-select productid
-from orders.orderslist
-where CodeFirmCr = :ProducerId
-group by ProductId;
-
-drop temporary table if exists ProductsAndProducers;
-create temporary table ProductsAndProducers engine 'memory'
-select
-ol.ProductId, ol.CodeFirmCr, 0 as OffersCount, 0 as OrdersCount, 0 as ExistsInRls
-from orders.orderslist ol
-  join ProductFromOrders p on ol.ProductId = p.ProductId
-where ol.CodeFirmCr is not null
-group by ol.ProductId, ol.CodeFirmCr
-union
-select
-c.ProductId, c.CodeFirmCr, 0 as OffersCount, 0 as OrdersCount, 0 as ExistsInRls
-from farm.core0 c
-  join farm.core0 sibling on c.ProductId = sibling.ProductId
-where sibling.CodeFirmCr = :ProducerId and c.CodeFirmCr is not null
-group by c.ProductId, c.CodeFirmCr;
-
-update ProductsAndProducers pap
-set pap.OffersCount = (select count(*) from farm.core0 c where c.CodeFirmCr = pap.CodeFirmCr and c.ProductId = pap.ProductId),
-    pap.OrdersCount = (select count(*) from orders.orderslist ol where ol.CodeFirmCr = pap.CodeFirmCr and ol.ProductId = pap.ProductId);
-
-update ProductsAndProducers pap
-set ExistsInRls = exists(select * from farm.core0 c where c.CodeFirmCr = pap.CodeFirmCr and c.ProductId = pap.ProductId and c.PriceCode = 1864);
-
-select p.CatalogId,
-	   concat(cn.Name, ' ', cf.Form) as Product,
-	   pr.Id as ProducerId,
-       pr.Name as Producer,
-	   pap.OrdersCount,
-	   pap.OffersCount,
-	   pap.ExistsInRls
-from ProductsAndProducers pap
-  join catalogs.Products as p on p.id = pap.productid
-	  join Catalogs.Catalog as c on p.catalogid = c.id
-    	JOIN Catalogs.CatalogNames cn on cn.id = c.nameid
-    	JOIN Catalogs.CatalogForms cf on cf.id = c.formid
-  join Catalogs.Producers pr on pr.Id = pap.CodeFirmCr
-group by pap.ProductId, pap.CodeFirmCr
-order by p.Id;")
-						.SetParameter("ProducerId", producer.Id)
-						.SetResultTransformer(Transformers.AliasToBean(typeof (ProductAndProducer)))
-						.List<ProductAndProducer>();
-				return productsAndProducers;
-			}).ToList();
-			return result;
-		}
-
 		public List<OrderView> FindOrders(Producer producer)
 		{
 			return With.Session(s => s.CreateSQLQuery(@"
@@ -265,10 +208,42 @@ order by cd.FirmCode",
 			ShowDialog<SynonymReport>(items, DateTime.Today.AddDays(-1), DateTime.Today);
 		}
 
+		public void ShowOffersBySynonym(ProducerSynonym synonym)
+		{
+			if (synonym == null)
+				return;
+
+			var service = CreateChanel();
+			var offers = service.GetOffers(synonym.Id);
+			ShowDialog<OffersBySynonym>(offers);
+		}
+
+		public void ShowProductsAndProducers(Producer producer)
+		{
+			if (producer == null)
+				return;
+
+			ShowDialog<ProductsAndProducersView>(this, producer, ProductAndProducer.FindRelativeProductsAndProducers(producer));
+		}
+
 		private void ShowDialog<T>(params object[] args)
 		{
 			var form = (Form) Activator.CreateInstance(typeof (T), args);
 			form.ShowDialog();
+		}
+
+		private ProducerService CreateChanel()
+		{
+			var binding = new BasicHttpBinding
+			{
+				MaxBufferSize = int.MaxValue,
+				MaxReceivedMessageSize = int.MaxValue,
+				SendTimeout = TimeSpan.FromMinutes(10),
+				ReaderQuotas = {MaxArrayLength = int.MaxValue},
+			};
+			var endpoint = new EndpointAddress(Settings.Default.EndpointAddress + "ProducerService.svc");
+			var factory = new ChannelFactory<ProducerService>(binding, endpoint);
+			return factory.CreateChannel();
 		}
 	}
 }
