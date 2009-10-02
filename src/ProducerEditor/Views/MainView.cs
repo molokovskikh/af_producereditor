@@ -50,6 +50,7 @@ namespace ProducerEditor.Views
 		private readonly ToolStrip toolStrip;
 
 		private uint BookmarkProducerId = Settings.Default.BookmarkProducerId;
+		private VirtualTable equivalentTable;
 
 		public MainView()
 		{
@@ -77,11 +78,6 @@ namespace ProducerEditor.Views
 					SearchProducer();
 			};
 
-			var split = new SplitContainer
-			{
-				Dock = DockStyle.Fill,
-				Orientation = Orientation.Horizontal
-			};
 			producerTable = new VirtualTable(new TemplateManager<List<Producer>, Producer>(
 				() => Row.Headers(new Header("Проверен").AddClass("CheckBoxColumn1"), "Производитель"), 
 				producer => {
@@ -129,7 +125,7 @@ namespace ProducerEditor.Views
 			var behavior = producerTable.Behavior<IRowSelectionBehavior>();
 			behavior.SelectedRowChanged += (oldRow, newRow) => SelectedProducerChanged(behavior.Selected<Producer>());
 
-			synonymsTable = new VirtualTable(new TemplateManager<List<SynonymView>, SynonymView>(
+			synonymsTable = new VirtualTable(new TemplateManager<List<SynonymDto>, SynonymDto>(
 				() =>{
 					var row = Row.Headers();
 					var header = new Header("Синоним").Sortable("Name");
@@ -169,16 +165,32 @@ namespace ProducerEditor.Views
 				.KeyDown(Keys.Enter, ShowProducers)
 				.KeyDown(Keys.Delete, Delete)
 				.KeyDown(Keys.Escape, () => producerTable.Host.Focus());
-
 			synonymsTable.Behavior<ColumnResizeBehavior>().ColumnResized += column => WidthHolder.Update(synonymsTable, column, WidthHolder.ProducerWidths);
 
+			equivalentTable = new VirtualTable(new TemplateManager<List<string>, string>(
+				() => Row.Headers("Эквивалент"),
+				e => Row.Cells(e)));
+
+			var producersToSynonymsSplit = new SplitContainer
+			{
+				Dock = DockStyle.Fill,
+				Orientation = Orientation.Horizontal
+			};
+			var producersToEquivalentsSplit = new SplitContainer
+			{
+				Dock = DockStyle.Fill,
+			};
 			InputLanguageHelper.SetToRussian();
-			split.Panel1.Controls.Add(producerTable.Host);
-			split.Panel2.Controls.Add(synonymsTable.Host);
-			Controls.Add(split);
+			producersToEquivalentsSplit.Panel1.Controls.Add(producerTable.Host);
+			producersToEquivalentsSplit.Panel2.Controls.Add(equivalentTable.Host);
+
+			producersToSynonymsSplit.Panel1.Controls.Add(producersToEquivalentsSplit);
+			producersToSynonymsSplit.Panel2.Controls.Add(synonymsTable.Host);
+			Controls.Add(producersToSynonymsSplit);
 			Controls.Add(bookmarksToolStrip);
 			Controls.Add(toolStrip);
-			split.SplitterDistance = (int) (Size.Height*0.6);
+			producersToSynonymsSplit.SplitterDistance = (int) (Size.Height*0.6);
+			producersToEquivalentsSplit.SplitterDistance = (int) (0.7*producersToEquivalentsSplit.Width);
 			Shown += (sender, args) => producerTable.Host.Focus();
 			synonymsTable.TemplateManager.ResetColumns();
 			UpdateProducers();
@@ -216,12 +228,12 @@ namespace ProducerEditor.Views
 			}
 			else if (synonymsTable.Host.Focused)
 			{
-				var synonym = synonymsTable.Selected<SynonymView>();
+				var synonym = synonymsTable.Selected<SynonymDto>();
 				if (synonym == null)
 					return;
 				var producer = producerTable.Selected<Producer>();
 				controller.DeleteSynonym(synonym, producer);
-				((IList<SynonymView>)synonymsTable.TemplateManager.Source).Remove(synonym);
+				((IList<SynonymDto>)synonymsTable.TemplateManager.Source).Remove(synonym);
 				synonymsTable.RebuildViewPort();
 			}
 		}
@@ -291,6 +303,7 @@ namespace ProducerEditor.Views
 		private void SelectedProducerChanged(Producer producer)
 		{
 			synonymsTable.TemplateManager.Source = controller.Synonyms(producer);
+			equivalentTable.TemplateManager.Source = controller.GetEquivalents(producer.Id).ToList();
 		}
 
 		public void UpdateProducers()

@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.Serialization;
-using System.ServiceModel;
 using Castle.ActiveRecord;
 using Castle.ActiveRecord.Linq;
 using NHibernate.Transform;
@@ -47,7 +45,7 @@ namespace ProducerEditor.Models
 		public virtual Producer Producer { get; set; }
 	}
 
-	public class SynonymView : ProducerSynonym
+	public class SynonymDto : ProducerSynonym
 	{
 		public string Supplier { get; set; }
 		public string Region { get; set; }

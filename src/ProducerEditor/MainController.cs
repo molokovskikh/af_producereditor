@@ -29,6 +29,36 @@ order by p.Name")
 			return Producers;
 		}
 
+		public IList<string> GetEquivalents(uint producerId)
+		{
+			IList<string> equivalents = null;
+			WithService(s => {
+				equivalents = s.GetEquivalents(producerId);
+			});
+			return equivalents;
+		}
+
+		public IList<SynonymDto> Synonyms(Producer producer)
+		{
+			return With.Session(session => session.CreateSQLQuery(@"
+select sfc.Synonym as Name,
+sfc.SynonymFirmCrCode as Id,
+cd.ShortName as Supplier,
+cd.FirmSegment as Segment,
+r.Region,
+c.Id is not null as HaveOffers
+from farm.SynonymFirmCr sfc
+  join usersettings.PricesData pd on sfc.PriceCode = pd.PriceCode
+    join usersettings.clientsdata cd on cd.FirmCode = pd.FirmCode
+      join farm.Regions r on cd.RegionCode = r.RegionCode
+  left join farm.Core0 c on c.SynonymFirmCrCode = sfc.SynonymFirmCrCode
+where sfc.CodeFirmCr = :ProducerId and cd.BillingCode <> 921
+group by sfc.SynonymFirmCrCode")
+				           	.SetParameter("ProducerId", producer.Id)
+				           	.SetResultTransformer(Transformers.AliasToBean(typeof (SynonymDto)))
+				           	.List<SynonymDto>().ToList());
+		}
+
 		public void OfferForProducerId(uint producerId)
 		{
 			var offers = FindOffers(0, producerId);
@@ -95,28 +125,6 @@ where CodeFirmCr = :SourceId
 				foreach (var source in sources)
 					Producers.Remove(source);
 			}));
-		}
-
-		public IList<SynonymView> Synonyms(Producer producer)
-		{
-			return With.Session(
-				session => session.CreateSQLQuery(@"
-select sfc.Synonym as Name,
-sfc.SynonymFirmCrCode as Id,
-cd.ShortName as Supplier,
-cd.FirmSegment as Segment,
-r.Region,
-c.Id is not null as HaveOffers
-from farm.SynonymFirmCr sfc
-  join usersettings.PricesData pd on sfc.PriceCode = pd.PriceCode
-    join usersettings.clientsdata cd on cd.FirmCode = pd.FirmCode
-      join farm.Regions r on cd.RegionCode = r.RegionCode
-  left join farm.Core0 c on c.SynonymFirmCrCode = sfc.SynonymFirmCrCode
-where sfc.CodeFirmCr = :ProducerId and cd.BillingCode <> 921
-group by sfc.SynonymFirmCrCode")
-				           	.SetParameter("ProducerId", producer.Id)
-				           	.SetResultTransformer(Transformers.AliasToBean(typeof (SynonymView)))
-				           	.List<SynonymView>().ToList());
 		}
 
 		public List<Producer> SearchProducer(string text)
@@ -189,7 +197,7 @@ order by cd.FirmCode",
 			});
 		}
 
-		public void DeleteSynonym(SynonymView view, Producer producer)
+		public void DeleteSynonym(SynonymDto view, Producer producer)
 		{
 			WithService(s => s.DeleteProducerSynonym(view.Id));
 		}
@@ -208,9 +216,9 @@ order by cd.FirmCode",
 			if (synonym == null)
 				return;
 
-			IList<Offer> offers = null;
+			List<Offer> offers = null;
 			WithService(s => {
-				offers = s.GetOffers(synonym.Id);
+				offers = s.GetOffers(synonym.Id).ToList();
 			});
 		
 			ShowDialog<OffersBySynonym>(offers);

@@ -35,10 +35,13 @@ namespace ProducerEditor.Models
 	public interface ProducerService
 	{
 		[OperationContract]
-		List<Offer> GetOffers(uint producerSynonymId);
+		IList<Offer> GetOffers(uint producerSynonymId);
 
 		[OperationContract]
 		IList<SynonymReportItem> GetSynonymReport(DateTime begin, DateTime end);
+
+		[OperationContract]
+		IList<string> GetEquivalents(uint producerId);
 
 		[OperationContract]
 		void DeleteProducerSynonym(uint producerSynonymId);

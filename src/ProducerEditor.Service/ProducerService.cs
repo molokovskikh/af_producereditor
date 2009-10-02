@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.ServiceModel;
 using NHibernate;
 using NHibernate.Mapping.Attributes;
@@ -161,6 +162,25 @@ where c.SynonymFirmCrCode = :producerSynonymId")
 		}
 
 		[OperationContract]
+		public IList<SynonymReportItem> GetSynonymReport(DateTime begin, DateTime end)
+		{
+			if (begin.Date == end.Date)
+				begin = begin.AddDays(-1);
+			using(var session = _factory.OpenSession())
+				return SynonymReportItem.Load(session, begin, end);
+		}
+
+		[OperationContract]
+		public IList<string> GetEquivalents(uint producerId)
+		{
+			using (var session = _factory.OpenSession())
+			{
+				var producer = session.Get<Producer>(producerId);
+				return producer.Equivalents.Select(e => e.Name).ToList();
+			}
+		}
+
+		[OperationContract]
 		public void DeleteProducerSynonym(uint producerSynonymId)
 		{
 			using (var session = _factory.OpenSession())
@@ -172,15 +192,6 @@ where c.SynonymFirmCrCode = :producerSynonymId")
 				_mailer.SynonymWasDeleted(synonym);
 				transaction.Commit();
 			}
-		}
-
-		[OperationContract]
-		public IList<SynonymReportItem> GetSynonymReport(DateTime begin, DateTime end)
-		{
-			if (begin.Date == end.Date)
-				begin = begin.AddDays(-1);
-			using(var session = _factory.OpenSession())
-				return SynonymReportItem.Load(session, begin, end);
 		}
 	}
 }
