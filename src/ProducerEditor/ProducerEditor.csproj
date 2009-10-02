@@ -59,6 +59,10 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\lib\NHibernate.ByteCode.Castle.dll</HintPath>
     </Reference>
+    <Reference Include="NHibernate.Linq, Version=1.0.0.0, Culture=neutral, PublicKeyToken=444cf6a87fdab271, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\lib\NHibernate.Linq.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.configuration" />
     <Reference Include="System.Core">
@@ -83,18 +87,19 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Infrastructure\MvcHelper.cs" />
     <Compile Include="Infrastructure\UserDataSettingProvider.cs" />
     <Compile Include="MainController.cs" />
     <Compile Include="Initializer.cs" />
     <Compile Include="Models\Service.cs" />
     <Compile Include="Settings.cs" />
-    <Compile Include="Views\Helpers.cs">
+    <Compile Include="Infrastructure\Helpers.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Views\JoinView.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Views\MainView.cs">
+    <Compile Include="Views\Main.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Models\Models.cs" />
@@ -114,6 +119,9 @@
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Views\RenameView.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Views\ShowSuspiciousSynonyms.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Views\SynonymReport.cs">

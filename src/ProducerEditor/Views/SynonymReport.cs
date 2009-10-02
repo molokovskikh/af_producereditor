@@ -9,16 +9,19 @@ using Subway.Dom.Styles;
 using Subway.Helpers;
 using Subway.VirtualTable;
 using Subway.VirtualTable.Behaviors;
+using Subway.VirtualTable.Behaviors.Selection;
 using Subway.VirtualTable.Behaviors.Specialized;
 
 namespace ProducerEditor.Views
 {
-	public class SynonymReport : Form
+	public class SynonymReport : View
 	{
+		private VirtualTable report;
+
 		public SynonymReport(MainController controller, IList<SynonymReportItem> items, DateTime begin, DateTime end)
 		{
 			Text = "Отчет о сопоставлениях";
-			var report = new VirtualTable(new TemplateManager<List<SynonymReportItem>, SynonymReportItem>(
+			report = new VirtualTable(new TemplateManager<List<SynonymReportItem>, SynonymReportItem>(
 				() => { 
 					var row = new Row();
 
@@ -50,15 +53,25 @@ namespace ProducerEditor.Views
 
 					return row;
 				},
-				i => Row.Cells(i.User, i.Price, i.Region, i.Synonym, i.Producer, i.Products)
+				i => {
+					var row = Row.Cells(i.User, i.Price, i.Region, i.Synonym, i.Producer, i.Products);
+					if (i.IsSuspicious == 1)
+						row.AddClass("Suspicious");
+					return row;
+				}
 			));
 			report.CellSpacing = 1;
 			report.RegisterBehavior(new ToolTipBehavior(),
-			                        new ColumnResizeBehavior(),
-			                        new SortInList());
+				new ColumnResizeBehavior(),
+				new SortInList(),
+				new RowSelectionBehavior());
 			report.TemplateManager.Source = items.ToList();
 			report.Behavior<ColumnResizeBehavior>().ColumnResized += column => WidthHolder.Update(report, column, WidthHolder.ReportWidths);
 			report.TemplateManager.ResetColumns();
+			report.Host
+				.InputMap()
+				.KeyDown(Keys.Space, Suspicios)
+				.KeyDown(Keys.Delete, Delete);
 
 			Controls.Add(report.Host);
 
@@ -77,7 +90,6 @@ namespace ProducerEditor.Views
 				Width = 130,
 			};
 
-
 			toolBar
 				.Label("C")
 				.Host(beginPeriodCalendar)
@@ -89,11 +101,59 @@ namespace ProducerEditor.Views
 						reportItems = s.GetSynonymReport(beginPeriodCalendar.Value, endPeriodCalendar.Value);
 					});
 					report.TemplateManager.Source = reportItems.ToList();
-				});
+				})
+				.Separator()
+				.Button("Suspicious", "Подозрительный (Пробел)", Suspicios)
+				.Button("Удалить (Delete)", Delete);
 
 			MinimumSize = new Size(640, 480);
 			KeyPreview = true;
 			this.InputMap().KeyDown(Keys.Escape, Close);
+			report.Behavior<IRowSelectionBehavior>().SelectedRowChanged += (oldIndex, newIndex) => {
+				var item = report.Translate<SynonymReportItem>(report.ViewPort.GetRow(newIndex));
+				if (item.IsSuspicious == 0)
+					toolBar.Items["Suspicious"].Text = "Подозрительный (Пробел)";
+				else
+					toolBar.Items["Suspicious"].Text = "Не подозрительный (Пробел)";
+			};
+		}
+
+		private void Delete()
+		{
+			Controller(s => {
+				var item = CurrentItem();
+				if (item == null)
+					return;
+				s.DeleteProducerSynonym(item.Id);
+				((IList<SynonymReportItem>)report.TemplateManager.Source).Remove(item);
+				report.RebuildViewPort();
+			})();
+		}
+
+		private void Suspicios()
+		{
+			Controller(s => {
+				var item = CurrentItem();
+				if (item == null)
+					return;
+
+				if (item.IsSuspicious == 1)
+				{
+					s.DeleteSuspicious(item.Id);
+					item.IsSuspicious = 0;
+				}
+				else
+				{
+					s.Suspicious(item.Id);
+					item.IsSuspicious = 1;
+				}
+				report.RebuildViewPort();
+			})();
+		}
+
+		private SynonymReportItem CurrentItem()
+		{
+			return report.Selected<SynonymReportItem>();
 		}
 	}
 }

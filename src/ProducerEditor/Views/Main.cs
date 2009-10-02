@@ -2,7 +2,10 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
+using System.Linq.Expressions;
+using System.ServiceModel;
 using System.Windows.Forms;
+using ProducerEditor.Infrastructure;
 using ProducerEditor.Models;
 using Subway.Dom;
 using Subway.Dom.Base;
@@ -24,6 +27,7 @@ namespace ProducerEditor.Views
 		public static List<int> ReportWidths = Enumerable.Repeat(100, 6).ToList();
 		public static List<int> ProductsAndProducersWidths = Enumerable.Repeat(100, 5).ToList();
 		public static List<int> OffersBySynonymView = Enumerable.Repeat(100, 2).ToList();
+		public static List<int> SyspiciosSynonyms = Enumerable.Repeat(100, 6).ToList();
 
 		public static void Update(VirtualTable table, Column column, List<int> widths)
 		{
@@ -42,7 +46,39 @@ namespace ProducerEditor.Views
 		}
 	}
 
-	public class MainView : Form
+	public class View : Form
+	{
+		protected Action Controller<T>(Expression<Func<ProducerService, T>> func)
+		{
+			return () => WithService(s => {
+				var viewName = MvcHelper.GetViewName(func);
+				var viewType = MvcHelper.GetViewType(viewName);
+				var result = func.Compile()(s);
+				MvcHelper.ShowDialog(viewType, result);
+			});
+		}
+
+		protected Action Controller(Action<ProducerService> action)
+		{
+			return () => WithService(action);
+		}
+
+		private void WithService(Action<ProducerService> action)
+		{
+			var binding = new BasicHttpBinding
+			{
+				MaxBufferSize = int.MaxValue,
+				MaxReceivedMessageSize = int.MaxValue,
+				SendTimeout = TimeSpan.FromMinutes(10),
+				ReaderQuotas = {MaxArrayLength = int.MaxValue},
+			};
+			var endpoint = new EndpointAddress(Settings.Default.EndpointAddress + "ProducerService.svc");
+			var factory = new ChannelFactory<ProducerService>(binding, endpoint);
+			action(factory.CreateChannel());
+		}
+	}
+
+	public class Main : View
 	{
 		private readonly MainController controller = new MainController();
 		private readonly VirtualTable producerTable;
@@ -52,10 +88,15 @@ namespace ProducerEditor.Views
 		private uint BookmarkProducerId = Settings.Default.BookmarkProducerId;
 		private VirtualTable equivalentTable;
 
-		public MainView()
+		public Main()
 		{
 			Text = "Редактор каталога производителей";
 			MinimumSize = new Size(640, 480);
+			KeyPreview = true;
+
+			this.InputMap()
+				.KeyDown(Keys.F9, () => controller.ShowSynonymReport())
+				.KeyDown(Keys.F10, Controller(s => s.ShowSuspiciousSynonyms()));
 
 			toolStrip = new ToolStrip()
 				.Edit("SearchText")
@@ -66,7 +107,9 @@ namespace ProducerEditor.Views
 				.Button("Удалить (Delete)", Delete)
 				.Separator()
 				.Button("Продукты (Enter)", ShowProducers)
-				.Button("Отчет о сопоставлениях (F9)", () => controller.ShowSynonymReport());
+				.Separator()
+				.Button("Отчет о сопоставлениях (F9)", () => controller.ShowSynonymReport())
+				.Button("Подозрительные сопоставления (F10)", Controller(c => c.ShowSuspiciousSynonyms()));
 
 			var bookmarksToolStrip = new ToolStrip()
 				.Button("К закаладке", () => MoveToBookmark())
@@ -114,8 +157,6 @@ namespace ProducerEditor.Views
 					ShowRenameView();
 				else if (args.KeyCode == Keys.F3)
 					ShowJoinView();
-				else if (args.KeyCode == Keys.F9)
-					controller.ShowSynonymReport();
 			};
 			producerTable.Host.KeyPress += (sender, args) => {
 				if (Char.IsLetterOrDigit(args.KeyChar))

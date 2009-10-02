@@ -42,6 +42,11 @@ namespace ProducerEditor
 
 			StylesHolder
 				.Instance
+				.RegisterClass("Suspicious")
+				.Set(StyleElementType.CustomBackgroundDraw, Predefine.MixWith(Color.FromArgb(153, 231, 216, 201)));
+
+			StylesHolder
+				.Instance
 				.RegisterClass("BookmarkGlyph")
 				.Set(StyleElementType.Width, 15)
 				.Set(StyleElementType.Height, 15)

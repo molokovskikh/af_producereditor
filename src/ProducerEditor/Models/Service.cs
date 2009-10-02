@@ -18,6 +18,8 @@ namespace ProducerEditor.Models
 	public class SynonymReportItem
 	{
 		[DataMember]
+		public uint Id { get; set; }
+		[DataMember]
 		public string User { get; set; }
 		[DataMember]
 		public string Price { get; set; }
@@ -29,6 +31,8 @@ namespace ProducerEditor.Models
 		public string Producer { get; set; }
 		[DataMember]
 		public string Products { get; set; }
+		[DataMember]
+		public int IsSuspicious { get; set; }
 	}
 
 	[ServiceContract]
@@ -42,6 +46,15 @@ namespace ProducerEditor.Models
 
 		[OperationContract]
 		IList<string> GetEquivalents(uint producerId);
+
+		[OperationContract]
+		IList<SynonymReportItem> ShowSuspiciousSynonyms();
+
+		[OperationContract]
+		void Suspicious(uint producerSynonymId);
+
+		[OperationContract]
+		void DeleteSuspicious(uint producerSynonymId);
 
 		[OperationContract]
 		void DeleteProducerSynonym(uint producerSynonymId);
