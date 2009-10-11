@@ -5,6 +5,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.ServiceModel;
 using System.Windows.Forms;
+using log4net;
 using ProducerEditor.Infrastructure;
 using ProducerEditor.Models;
 using Subway.Dom;
@@ -43,6 +44,9 @@ namespace ProducerEditor.Views
 
 	public class View : Form
 	{
+		private ILog _log = LogManager.GetLogger(typeof (Form));
+		private static ChannelFactory<ProducerService> factory = new ChannelFactory<ProducerService>(Settings.Binding, Settings.Endpoint);
+
 		protected virtual Action Controller<T>(Expression<Func<ProducerService, T>> func)
 		{
 			return () => WithService(s => {
@@ -65,16 +69,22 @@ namespace ProducerEditor.Views
 
 		protected void WithService(Action<ProducerService> action)
 		{
-			var binding = new BasicHttpBinding
+			ICommunicationObject communicationObject = null;
+			try
 			{
-				MaxBufferSize = int.MaxValue,
-				MaxReceivedMessageSize = int.MaxValue,
-				SendTimeout = TimeSpan.FromMinutes(10),
-				ReaderQuotas = {MaxArrayLength = int.MaxValue},
-			};
-			var endpoint = new EndpointAddress(Settings.Default.EndpointAddress + "ProducerService.svc");
-			var factory = new ChannelFactory<ProducerService>(binding, endpoint);
-			action(factory.CreateChannel());
+				var chanel = factory.CreateChannel();
+				communicationObject = chanel as ICommunicationObject;
+				action(chanel);
+				communicationObject.Close();
+			}
+			catch (Exception e)
+			{
+				if (communicationObject != null 
+					&& communicationObject.State != CommunicationState.Closed)
+					communicationObject.Abort();
+
+				_log.Error("Ошибка при обращении к серверу", e);
+			}
 		}
 	}
 

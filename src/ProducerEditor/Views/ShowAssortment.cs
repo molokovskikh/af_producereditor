@@ -31,7 +31,7 @@ namespace ProducerEditor.Views
 				.Edit("SearchText")
 				.Button("Поиск", Search)
 				.Separator()
-				.Button("Удалить", Delete);
+				.Button("Удалить (Delete)", Delete);
 
 			bookmarksToolStrip = new ToolStrip()
 				.Button("К закаладке", MoveToBookmark)

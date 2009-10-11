@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.ServiceModel;
 using System.Windows.Forms;
 using NHibernate.Transform;
 using ProducerEditor.Models;
@@ -31,8 +30,7 @@ order by p.Name")
 
 		public IList<SynonymDto> Synonyms(Producer producer)
 		{
-			return With.Session(session => session.CreateSQLQuery(
-							@"
+			return With.Session(session => session.CreateSQLQuery(@"
 select sfc.Synonym as Name,
 sfc.SynonymFirmCrCode as Id,
 cd.ShortName as Supplier,
@@ -155,15 +153,6 @@ order by cd.FirmCode", filter))
 			}).ToList();
 		}
 
-		public void ShowSynonymReport()
-		{
-			IList<SynonymReportItem> items = null;
-			WithService(s => {
-				items = s.ShowSynonymReport(DateTime.Today.AddDays(-1), DateTime.Today);
-			});
-			ShowDialog<ShowSynonymReport>(this, items, DateTime.Today.AddDays(-1), DateTime.Today);
-		}
-
 		public void ShowProductsAndProducers(Producer producer)
 		{
 			if (producer == null)
@@ -176,20 +165,6 @@ order by cd.FirmCode", filter))
 		{
 			var form = (Form) Activator.CreateInstance(typeof (T), args);
 			form.ShowDialog();
-		}
-
-		public void WithService(Action<ProducerService> action)
-		{
-			var binding = new BasicHttpBinding
-			{
-				MaxBufferSize = int.MaxValue,
-				MaxReceivedMessageSize = int.MaxValue,
-				SendTimeout = TimeSpan.FromMinutes(10),
-				ReaderQuotas = {MaxArrayLength = int.MaxValue},
-			};
-			var endpoint = new EndpointAddress(Settings.Default.EndpointAddress + "ProducerService.svc");
-			var factory = new ChannelFactory<ProducerService>(binding, endpoint);
-			action(factory.CreateChannel());
 		}
 	}
 }
