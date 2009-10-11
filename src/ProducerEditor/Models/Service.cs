@@ -82,6 +82,8 @@ namespace ProducerEditor.Models
 		[OperationContract]
 		Pager<IList<Assortment>> SearchAssortment(string text);
 
+		[OperationContract]
+		void DeleteAssortment(uint assortmentId);
 
 		[OperationContract]
 		void Suspicious(uint producerSynonymId);

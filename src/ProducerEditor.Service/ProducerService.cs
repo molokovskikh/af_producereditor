@@ -139,6 +139,18 @@ where c.SynonymFirmCrCode = :producerSynonymId")
 		}
 
 		[OperationContract]
+		public void DeleteAssortment(uint assortmentId)
+		{
+			using (var session = _factory.OpenSession())
+			using (var transaction = session.BeginTransaction())
+			{
+				var assortment = session.Get<ProductAssortment>(assortmentId);
+				session.Delete(assortment);
+				transaction.Commit();
+			}
+		}
+
+		[OperationContract]
 		public Pager<IList<Assortment>> ShowAssortment(uint assortimentId)
 		{
 			using (var session = _factory.OpenSession())

@@ -29,7 +29,9 @@ namespace ProducerEditor.Views
 
 			tools = new ToolStrip()
 				.Edit("SearchText")
-				.Button("Поиск", Search);
+				.Button("Поиск", Search)
+				.Separator()
+				.Button("Удалить", Delete);
 
 			bookmarksToolStrip = new ToolStrip()
 				.Button("К закаладке", MoveToBookmark)
@@ -53,6 +55,9 @@ namespace ProducerEditor.Views
 				new ColumnResizeBehavior());
 			assortimentTable.Behavior<ColumnResizeBehavior>().ColumnResized += column => WidthHolder.Update(assortimentTable, column, WidthHolder.AssortimentWidths);
 			assortimentTable.TemplateManager.ResetColumns();
+			assortimentTable.Host
+				.InputMap()
+				.KeyDown(Keys.Delete, Delete);
 
 			UpdateAssortment(assortiments);
 
@@ -74,6 +79,17 @@ namespace ProducerEditor.Views
 			Controls.Add(assortimentTable.Host);
 			Controls.Add(bookmarksToolStrip);
 			Controls.Add(tools);
+		}
+
+		private void Delete()
+		{
+			var assortment = assortimentTable.Selected<Assortment>();
+			if (assortment == null)
+				return;
+
+			Action(s => s.DeleteAssortment(assortment.Id));
+			((List<Assortment>)assortimentTable.TemplateManager.Source).Remove(assortment);
+			assortimentTable.RebuildViewPort();
 		}
 
 		private void Search()

@@ -111,6 +111,14 @@ namespace ProducerEditor.Service
 		public virtual IList<ProducerEquivalent> Equivalents { get; set; }
 	}
 
+	[Class(Table = "Catalogs.Assortment")]
+	public class ProductAssortment
+	{
+		[Id(0, Name = "Id")]
+		[Generator(1, Class = "native")]
+		public virtual uint Id { get; set; }
+	}
+
 	[Class(Table = "Catalogs.ProducerEquivalents")]
 	public class ProducerEquivalent
 	{
