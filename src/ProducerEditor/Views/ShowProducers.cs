@@ -158,7 +158,7 @@ namespace ProducerEditor.Views
 			Controls.Add(producersToSynonymsSplit);
 			Controls.Add(bookmarksToolStrip);
 			Controls.Add(toolStrip);
-			producersToSynonymsSplit.SplitterDistance = (int) (0.6 * Size.Height);
+			producersToSynonymsSplit.SplitterDistance = (int) (0.5 * Height);
 			producersToEquivalentsSplit.SplitterDistance = (int) (0.7 * producersToEquivalentsSplit.Width);
 			Shown += (sender, args) => producerTable.Host.Focus();
 			synonymsTable.TemplateManager.ResetColumns();
