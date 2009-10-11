@@ -64,7 +64,7 @@ namespace ProducerEditor.Models
 		IList<Offer> ShowOffersBySynonym(uint producerSynonymId);
 
 		[OperationContract]
-		IList<SynonymReportItem> GetSynonymReport(DateTime begin, DateTime end);
+		IList<SynonymReportItem> ShowSynonymReport(DateTime begin, DateTime end);
 
 		[OperationContract]
 		IList<string> GetEquivalents(uint producerId);

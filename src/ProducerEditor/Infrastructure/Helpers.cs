@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Configuration;
 using System.Globalization;
+using System.Linq;
 using System.Reflection;
 using System.Windows.Forms;
 using Castle.ActiveRecord;
 using Castle.ActiveRecord.Framework.Scopes;
+using Common.Tools;
 using MySql.Data.MySqlClient;
 using NHibernate;
 
@@ -234,6 +236,27 @@ namespace ProducerEditor.Views
 		{
 			Session(session => SetupParametersForTriggerLogging(parameters, session));
 		}
+	}
 
+	public static class NavigatorExtention
+	{
+		public static ToolStrip ActAsNavigator(this ToolStrip toolStrip)
+		{
+			toolStrip.Items
+				.OfType<ToolStripButton>()
+				.Each(b => b.Click += MaintainNavigation);
+			return toolStrip;
+		}
+
+		private static void MaintainNavigation(object sender, EventArgs e)
+		{
+			var button = (ToolStripButton) sender;
+			if (!button.Checked)
+				button.Checked = true;
+
+			button.Owner.Items.OfType<ToolStripButton>()
+				.Where(b => b != button && b.Checked)
+				.Each(b => b.Checked = false);
+		}
 	}
 }

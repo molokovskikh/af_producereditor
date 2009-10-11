@@ -109,9 +109,6 @@
     <Compile Include="Views\OffersView.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Views\OrdersView.cs">
-      <SubType>Form</SubType>
-    </Compile>
     <Compile Include="Program.cs">
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -124,10 +121,13 @@
     <Compile Include="Views\ShowAssortment.cs">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="Views\ShowProducers.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="Views\ShowSuspiciousSynonyms.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Views\SynonymReport.cs">
+    <Compile Include="Views\ShowSynonymReport.cs">
       <SubType>Form</SubType>
     </Compile>
     <None Include="App.config" />

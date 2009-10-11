@@ -33,7 +33,6 @@ namespace ProducerEditor.Service
 		}
 	}
 
-
 	[ServiceContract]
 	public class ProducerService
 	{
@@ -64,7 +63,7 @@ where c.SynonymFirmCrCode = :producerSynonymId")
 		}
 
 		[OperationContract]
-		public IList<SynonymReportItem> GetSynonymReport(DateTime begin, DateTime end)
+		public IList<SynonymReportItem> ShowSynonymReport(DateTime begin, DateTime end)
 		{
 			if (begin.Date == end.Date)
 				begin = begin.AddDays(-1);

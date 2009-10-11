@@ -14,11 +14,11 @@ using Subway.VirtualTable.Behaviors.Specialized;
 
 namespace ProducerEditor.Views
 {
-	public class SynonymReport : View
+	public class ShowSynonymReport : View
 	{
 		private VirtualTable report;
 
-		public SynonymReport(MainController controller, IList<SynonymReportItem> items, DateTime begin, DateTime end)
+		public ShowSynonymReport(IList<SynonymReportItem> items)
 		{
 			Text = "Отчет о сопоставлениях";
 			report = new VirtualTable(new TemplateManager<List<SynonymReportItem>, SynonymReportItem>(
@@ -78,6 +78,9 @@ namespace ProducerEditor.Views
 			var toolBar = new ToolStrip();
 			Controls.Add(toolBar);
 
+			var begin = DateTime.Now.AddDays(-1).Date;
+			var end = DateTime.Now.Date;
+
 			var beginPeriodCalendar = new DateTimePicker
 			{
 				Value = begin,
@@ -95,12 +98,10 @@ namespace ProducerEditor.Views
 				.Host(beginPeriodCalendar)
 				.Label("По")
 				.Host(endPeriodCalendar)
-				.Button("Обновить", () => {
-					IList<SynonymReportItem> reportItems = null;
-					controller.WithService(s => {
-						reportItems = s.GetSynonymReport(beginPeriodCalendar.Value, endPeriodCalendar.Value);
+				.Button("Показать", () => {
+					Action(s => {
+						report.TemplateManager.Source = s.ShowSynonymReport(beginPeriodCalendar.Value, endPeriodCalendar.Value).ToList();
 					});
-					report.TemplateManager.Source = reportItems.ToList();
 				})
 				.Separator()
 				.Button("Suspicious", "Подозрительный (Пробел)", Suspicios)
