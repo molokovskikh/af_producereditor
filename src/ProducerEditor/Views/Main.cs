@@ -96,7 +96,7 @@ namespace ProducerEditor.Views
 		public Main()
 		{
 			Text = "Редактор каталога производителей";
-			MinimumSize = new Size(640, 480);
+			MinimumSize = new Size(800, 600);
 			KeyPreview = true;
 
 			this.InputMap()
@@ -105,7 +105,7 @@ namespace ProducerEditor.Views
 
 			var navigation = new ToolStrip()
 				.Button("Производители", () => { })
-				.Button("Ассортимент", () => { })
+				.Button("Ассортимент", Controller(s => s.ShowAssortment(Settings.Default.BookmarkAssortimentId)))
 				.Button("Отчет о сопоставлениях (F9)", () => controller.ShowSynonymReport())
 				.Button("Подозрительные сопоставления (F10)", Controller(c => c.ShowSuspiciousSynonyms()));
 
@@ -239,6 +239,7 @@ namespace ProducerEditor.Views
 			Controls.Add(producersToSynonymsSplit);
 			Controls.Add(bookmarksToolStrip);
 			Controls.Add(toolStrip);
+			Controls.Add(navigation);
 			producersToSynonymsSplit.SplitterDistance = (int) (0.6 * Size.Height);
 			producersToEquivalentsSplit.SplitterDistance = (int) (0.7 * producersToEquivalentsSplit.Width);
 			Shown += (sender, args) => producerTable.Host.Focus();
