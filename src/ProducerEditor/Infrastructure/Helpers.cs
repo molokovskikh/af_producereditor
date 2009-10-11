@@ -143,6 +143,16 @@ namespace ProducerEditor.Views
 			return toolStrip;
 		}
 
+		public static ToolStrip Label(this ToolStrip toolStrip, string name, string label)
+		{
+			toolStrip.Items.Add(new ToolStripLabel
+			{
+				Text = label,
+				Name = name,
+			});
+			return toolStrip;
+		}
+
 		public static ToolStrip Separator(this ToolStrip toolStrip)
 		{
 			toolStrip.Items.Add(new ToolStripSeparator());

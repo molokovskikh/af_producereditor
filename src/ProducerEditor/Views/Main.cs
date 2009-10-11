@@ -28,13 +28,13 @@ namespace ProducerEditor.Views
 		public static List<int> ProductsAndProducersWidths = Enumerable.Repeat(100, 5).ToList();
 		public static List<int> OffersBySynonymView = Enumerable.Repeat(100, 2).ToList();
 		public static List<int> SyspiciosSynonyms = Enumerable.Repeat(100, 6).ToList();
+		public static List<int> AssortimentWidths = Enumerable.Repeat(100, 2).ToList();
 
 		public static void Update(VirtualTable table, Column column, List<int> widths)
 		{
 			var element = column;
 			do
 			{
-				
 				widths[table.Columns.IndexOf(element)] = element.ReadonlyStyle.Get(StyleElementType.Width);
 				var node = table.Columns.Find(element).Next;
 				if (node != null)
@@ -61,6 +61,11 @@ namespace ProducerEditor.Views
 		protected Action Controller(Action<ProducerService> action)
 		{
 			return () => WithService(action);
+		}
+
+		protected void Action(Action<ProducerService> action)
+		{
+			WithService(action);
 		}
 
 		private void WithService(Action<ProducerService> action)
@@ -109,11 +114,13 @@ namespace ProducerEditor.Views
 				.Button("Продукты (Enter)", ShowProducers)
 				.Separator()
 				.Button("Отчет о сопоставлениях (F9)", () => controller.ShowSynonymReport())
-				.Button("Подозрительные сопоставления (F10)", Controller(c => c.ShowSuspiciousSynonyms()));
+				.Button("Подозрительные сопоставления (F10)", Controller(c => c.ShowSuspiciousSynonyms()))
+				.Separator()
+				.Button("Ассортимент", Controller(s => s.ShowAssortment(Settings.Default.BookmarkAssortimentId)));
 
 			var bookmarksToolStrip = new ToolStrip()
-				.Button("К закаладке", () => MoveToBookmark())
-				.Button("Установить закладку", () => SetBookmark());
+				.Button("К закаладке", MoveToBookmark)
+				.Button("Установить закладку", SetBookmark);
 
 			var searchText = ((ToolStripTextBox) toolStrip.Items["SearchText"]);
 			searchText.KeyDown += (sender, args) => {
@@ -198,9 +205,10 @@ namespace ProducerEditor.Views
 				}));
 			synonymsTable.CellSpacing = 1;
 			synonymsTable.RegisterBehavior(new ToolTipBehavior(),
-										   new SortInList(),
-										   new ColumnResizeBehavior(),
-										   new RowSelectionBehavior());
+				new SortInList(),
+				new ColumnResizeBehavior(),
+				new RowSelectionBehavior());
+
 			synonymsTable.Host
 				.InputMap()
 				.KeyDown(Keys.Enter, ShowProducers)
@@ -230,8 +238,8 @@ namespace ProducerEditor.Views
 			Controls.Add(producersToSynonymsSplit);
 			Controls.Add(bookmarksToolStrip);
 			Controls.Add(toolStrip);
-			producersToSynonymsSplit.SplitterDistance = (int) (Size.Height*0.6);
-			producersToEquivalentsSplit.SplitterDistance = (int) (0.7*producersToEquivalentsSplit.Width);
+			producersToSynonymsSplit.SplitterDistance = (int) (0.6 * Size.Height);
+			producersToEquivalentsSplit.SplitterDistance = (int) (0.7 * producersToEquivalentsSplit.Width);
 			Shown += (sender, args) => producerTable.Host.Focus();
 			synonymsTable.TemplateManager.ResetColumns();
 			UpdateProducers();
@@ -261,9 +269,12 @@ namespace ProducerEditor.Views
 				if (MessageBox.Show(String.Format("Удалить производителя \"{0}\"", producer.Name), "Удаление производителя", MessageBoxButtons.OKCancel, MessageBoxIcon.Question) == DialogResult.Cancel)
 					return;
 
-				controller.Delete(producer);
-				((IList<Producer>)producerTable.TemplateManager.Source).Remove(producer);
-				controller.Producers.Remove(producer);
+				Action(s => {
+					s.DeleteProducer(producer.Id);
+					((IList<Producer>)producerTable.TemplateManager.Source).Remove(producer);
+					controller.Producers.Remove(producer);
+				});
+
 				SelectedProducerChanged(producer);
 				producerTable.RebuildViewPort();
 			}
@@ -272,8 +283,9 @@ namespace ProducerEditor.Views
 				var synonym = synonymsTable.Selected<SynonymDto>();
 				if (synonym == null)
 					return;
-				var producer = producerTable.Selected<Producer>();
-				controller.DeleteSynonym(synonym, producer);
+
+				Action(s => s.DeleteProducerSynonym(synonym.Id));
+
 				((IList<SynonymDto>)synonymsTable.TemplateManager.Source).Remove(synonym);
 				synonymsTable.RebuildViewPort();
 			}
@@ -344,7 +356,9 @@ namespace ProducerEditor.Views
 		private void SelectedProducerChanged(Producer producer)
 		{
 			synonymsTable.TemplateManager.Source = controller.Synonyms(producer);
-			equivalentTable.TemplateManager.Source = controller.GetEquivalents(producer.Id).ToList();
+			Action(s => {
+				equivalentTable.TemplateManager.Source = s.GetEquivalents(producer.Id).ToList();
+			});
 		}
 
 		public void UpdateProducers()

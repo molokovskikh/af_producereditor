@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.ServiceModel;
 using NHibernate;
 using NHibernate.Linq;
@@ -13,6 +14,25 @@ namespace ProducerEditor.Service
 		public string Product { get; set; }
 		public string Producer { get; set; }
 	}
+
+	[DataContract]
+	public class Pager<T>
+	{
+		[DataMember]
+		public uint Page { get; set; }
+		[DataMember]
+		public uint TotalPages { get; set; }
+		[DataMember]
+		public T Content { get; set; }
+
+		public Pager(uint page, uint totalPages, T content)
+		{
+			Page = page;
+			TotalPages = totalPages;
+			Content = content;
+		}
+	}
+
 
 	[ServiceContract]
 	public class ProducerService
@@ -104,6 +124,53 @@ where c.SynonymFirmCrCode = :producerSynonymId")
 				var suspicious = session.Linq<SuspiciousProducerSynonym>().Where(s => s.Synonym.Id == producerSynonymId).First();
 				session.Delete(suspicious);
 				transaction.Commit();
+			}
+		}
+
+		[OperationContract]
+		public void DeleteProducer(uint producerId)
+		{
+			using (var session = _factory.OpenSession())
+			using (var transaction = session.BeginTransaction())
+			{
+				var producer = session.Get<Producer>(producerId);
+				session.Delete(producer);
+				transaction.Commit();
+			}
+		}
+
+		[OperationContract]
+		public Pager<IList<Assortment>> ShowAssortment(uint assortimentId)
+		{
+			using (var session = _factory.OpenSession())
+			{
+				var total = Assortment.TotalPages(session);
+				uint page = 1;
+				if (assortimentId != 0)
+					page = Assortment.GetPage(session, assortimentId);
+				var assortments = Assortment.Load(session, page);
+				return new Pager<IList<Assortment>>(page, total, assortments);
+			}
+		}
+
+		[OperationContract]
+		public Pager<IList<Assortment>> GetAssortmentPage(uint page)
+		{
+			using (var session = _factory.OpenSession())
+			{
+				var total = Assortment.TotalPages(session);
+				return new Pager<IList<Assortment>>(page, total, Assortment.Load(session, page));
+			}
+		}
+
+		[OperationContract]
+		public Pager<IList<Assortment>> SearchAssortment(string text)
+		{
+			using (var session = _factory.OpenSession())
+			{
+				var total = Assortment.TotalPages(session);
+				var page = Assortment.Find(session, text);
+				return new Pager<IList<Assortment>>(page, total, Assortment.Load(session, page));
 			}
 		}
 	}

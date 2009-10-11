@@ -80,6 +80,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ActiveRecordFixture.cs" />
+    <Compile Include="AssortmentFixture.cs" />
     <Compile Include="InitializationFixture.cs" />
     <Compile Include="ModelsFixture.cs" />
     <Compile Include="MvcHelperFixture.cs" />

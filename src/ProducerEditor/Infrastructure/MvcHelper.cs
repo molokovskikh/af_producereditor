@@ -13,7 +13,7 @@ namespace ProducerEditor.Infrastructure
 		{
 			var viewType = Assembly.GetExecutingAssembly()
 				.GetTypes()
-				.Where(t => t.Namespace.EndsWith(".Views") && t.Name.Equals(name, StringComparison.InvariantCultureIgnoreCase))
+				.Where(t => !String.IsNullOrEmpty(t.Namespace) && t.Namespace.EndsWith(".Views") && t.Name.Equals(name, StringComparison.InvariantCultureIgnoreCase))
 				.FirstOrDefault();
 			if (viewType == null)
 				throw new Exception(String.Format("Не могу найти вид {0}", name));

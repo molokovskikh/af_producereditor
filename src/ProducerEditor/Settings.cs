@@ -20,6 +20,13 @@ namespace ProducerEditor
 			set { this["BookmarkProducerId"] = value; }
 		}
 
+		[UserScopedSetting, DefaultSettingValue("0")]
+		public uint BookmarkAssortimentId
+		{
+			get { return (uint)this["BookmarkAssortimentId"]; }
+			set { this["BookmarkAssortimentId"] = value; }
+		}
+
 		[ApplicationScopedSetting]
 		public string EndpointAddress
 		{

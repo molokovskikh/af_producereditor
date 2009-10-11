@@ -29,15 +29,6 @@ order by p.Name")
 			return Producers;
 		}
 
-		public IList<string> GetEquivalents(uint producerId)
-		{
-			IList<string> equivalents = null;
-			WithService(s => {
-				equivalents = s.GetEquivalents(producerId);
-			});
-			return equivalents;
-		}
-
 		public IList<SynonymDto> Synonyms(Producer producer)
 		{
 			return With.Session(session => session.CreateSQLQuery(@"
@@ -187,19 +178,6 @@ order by cd.FirmCode",
 					query.SetParameter("ProducerId", producerId);
 				return query.List<OfferView>();
 			}).ToList();
-		}
-
-		public void Delete(object instance)
-		{
-			With.Master(() => {
-				if (instance is Producer)
-					Producer.Find(((Producer) instance).Id).Delete();
-			});
-		}
-
-		public void DeleteSynonym(SynonymDto view, Producer producer)
-		{
-			WithService(s => s.DeleteProducerSynonym(view.Id));
 		}
 
 		public void ShowSynonymReport()

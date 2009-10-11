@@ -19,13 +19,14 @@ namespace ProducerEditor.Service
 		{
 			var smtp = new SmtpClient(_smtpServer);
 			smtp.Send("tech@analit.net",
-			          _synonymDeleteNotificationMail,
-			          "Удален синоним производителя",
-			          String.Format(@"Синоним: {0}
+				_synonymDeleteNotificationMail,
+				"Удален синоним производителя",
+				String.Format(@"Синоним: {0}
 Производитель: {1}
 Поставщик: {2}
 Регион: {3}
-", synonym.Name, synonym.Producer.Name, synonym.Price.Supplier.ShortName, synonym.Price.Supplier.Region.Name));
+", synonym.Name,
+					synonym.Producer.Name, synonym.Price.Supplier.ShortName, synonym.Price.Supplier.Region.Name));
 		}
 	}
 }

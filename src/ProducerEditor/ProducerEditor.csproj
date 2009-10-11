@@ -121,6 +121,9 @@
     <Compile Include="Views\RenameView.cs">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="Views\ShowAssortment.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="Views\ShowSuspiciousSynonyms.cs">
       <SubType>Form</SubType>
     </Compile>
