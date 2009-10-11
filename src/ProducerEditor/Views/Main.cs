@@ -275,7 +275,7 @@ namespace ProducerEditor.Views
 					controller.Producers.Remove(producer);
 				});
 
-				SelectedProducerChanged(producer);
+				SelectedProducerChanged(producerTable.Selected<Producer>());
 				producerTable.RebuildViewPort();
 			}
 			else if (synonymsTable.Host.Focused)
