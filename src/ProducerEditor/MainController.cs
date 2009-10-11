@@ -15,7 +15,7 @@ namespace ProducerEditor
 
 		public IList<Producer> GetAllProducers()
 		{
-			Producers = With.Session(s =>s.CreateSQLQuery(@"
+			Producers = With.Session(s => s.CreateSQLQuery(@"
 select p.Id,
 p.Name,
 p.Checked,
@@ -31,7 +31,8 @@ order by p.Name")
 
 		public IList<SynonymDto> Synonyms(Producer producer)
 		{
-			return With.Session(session => session.CreateSQLQuery(@"
+			return With.Session(session => session.CreateSQLQuery(
+							@"
 select sfc.Synonym as Name,
 sfc.SynonymFirmCrCode as Id,
 cd.ShortName as Supplier,
@@ -45,9 +46,9 @@ from farm.SynonymFirmCr sfc
   left join farm.Core0 c on c.SynonymFirmCrCode = sfc.SynonymFirmCrCode
 where sfc.CodeFirmCr = :ProducerId and cd.BillingCode <> 921
 group by sfc.SynonymFirmCrCode")
-				           	.SetParameter("ProducerId", producer.Id)
-				           	.SetResultTransformer(Transformers.AliasToBean(typeof (SynonymDto)))
-				           	.List<SynonymDto>().ToList());
+							.SetParameter("ProducerId", producer.Id)
+							.SetResultTransformer(Transformers.AliasToBean(typeof (SynonymDto)))
+							.List<SynonymDto>().ToList());
 		}
 
 		public void OfferForProducerId(uint producerId)
@@ -123,29 +124,6 @@ where CodeFirmCr = :SourceId
 			return Producers.Where(p => p.Name.Contains((text ?? "").ToUpper())).ToList();
 		}
 
-		public List<OrderView> FindOrders(Producer producer)
-		{
-			return With.Session(s => s.CreateSQLQuery(@"
-select oh.WriteTime,
-drugstore.ShortName as Drugstore,
-supplier.ShortName as Supplier,
-sa.Synonym as ProductSynonym,
-sfc.Synonym as ProducerSynonym
-from orders.orderslist ol
-  join orders.ordershead oh on ol.OrderId = oh.RowId
-    join farm.SynonymArchive sa on sa.SynonymCode = ol.SynonymCode
-    join farm.SynonymFirmCr sfc on sfc.SynonymFirmCrCode = ol.SynonymFirmCrCode
-  join usersettings.clientsdata drugstore on drugstore.FirmCode = oh.ClientCode
-  join usersettings.pricesdata pd on pd.PriceCode = oh.PriceCode
-    join usersettings.clientsdata supplier on supplier.FirmCode = pd.FirmCode
-where ol.CodeFirmCr = :ProducerId and oh.Deleted = 0
-order by oh.WriteTime desc
-limit 20")
-					.SetParameter("ProducerId", producer.Id)
-					.SetResultTransformer(Transformers.AliasToBean(typeof (OrderView)))
-					.List<OrderView>()).ToList();
-		}
-
 		public List<OfferView> FindOffers(uint catalogId, uint producerId)
 		{
 			return With.Session(s => {
@@ -154,9 +132,7 @@ limit 20")
 					filter = "p.CatalogId = :CatalogId";
 				else
 					filter = "c.CodeFirmCr = :ProducerId";
-				var query = s.CreateSQLQuery(
-					String.Format(
-						@"
+				var query = s.CreateSQLQuery(String.Format(@"
 select cd.ShortName as Supplier, 
 cd.FirmSegment as Segment,
 s.Synonym as ProductSynonym, 
@@ -169,8 +145,7 @@ from farm.core0 c
     join usersettings.ClientsData cd on cd.FirmCode = pd.FirmCode
 where {0}
 group by c.Id
-order by cd.FirmCode",
-						filter))
+order by cd.FirmCode", filter))
 					.SetResultTransformer(Transformers.AliasToBean(typeof (OfferView)));
 				if (catalogId != 0)
 					query.SetParameter("CatalogId", catalogId);
@@ -184,9 +159,9 @@ order by cd.FirmCode",
 		{
 			IList<SynonymReportItem> items = null;
 			WithService(s => {
-				items = s.GetSynonymReport(DateTime.Today.AddDays(-1), DateTime.Today);
+				items = s.ShowSynonymReport(DateTime.Today.AddDays(-1), DateTime.Today);
 			});
-			ShowDialog<SynonymReport>(this, items, DateTime.Today.AddDays(-1), DateTime.Today);
+			ShowDialog<ShowSynonymReport>(this, items, DateTime.Today.AddDays(-1), DateTime.Today);
 		}
 
 		public void ShowProductsAndProducers(Producer producer)
