@@ -65,7 +65,11 @@ namespace ProducerEditor.Views
 			assortimentTable.Host.InputMap()
 				.KeyDown(Keys.Enter, Search)
 				.KeyDown(Keys.Escape, () => searchText.Text = "")
-				.KeyPress((o, a) => searchText.Text += a.KeyChar);
+				.KeyPress((o, a) => {
+					if (!Char.IsLetterOrDigit(a.KeyChar))
+						return;
+					searchText.Text += a.KeyChar;
+				});
 
 			Controls.Add(assortimentTable.Host);
 			Controls.Add(bookmarksToolStrip);
