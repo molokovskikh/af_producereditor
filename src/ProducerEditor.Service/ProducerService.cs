@@ -47,7 +47,7 @@ namespace ProducerEditor.Service
 		}
 
 		[OperationContract]
-		public IList<Offer> GetOffers(uint producerSynonymId)
+		public IList<Offer> ShowOffersBySynonym(uint producerSynonymId)
 		{
 			using (var session = _factory.OpenSession())
 			{

@@ -61,7 +61,7 @@ namespace ProducerEditor.Models
 	public interface ProducerService
 	{
 		[OperationContract]
-		IList<Offer> GetOffers(uint producerSynonymId);
+		IList<Offer> ShowOffersBySynonym(uint producerSynonymId);
 
 		[OperationContract]
 		IList<SynonymReportItem> GetSynonymReport(DateTime begin, DateTime end);

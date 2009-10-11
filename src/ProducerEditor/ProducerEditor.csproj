@@ -103,7 +103,7 @@
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Models\Models.cs" />
-    <Compile Include="Views\OffersBySynonym.cs">
+    <Compile Include="Views\ShowOffersBySynonym.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Views\OffersView.cs">

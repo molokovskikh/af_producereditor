@@ -103,6 +103,12 @@ namespace ProducerEditor.Views
 				.KeyDown(Keys.F9, () => controller.ShowSynonymReport())
 				.KeyDown(Keys.F10, Controller(s => s.ShowSuspiciousSynonyms()));
 
+			var navigation = new ToolStrip()
+				.Button("Производители", () => { })
+				.Button("Ассортимент", () => { })
+				.Button("Отчет о сопоставлениях (F9)", () => controller.ShowSynonymReport())
+				.Button("Подозрительные сопоставления (F10)", Controller(c => c.ShowSuspiciousSynonyms()));
+
 			toolStrip = new ToolStrip()
 				.Edit("SearchText")
 				.Button("Поиск", SearchProducer)
@@ -111,12 +117,7 @@ namespace ProducerEditor.Views
 				.Button("Объединить (F3)", ShowJoinView)
 				.Button("Удалить (Delete)", Delete)
 				.Separator()
-				.Button("Продукты (Enter)", ShowProducers)
-				.Separator()
-				.Button("Отчет о сопоставлениях (F9)", () => controller.ShowSynonymReport())
-				.Button("Подозрительные сопоставления (F10)", Controller(c => c.ShowSuspiciousSynonyms()))
-				.Separator()
-				.Button("Ассортимент", Controller(s => s.ShowAssortment(Settings.Default.BookmarkAssortimentId)));
+				.Button("Продукты (Enter)", ShowProducers);
 
 			var bookmarksToolStrip = new ToolStrip()
 				.Button("К закаладке", MoveToBookmark)
@@ -302,7 +303,10 @@ namespace ProducerEditor.Views
 			else
 			{
 				var synonym = synonymsTable.Selected<ProducerSynonym>();
-				controller.ShowOffersBySynonym(synonym);
+				if (synonym == null)
+					return;
+
+				Controller(s => s.ShowOffersBySynonym(synonym.Id))();
 			}
 		}
 

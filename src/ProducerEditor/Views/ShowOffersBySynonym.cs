@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
 using System.Windows.Forms;
 using ProducerEditor.Models;
 using Subway.Dom;
@@ -11,9 +12,9 @@ using Subway.VirtualTable.Behaviors.Specialized;
 
 namespace ProducerEditor.Views
 {
-	public class OffersBySynonym : Form
+	public class ShowOffersBySynonym : Form
 	{
-		public OffersBySynonym(List<Offer> offers)
+		public ShowOffersBySynonym(IList<Offer> offers)
 		{
 			MinimumSize = new Size(640, 480);
 			KeyPreview = true;
@@ -37,9 +38,9 @@ namespace ProducerEditor.Views
 
 			offersTable.CellSpacing = 1;
 			offersTable.RegisterBehavior(new ToolTipBehavior(),
-			                             new ColumnResizeBehavior(),
-			                             new SortInList());
-			offersTable.TemplateManager.Source = offers;
+				new ColumnResizeBehavior(),
+				new SortInList());
+			offersTable.TemplateManager.Source = offers.ToList();
 			offersTable.Behavior<ColumnResizeBehavior>().ColumnResized += column => WidthHolder.Update(offersTable, column, WidthHolder.OffersBySynonymView);
 			offersTable.TemplateManager.ResetColumns();
 			Controls.Add(offersTable.Host);

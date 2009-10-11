@@ -189,19 +189,6 @@ order by cd.FirmCode",
 			ShowDialog<SynonymReport>(this, items, DateTime.Today.AddDays(-1), DateTime.Today);
 		}
 
-		public void ShowOffersBySynonym(ProducerSynonym synonym)
-		{
-			if (synonym == null)
-				return;
-
-			List<Offer> offers = null;
-			WithService(s => {
-				offers = s.GetOffers(synonym.Id).ToList();
-			});
-		
-			ShowDialog<OffersBySynonym>(offers);
-		}
-
 		public void ShowProductsAndProducers(Producer producer)
 		{
 			if (producer == null)
