@@ -54,6 +54,7 @@ namespace ProducerEditor.Service
 			Producer = synonym.Producer;
 			Synonym = synonym.Name;
 			BlockedOn = DateTime.Now;
+			Price = synonym.Price;
 		}
 
 		[Id(0, Name = "Id")]
@@ -68,6 +69,9 @@ namespace ProducerEditor.Service
 
 		[Property]
 		public virtual DateTime BlockedOn { get; set; }
+
+		[ManyToOne(ClassType = typeof (Price), Column = "PriceCode")]
+		public virtual Price Price { get; set; }
 	}
 
 	[Class(Table = "farm.SynonymFirmCr")]
