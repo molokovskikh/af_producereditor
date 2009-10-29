@@ -41,16 +41,6 @@ namespace ProducerEditor.Views
 				.Label("PageLabel", "")
 				.Button("Next", "Следующая страница");
 
-			bookmarksToolStrip.ActAsPaginator(assortiments,
-				page => {
-					Pager<Assortment> pager = null;
-					Action(s => {
-						pager = s.GetAssortmentPage(page);
-						UpdateAssortment(pager);
-					});
-					return pager;
-				});
-
 			assortimentTable = new VirtualTable(new TemplateManager<List<Assortment>, Assortment>(
 				() => Row.Headers("Продукт", "Производитель"),
 				a => {
@@ -89,6 +79,19 @@ namespace ProducerEditor.Views
 			Controls.Add(assortimentTable.Host);
 			Controls.Add(bookmarksToolStrip);
 			Controls.Add(tools);
+
+			bookmarksToolStrip.ActAsPaginator(assortiments,
+				page => {
+					Pager<Assortment> pager = null;
+					Action(s => {
+						pager = s.GetAssortmentPage(page);
+						UpdateAssortment(pager);
+					});
+					return pager;
+				});
+
+			MoveToBookmark();
+			Shown += (s, a) => assortimentTable.Host.Focus();
 		}
 
 		private void Delete()
@@ -110,6 +113,11 @@ namespace ProducerEditor.Views
 
 			Action(s => {
 				var pager = s.SearchAssortment(searchText);
+				if (pager == null)
+				{
+					MessageBox.Show("По вашему запросу ничего не найдено");
+					return;
+				}
 				UpdateAssortment(pager);
 				bookmarksToolStrip.UpdatePaginator(pager);
 			});

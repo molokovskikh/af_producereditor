@@ -90,7 +90,7 @@ where c.Id = ?id", connection);
 			return Convert.ToUInt32(value) / 100;
 		}
 
-		public static uint Find(ISession session, string text)
+		public static int Find(ISession session, string text)
 		{
 			var assortiment = session.CreateSQLQuery(@"
 select	a.Id,
@@ -104,7 +104,9 @@ limit 1")
 				.SetParameter("text", text + "%")
 				.SetResultTransformer(Transformers.AliasToBean<AssortmentDto>())
 				.UniqueResult<AssortmentDto>();
-			return GetPage(session, assortiment.Id);
+			if (assortiment == null)
+				return -1;
+			return (int) GetPage(session, assortiment.Id);
 		}
 
 		public virtual bool Exist(ISession session)

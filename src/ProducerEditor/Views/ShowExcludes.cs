@@ -29,8 +29,8 @@ namespace ProducerEditor.Views
 				.Button("Next", "Следующая страница");
 
 			excludeTable = new VirtualTable(new TemplateManager<List<Exclude>, Exclude>(
-				() => Row.Headers("Продукт", "Производитель", "Синоним", "Поставщик", "Регион", "Прайс"),
-				e => Row.Cells(e.Catalog, e.Producer, e.ProducerSynonym, e.Supplier, e.Region, e.Price)));
+				() => Row.Headers("Продукт", "Производитель", "Синоним", "Поставщик", "Регион"),
+				e => Row.Cells(e.Catalog, e.Producer, e.ProducerSynonym, e.Supplier, e.Region)));
 
 			excludeTable.CellSpacing = 1;
 			excludeTable.RegisterBehavior(new RowSelectionBehavior(),
@@ -51,6 +51,8 @@ namespace ProducerEditor.Views
 				excludeTable.TemplateManager.Source = result.Content.ToList();
 				return result;
 			});
+
+			Shown += (s, a) => excludeTable.Host.Focus();
 		}
 
 		public void AddToAssortiment()

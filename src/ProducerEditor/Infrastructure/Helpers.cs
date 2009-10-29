@@ -10,6 +10,8 @@ using Common.Tools;
 using MySql.Data.MySqlClient;
 using NHibernate;
 using ProducerEditor.Models;
+using Subway.Helpers;
+using Subway.VirtualTable;
 
 namespace ProducerEditor.Views
 {
@@ -271,42 +273,48 @@ namespace ProducerEditor.Views
 		}
 	}
 
-	public static class PagonatorExtention
+	public static class PaginatorExtention
 	{
 		public static ToolStrip ActAsPaginator<T>(this ToolStrip toolStrip, Pager<T> pager, Func<uint, Pager<T>> page)
 		{
-			toolStrip.Items["Prev"].Click += (s, a) => {
-				var pageIndex = Convert.ToInt32(((ToolStripButton) s).Tag);
+			Action<ToolStripButton> move = b => {
+				var pageIndex = Convert.ToInt32(b.Tag);
 				if (pageIndex < 0)
 					return;
 
 				pager = page((uint) pageIndex);
 				toolStrip.UpdatePaginator(pager);
 			};
-			toolStrip.Items["Next"].Click += (s, a) => {
-				var pageIndex = Convert.ToInt32(((ToolStripButton) s).Tag);
-				if (pageIndex < 0)
-					return;
+			toolStrip.Items["Prev"].Click += (s, a) => move((ToolStripButton)s);
+			toolStrip.Items["Next"].Click += (s, a) => move((ToolStripButton)s);
 
-				pager = page((uint) pageIndex);
-				toolStrip.UpdatePaginator(pager);
-			};
 
 			toolStrip.UpdatePaginator(pager);
+
+			var form = toolStrip.Parent;
+			if (form == null)
+				throw new Exception("У paginatora нет родителя, всего скорее ты нужно добавлять поведение позже");
+			var table = form.Controls.OfType<TableHost>().First();
+
+			table.InputMap()
+				.KeyDown(Keys.Left, () => move((ToolStripButton) toolStrip.Items["Prev"]))
+				.KeyDown(Keys.Right, () => move((ToolStripButton) toolStrip.Items["Next"]));
 			return toolStrip;
 		}
 
 		public static void UpdatePaginator<T>(this ToolStrip toolStrip, Pager<T> pager)
 		{
 			toolStrip.Items["PageLabel"].Text = String.Format("Страница {0} из {1}", pager.Page, pager.TotalPages);
+
 			var next = toolStrip.Items["Next"];
-			next.Enabled = pager.Page < pager.TotalPages - 1;
+			next.Enabled = pager.Page < pager.TotalPages;
 			if (next.Enabled)
 				next.Tag = pager.Page + 1;
 			else
 				next.Tag = -1;
+
 			var prev = toolStrip.Items["Prev"];
-			prev.Enabled = pager.Page > 1;
+			prev.Enabled = pager.Page > 0;
 			if (prev.Enabled)
 				prev.Tag = pager.Page - 1;
 			else

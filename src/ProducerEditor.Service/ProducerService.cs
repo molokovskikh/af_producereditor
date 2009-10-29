@@ -183,7 +183,9 @@ order by Product, Producer")
 			{
 				var total = Assortment.TotalPages(session);
 				var page = Assortment.Find(session, text);
-				return new Pager<AssortmentDto>(page, total, Assortment.Load(session, page));
+				if (page == -1)
+					return null;
+				return new Pager<AssortmentDto>((uint) page, total, Assortment.Load(session, (uint) page));
 			}
 		}
 

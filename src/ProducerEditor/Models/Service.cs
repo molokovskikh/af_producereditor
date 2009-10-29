@@ -15,8 +15,6 @@ namespace ProducerEditor.Models
 		[DataMember]
 		public string Region { get; set; }
 		[DataMember]
-		public string Price { get; set; }
-		[DataMember]
 		public string Catalog { get; set; }
 		[DataMember]
 		public string Producer { get; set; }

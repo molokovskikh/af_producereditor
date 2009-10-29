@@ -77,6 +77,8 @@ namespace ProducerEditor.Views
 			Controls.Add(tools);
 			KeyPreview = true;
 			this.InputMap().KeyDown(Keys.Escape, Close);
+
+			Shown += (s, a) => report.Host.Focus();
 		}
 
 		private void NotSuspicious()

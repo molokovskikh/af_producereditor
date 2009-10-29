@@ -25,7 +25,7 @@ namespace ProducerEditor.Views
 		public static List<int> OffersBySynonymView = Enumerable.Repeat(100, 2).ToList();
 		public static List<int> SyspiciosSynonyms = Enumerable.Repeat(100, 6).ToList();
 		public static List<int> AssortimentWidths = Enumerable.Repeat(100, 2).ToList();
-		public static List<int> ExcludeWidths = Enumerable.Repeat(100, 6).ToList();
+		public static List<int> ExcludeWidths = Enumerable.Repeat(100, 5).ToList();
 
 		public static void Update(VirtualTable table, Column column, List<int> widths)
 		{
@@ -108,15 +108,18 @@ namespace ProducerEditor.Views
 			KeyPreview = true;
 
 			this.InputMap()
-				.KeyDown(Keys.F9, Controller(s => s.ShowSynonymReport(DateTime.Now.AddDays(-1).Date, DateTime.Now.Date)))
-				.KeyDown(Keys.F10, Controller(s => s.ShowSuspiciousSynonyms()));
+				.KeyDown(Keys.F5, () => OpenView(typeof(ShowProducers)))
+				.KeyDown(Keys.F6, Controller(s => s.ShowAssortment(Settings.Default.BookmarkAssortimentId)))
+				.KeyDown(Keys.F7, Controller(s => s.ShowExcludes(0)))
+				.KeyDown(Keys.F8, Controller(s => s.ShowSynonymReport(DateTime.Now.AddDays(-1).Date, DateTime.Now.Date)))
+				.KeyDown(Keys.F9, Controller(s => s.ShowSuspiciousSynonyms()));
 
 			var navigation = new ToolStrip()
-				.Button("Producers", "Производители", () => OpenView(typeof(ShowProducers)))
-				.Button("Ассортимент", Controller(s => s.ShowAssortment(Settings.Default.BookmarkAssortimentId)))
-				.Button("Отчет о сопоставлениях (F9)", Controller(s => s.ShowSynonymReport(DateTime.Now.AddDays(-1).Date, DateTime.Now.Date)))
-				.Button("Подозрительные сопоставления (F10)", Controller(c => c.ShowSuspiciousSynonyms()))
-				.Button("Исключения", Controller(s => s.ShowExcludes(0)))
+				.Button("Producers", "Производители  (F5)", () => OpenView(typeof(ShowProducers)))
+				.Button("Ассортимент (F6)", Controller(s => s.ShowAssortment(Settings.Default.BookmarkAssortimentId)))
+				.Button("Исключения (F7)", Controller(s => s.ShowExcludes(0)))
+				.Button("Отчет о сопоставлениях (F8)", Controller(s => s.ShowSynonymReport(DateTime.Now.AddDays(-1).Date, DateTime.Now.Date)))
+				.Button("Подозрительные сопоставления (F9)", Controller(c => c.ShowSuspiciousSynonyms()))
 				.ActAsNavigator();
 
 			Controls.Add(navigation);
