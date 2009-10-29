@@ -1,6 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
+using MySql.Data.MySqlClient;
 using NHibernate;
 using NHibernate.Linq;
 using NHibernate.Mapping.Attributes;
@@ -67,16 +69,25 @@ limit :begin, 100")
 
 		public static uint GetPage(ISession session, uint assortimentId)
 		{
-			var count = session
-				.CreateSQLQuery(@"
-select count(*) 
+			//nhibernate воспринимает : как начало параметра по этому, ado
+			var connection = (MySqlConnection) session.Connection;
+			var command =new MySqlCommand(@"
+set @i = 0;
+
+select assortmentIndex
+from (
+select @i := @i + 1 as assortmentIndex, a.id
 from catalogs.Assortment a
-	join Catalogs.Catalog as c on c.Id = a.CatalogId
-where a.id < :id
-order by c.name")
-				.SetParameter("id", assortimentId)
-				.UniqueResult<long>();
-			return (uint) (count/100);
+join Catalogs.Catalog as c on c.Id = a.CatalogId
+order by c.name
+) as c
+where c.Id = ?id", connection);
+			command.Parameters.AddWithValue("?id", assortimentId);
+			var value = command.ExecuteScalar();
+
+			if (value == DBNull.Value)
+				return 0;
+			return Convert.ToUInt32(value) / 100;
 		}
 
 		public static uint Find(ISession session, string text)
