@@ -1,9 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Runtime.Serialization;
-using NHibernate;
 using NHibernate.Mapping.Attributes;
-using NHibernate.Transform;
 
 namespace ProducerEditor.Service
 {
@@ -156,75 +153,11 @@ namespace ProducerEditor.Service
 		public virtual ProducerSynonym Synonym { get; set; }
 	}
 
-	[DataContract(Namespace = "http://schemas.datacontract.org/2004/07/ProducerEditor.Service")]
-	public class Assortment
+	[Class(Table = "Catalogs.Catalog")]
+	public class CatalogProduct
 	{
-		[DataMember]
-		public uint Id { get; set; }
-		[DataMember]
-		public string Product { get; set; }
-		[DataMember]
-		public string Producer { get; set; }
-
-		public static IList<Assortment> Load(ISession session, uint page)
-		{
-			return session.CreateSQLQuery(@"
-select	a.Id, 
-		pr.Name as Producer,
-		cast(concat(cn.Name, ' ', cf.Form, ' ', ifnull(group_concat(distinct pv.Value ORDER BY prop.PropertyName, pv.Value SEPARATOR ', '), '')) as CHAR) as Product
-from catalogs.Assortment a
-	join catalogs.Producers pr on pr.Id = a.ProducerId
-	join catalogs.Products p on p.Id = a.ProductId
-		join Catalogs.Catalog as c on p.catalogid = c.id
-			join Catalogs.CatalogNames cn on cn.id = c.nameid
-			join Catalogs.CatalogForms cf on cf.id = c.formid
-	left join Catalogs.ProductProperties pp on pp.ProductId = p.Id
-		left join Catalogs.PropertyValues pv on pv.id = pp.PropertyValueId
-		left join Catalogs.Properties prop on prop.Id = pv.PropertyId
-group by a.Id
-limit :begin, 100")
-					.SetParameter("begin", page * 100)
-					.SetResultTransformer(Transformers.AliasToBean<Assortment>())
-					.List<Assortment>();
-		}
-
-		public static uint TotalPages(ISession session)
-		{
-			return (uint) session.CreateSQLQuery(@"select count(*) from catalogs.Assortment").UniqueResult<long>() / 100;
-		}
-
-		public static uint GetPage(ISession session, uint assortimentId)
-		{
-			var count = session
-				.CreateSQLQuery(@"select count(*) from catalogs.Assortment where id < :id")
-				.SetParameter("id", assortimentId)
-				.UniqueResult<long>();
-			return (uint) (count/100);
-		}
-
-		public static uint Find(ISession session, string text)
-		{
-			var assortiment = session.CreateSQLQuery(@"
-select	a.Id, 
-		pr.Name as Producer,
-		cast(concat(cn.Name, ' ', cf.Form, ' ', ifnull(group_concat(distinct pv.Value ORDER BY prop.PropertyName, pv.Value SEPARATOR ', '), '')) as CHAR) as Product
-from catalogs.Assortment a
-	join catalogs.Producers pr on pr.Id = a.ProducerId
-	join catalogs.Products p on p.Id = a.ProductId
-		join Catalogs.Catalog as c on p.catalogid = c.id
-			join Catalogs.CatalogNames cn on cn.id = c.nameid
-			join Catalogs.CatalogForms cf on cf.id = c.formid
-	left join Catalogs.ProductProperties pp on pp.ProductId = p.Id
-		left join Catalogs.PropertyValues pv on pv.id = pp.PropertyValueId
-		left join Catalogs.Properties prop on prop.Id = pv.PropertyId
-group by a.Id
-having Product like :text
-limit 1")
-					.SetParameter("text", text + "%")
-					.SetResultTransformer(Transformers.AliasToBean<Assortment>())
-					.UniqueResult<Assortment>();
-			return GetPage(session, assortiment.Id);
-		}
+		[Id(0, Name = "Id")]
+		[Generator(1, Class = "native")]
+		public virtual uint Id { get; set; }
 	}
-
 }

@@ -20,9 +20,9 @@ namespace ProducerEditor.Views
 		private ToolStrip bookmarksToolStrip;
 		private VirtualTable assortimentTable;
 
-		private Pager<IList<Assortment>> assortiments;
+		private Pager<Assortment> assortiments;
 		
-		public ShowAssortment(Pager<IList<Assortment>> assortiments)
+		public ShowAssortment(Pager<Assortment> assortiments)
 		{
 			Text = "Ассортимент";
 			MinimumSize = new Size(640, 480);
@@ -37,9 +37,19 @@ namespace ProducerEditor.Views
 				.Button("К закаладке", MoveToBookmark)
 				.Button("Установить закладку", SetBookmark)
 				.Separator()
-				.Button("Prev", "Предыдущая страница", Prev)
+				.Button("Prev", "Предыдущая страница")
 				.Label("PageLabel", "")
-				.Button("Next", "Следующая страница", Next);
+				.Button("Next", "Следующая страница");
+
+			bookmarksToolStrip.ActAsPaginator(assortiments,
+				page => {
+					Pager<Assortment> pager = null;
+					Action(s => {
+						pager = s.GetAssortmentPage(page);
+						UpdateAssortment(pager);
+					});
+					return pager;
+				});
 
 			assortimentTable = new VirtualTable(new TemplateManager<List<Assortment>, Assortment>(
 				() => Row.Headers("Продукт", "Производитель"),
@@ -99,27 +109,9 @@ namespace ProducerEditor.Views
 				return;
 
 			Action(s => {
-				UpdateAssortment(s.SearchAssortment(searchText));
-			});
-		}
-
-		private void Prev()
-		{
-			if (assortiments.Page == 1)
-				return;
-
-			Action(s => {
-				UpdateAssortment(s.GetAssortmentPage(assortiments.Page - 1));
-			});
-		}
-
-		private void Next()
-		{
-			if (assortiments.Page == assortiments.TotalPages - 1)
-				return;
-
-			Action(s => {
-				UpdateAssortment(s.GetAssortmentPage(assortiments.Page + 1));
+				var pager = s.SearchAssortment(searchText);
+				UpdateAssortment(pager);
+				bookmarksToolStrip.UpdatePaginator(pager);
 			});
 		}
 
@@ -141,13 +133,10 @@ namespace ProducerEditor.Views
 			});
 		}
 
-		private void UpdateAssortment(Pager<IList<Assortment>> pager)
+		private void UpdateAssortment(Pager<Assortment> pager)
 		{
 			assortiments = pager;
 			assortimentTable.TemplateManager.Source = assortiments.Content.ToList();
-			bookmarksToolStrip.Items["PageLabel"].Text = String.Format("Страница {0} из {1}", assortiments.Page, assortiments.TotalPages);
-			bookmarksToolStrip.Items["Next"].Enabled = assortiments.Page < assortiments.TotalPages - 1;
-			bookmarksToolStrip.Items["Prev"].Enabled = assortiments.Page > 1;
 		}
 	}
 }

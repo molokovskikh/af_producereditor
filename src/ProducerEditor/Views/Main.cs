@@ -25,6 +25,7 @@ namespace ProducerEditor.Views
 		public static List<int> OffersBySynonymView = Enumerable.Repeat(100, 2).ToList();
 		public static List<int> SyspiciosSynonyms = Enumerable.Repeat(100, 6).ToList();
 		public static List<int> AssortimentWidths = Enumerable.Repeat(100, 2).ToList();
+		public static List<int> ExcludeWidths = Enumerable.Repeat(100, 6).ToList();
 
 		public static void Update(VirtualTable table, Column column, List<int> widths)
 		{
@@ -62,6 +63,15 @@ namespace ProducerEditor.Views
 			return () => WithService(action);
 		}
 
+		protected T Request<T>(Func<ProducerService, T> func)
+		{
+			var result = default(T);
+			WithService(s => {
+				result = func(s);
+			});
+			return result;
+		}
+
 		protected void Action(Action<ProducerService> action)
 		{
 			WithService(action);
@@ -84,6 +94,7 @@ namespace ProducerEditor.Views
 					communicationObject.Abort();
 
 				_log.Error("Ошибка при обращении к серверу", e);
+				throw;
 			}
 		}
 	}
@@ -105,6 +116,7 @@ namespace ProducerEditor.Views
 				.Button("Ассортимент", Controller(s => s.ShowAssortment(Settings.Default.BookmarkAssortimentId)))
 				.Button("Отчет о сопоставлениях (F9)", Controller(s => s.ShowSynonymReport(DateTime.Now.AddDays(-1).Date, DateTime.Now.Date)))
 				.Button("Подозрительные сопоставления (F10)", Controller(c => c.ShowSuspiciousSynonyms()))
+				.Button("Исключения", Controller(s => s.ShowExcludes(0)))
 				.ActAsNavigator();
 
 			Controls.Add(navigation);

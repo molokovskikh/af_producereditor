@@ -21,7 +21,7 @@ namespace ProducerEditor.Service
 		{
 			return session.CreateSQLQuery(@"
 SELECT sfc.SynonymFirmCrCode as Id,
-		sfcl.OperatorName as User,
+       sfcl.OperatorName as User,
        cd.ShortName as Price,
        r.Region,
        sfc.Synonym,
@@ -42,7 +42,8 @@ FROM logs.SynonymFirmCrLogs sfcl
         join farm.Regions r on r.RegionCode = cd.RegionCode
     join Catalogs.Producers pr on pr.Id = sfc.CodeFirmCr
 where sfcl.Operation = 0 and sfcl.LogTime between :begin and :end
-group by sfc.SynonymFirmCrCode;")
+group by sfc.SynonymFirmCrCode
+order by sfc.Synonym;")
 					.SetParameter("begin", begin)
 					.SetParameter("end", end)
 					.SetResultTransformer(Transformers.AliasToBean(typeof (SynonymReportItem)))
@@ -53,7 +54,7 @@ group by sfc.SynonymFirmCrCode;")
 		{
 			return session.CreateSQLQuery(@"
 SELECT sfc.SynonymFirmCrCode as Id,
-		sfcl.OperatorName as User,
+       sfcl.OperatorName as User,
        cd.ShortName as Price,
        r.Region,
        sfc.Synonym,
@@ -74,7 +75,8 @@ FROM logs.SynonymFirmCrLogs sfcl
         join farm.Regions r on r.RegionCode = cd.RegionCode
     join Catalogs.Producers pr on pr.Id = sfc.CodeFirmCr
 where sfcl.Operation = 0
-group by sfc.SynonymFirmCrCode;")
+group by sfc.SynonymFirmCrCode
+order by sfc.Synonym;")
 					.SetResultTransformer(Transformers.AliasToBean(typeof (SynonymReportItem)))
 					.List<SynonymReportItem>().ToList();
 		}

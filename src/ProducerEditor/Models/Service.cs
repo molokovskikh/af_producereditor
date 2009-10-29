@@ -6,6 +6,25 @@ using System.ServiceModel;
 namespace ProducerEditor.Models
 {
 	[DataContract(Namespace = "http://schemas.datacontract.org/2004/07/ProducerEditor.Service")]
+	public class Exclude
+	{
+		[DataMember]
+		public uint Id { get; set; }
+		[DataMember]
+		public string Supplier { get; set; }
+		[DataMember]
+		public string Region { get; set; }
+		[DataMember]
+		public string Price { get; set; }
+		[DataMember]
+		public string Catalog { get; set; }
+		[DataMember]
+		public string Producer { get; set; }
+		[DataMember]
+		public string ProducerSynonym { get; set; }
+	}
+
+	[DataContract(Namespace = "http://schemas.datacontract.org/2004/07/ProducerEditor.Service")]
 	public class Offer
 	{
 		[DataMember]
@@ -54,7 +73,7 @@ namespace ProducerEditor.Models
 		[DataMember]
 		public uint TotalPages { get; set; }
 		[DataMember]
-		public T Content { get; set; }
+		public IList<T> Content { get; set; }
 	}
 
 	[ServiceContract]
@@ -72,15 +91,14 @@ namespace ProducerEditor.Models
 		[OperationContract]
 		IList<SynonymReportItem> ShowSuspiciousSynonyms();
 
+		[OperationContract]
+		Pager<Assortment> ShowAssortment(uint assortimentId);
 
 		[OperationContract]
-		Pager<IList<Assortment>> ShowAssortment(uint assortimentId);
+		Pager<Assortment> GetAssortmentPage(uint page);
 
 		[OperationContract]
-		Pager<IList<Assortment>> GetAssortmentPage(uint page);
-
-		[OperationContract]
-		Pager<IList<Assortment>> SearchAssortment(string text);
+		Pager<Assortment> SearchAssortment(string text);
 
 		[OperationContract]
 		void DeleteAssortment(uint assortmentId);
@@ -96,5 +114,14 @@ namespace ProducerEditor.Models
 
 		[OperationContract]
 		void DeleteProducer(uint producerId);
+
+		[OperationContract]
+		Pager<Exclude> ShowExcludes(uint page);
+
+		[OperationContract]
+		void DoNotShow(uint excludeId);
+
+		[OperationContract]
+		void AddToAssotrment(uint excludeId);
 	}
 }

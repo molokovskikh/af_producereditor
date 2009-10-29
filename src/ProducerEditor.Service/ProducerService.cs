@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.ServiceModel;
+using Common.Tools;
 using NHibernate;
 using NHibernate.Linq;
 using NHibernate.Transform;
@@ -23,9 +24,9 @@ namespace ProducerEditor.Service
 		[DataMember]
 		public uint TotalPages { get; set; }
 		[DataMember]
-		public T Content { get; set; }
+		public IList<T> Content { get; set; }
 
-		public Pager(uint page, uint totalPages, T content)
+		public Pager(uint page, uint totalPages, IList<T> content)
 		{
 			Page = page;
 			TotalPages = totalPages;
@@ -55,7 +56,8 @@ select s.Synonym as Product, sfc.Synonym as Producer
 from farm.core0 c
 	join farm.Synonym s on s.SynonymCode = c.SynonymCode
 	join farm.SynonymFirmCr sfc on sfc.SynonymFirmCrCode = c.SynonymFirmCrCode
-where c.SynonymFirmCrCode = :producerSynonymId")
+where c.SynonymFirmCrCode = :producerSynonymId
+order by Product, Producer")
 					.SetResultTransformer(Transformers.AliasToBean<Offer>())
 					.SetParameter("producerSynonymId", producerSynonymId)
 					.List<Offer>();
@@ -151,7 +153,7 @@ where c.SynonymFirmCrCode = :producerSynonymId")
 		}
 
 		[OperationContract]
-		public Pager<IList<Assortment>> ShowAssortment(uint assortimentId)
+		public Pager<AssortmentDto> ShowAssortment(uint assortimentId)
 		{
 			using (var session = _factory.OpenSession())
 			{
@@ -160,28 +162,77 @@ where c.SynonymFirmCrCode = :producerSynonymId")
 				if (assortimentId != 0)
 					page = Assortment.GetPage(session, assortimentId);
 				var assortments = Assortment.Load(session, page);
-				return new Pager<IList<Assortment>>(page, total, assortments);
+				return new Pager<AssortmentDto>(page, total, assortments);
 			}
 		}
 
 		[OperationContract]
-		public Pager<IList<Assortment>> GetAssortmentPage(uint page)
+		public Pager<AssortmentDto> GetAssortmentPage(uint page)
 		{
 			using (var session = _factory.OpenSession())
 			{
 				var total = Assortment.TotalPages(session);
-				return new Pager<IList<Assortment>>(page, total, Assortment.Load(session, page));
+				return new Pager<AssortmentDto>(page, total, Assortment.Load(session, page));
 			}
 		}
 
 		[OperationContract]
-		public Pager<IList<Assortment>> SearchAssortment(string text)
+		public Pager<AssortmentDto> SearchAssortment(string text)
 		{
 			using (var session = _factory.OpenSession())
 			{
 				var total = Assortment.TotalPages(session);
 				var page = Assortment.Find(session, text);
-				return new Pager<IList<Assortment>>(page, total, Assortment.Load(session, page));
+				return new Pager<AssortmentDto>(page, total, Assortment.Load(session, page));
+			}
+		}
+
+		[OperationContract]
+		public Pager<ExcludeDto> ShowExcludes(uint page)
+		{
+			using(var session = _factory.OpenSession())
+			{
+				var total = Exclude.TotalPages(session);
+				return new Pager<ExcludeDto>(page, total, Exclude.Load(page, session));
+			}
+		}
+
+		[OperationContract]
+		public void DoNotShow(uint excludeId)
+		{
+			using (var session = _factory.OpenSession())
+			using (var transaction = session.BeginTransaction())
+			{
+				var exclude = session.Load<Exclude>(excludeId);
+				exclude.DoNotShow = false;
+				session.Update(exclude);
+				transaction.Commit();
+			}
+		}
+
+		[OperationContract]
+		public void AddToAssotrment(uint excludeId)
+		{
+			using (var session = _factory.OpenSession())
+			using (var transaction = session.BeginTransaction())
+			{
+				var exclude = session.Load<Exclude>(excludeId);
+				var assortment = new Assortment(exclude.CatalogProduct, exclude.ProducerSynonym.Producer);
+
+				if (assortment.Exist(session))
+					throw new Exception("Запись в ассортименте уже существует");
+
+				var excludes = (
+					from ex in session.Linq<Exclude>()
+					where ex.CatalogProduct == assortment.CatalogProduct
+						&& ex.ProducerSynonym.Producer == assortment.Producer
+					select ex).ToList();
+
+				excludes.Each(session.Delete);
+
+				session.Delete(exclude);
+				session.Save(assortment);
+				transaction.Commit();
 			}
 		}
 	}
