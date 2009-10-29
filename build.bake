@@ -20,12 +20,12 @@ def GeneratePublishPage(file as string, version as string, projectName as string
 	template = System.IO.File.ReadAllText("publish.htm.template")
 	result = template.Replace("{version}", version)
 	result = result.Replace("{name}", projectName)
-	System.IO.File.AppendAllText(file, result)	
+	System.IO.File.AppendAllText(file, result)
 
 project = "ProducerEditor"
 projectFile = Path.GetFullPath("src/${project}/${project}.csproj")
 output = Path.GetFullPath("./build/${project}");
-version = "0.4.1"
+version = "0.5.1"
 deploymentUrl = "http://publish.analit.net/ProducerEditor/"
 deployDir = "\\\\acdcserv\\publish\\ProducerEditor"
 	
@@ -53,7 +53,32 @@ Task @clean:
 			FrameworkVersion : "3.5").Execute()
 	Clean(output)
 
-Task @buildDeployPackage, [@build, @buildInstaller, @cleanDeployPackage]:
+Task @buildService, [@cleanService]:
+	MsBuild(Path.GetFullPath("src/ProducerEditor.Service/ProducerEditor.Service.csproj"),
+			Parameters : { "OutDir" : Path.GetFullPath("build/ProducerEditor.Service/bin") + "\\" ,
+						   "Configuration" : "release"},
+			FrameworkVersion : "3.5").Execute()
+	Cp("src/ProducerEditor.Service/Web.release.config", "build/ProducerEditor.Service/Web.config", true)
+	Rm(FileSet("*.*", 
+			   BaseDirectory : "build/ProducerEditor.Service/bin",
+			   Excludes : ["*.dll", "*.exe", "*.config"]))
+	Cp(FileSet(["**/*.svc", "**/*.asax"], BaseDirectory : "src/ProducerEditor.Service/"), "build/ProducerEditor.Service/")
+
+Task @cleanService:
+	MsBuild("src/ProducerEditor.Service/ProducerEditor.Service.csproj",
+			Target : @clean,
+			Parameters : { @Configuration : @release },
+			FrameworkVersion : "3.5").Execute()
+	Clean("build/ProducerEditor.Service")
+
+Task @deployService, [@buildService, @cleanServiceDeployDir]: 
+	Cp(FileSet("**/*.*", BaseDirectory : "build/ProducerEditor.Service/"), "\\\\acdcserv\\ios\\ProducerEditor.Service\\")
+
+Task @cleanServiceDeployDir:
+	Clean("\\\\acdcserv\\ios\\ProducerEditor.Service\\")
+
+
+Task @buildDeployPackage, [@build, @buildService, @buildInstaller, @cleanDeployPackage]:
 	output = Path.GetFullPath("build/${project}.Setup/")
 	source = Path.GetFullPath("build/${project}/")
 	certPath = Path.GetFullPath("lib/CodeSign.pfx")
@@ -138,7 +163,7 @@ Task @cleanDeployPackage:
 	Clean("build/${project}.Setup")
 	Clean("build/bootstrapper")
 	
-Task @deploy, [@buildDeployPackage, @cleanDeployDir]:
+Task @deploy, [@buildDeployPackage, @cleanDeployDir, @deployService]:
 	Cp(FileSet("**/*.*", BaseDirectory : "build/${project}.Setup"), deployDir)
 	
 Task @cleanDeployDir:
