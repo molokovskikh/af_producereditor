@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization;
 using Common.Tools;
 using NHibernate.Mapping.Attributes;
 
@@ -89,6 +90,29 @@ namespace ProducerEditor.Service
 		[ManyToOne(ClassType = typeof (Price), Column = "PriceCode")]
 		public virtual Price Price { get; set; }
 	}
+
+	[DataContract(Name = "ProducerSynonym", Namespace = "http://schemas.datacontract.org/2004/07/ProducerEditor.Service")]
+	public class ProducerSynonymDto
+	{
+		[DataMember]
+		public virtual uint Id { get; set; }
+		[DataMember]
+		public virtual string Name { get; set; }
+		[DataMember]
+		public string Supplier { get; set; }
+		[DataMember]
+		public string Region { get; set; }
+		[DataMember]
+		public byte Segment { get; set; }
+		[DataMember]
+		public Int64 HaveOffers { get; set; }
+
+		public string SegmentAsString()
+		{
+			return Segment == 0 ? "Опт" : "Розница";
+		}
+	}
+
 
 	[Class(Table = "Catalogs.Producers")]
 	public class Producer

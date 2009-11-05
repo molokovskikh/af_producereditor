@@ -93,7 +93,7 @@ namespace ProducerEditor.Views
 			var behavior = producerTable.Behavior<IRowSelectionBehavior>();
 			behavior.SelectedRowChanged += (oldRow, newRow) => SelectedProducerChanged(behavior.Selected<Producer>());
 
-			synonymsTable = new VirtualTable(new TemplateManager<List<SynonymDto>, SynonymDto>(
+			synonymsTable = new VirtualTable(new TemplateManager<List<ProducerSynonym>, ProducerSynonym>(
 				() =>{
 					var row = Row.Headers();
 					var header = new Header("Синоним").Sortable("Name");
@@ -200,13 +200,13 @@ namespace ProducerEditor.Views
 			}
 			else if (synonymsTable.Host.Focused)
 			{
-				var synonym = synonymsTable.Selected<SynonymDto>();
+				var synonym = synonymsTable.Selected<ProducerSynonym>();
 				if (synonym == null)
 					return;
 
 				Action(s => s.DeleteProducerSynonym(synonym.Id));
 
-				((IList<SynonymDto>)synonymsTable.TemplateManager.Source).Remove(synonym);
+				((IList<ProducerSynonym>)synonymsTable.TemplateManager.Source).Remove(synonym);
 				synonymsTable.RebuildViewPort();
 			}
 		}
@@ -278,8 +278,8 @@ namespace ProducerEditor.Views
 
 		private void SelectedProducerChanged(Producer producer)
 		{
-			synonymsTable.TemplateManager.Source = controller.Synonyms(producer);
 			Action(s => {
+				synonymsTable.TemplateManager.Source = s.GetSynonyms(producer.Id).ToList();
 				equivalentTable.TemplateManager.Source = s.GetEquivalents(producer.Id).ToList();
 			});
 		}

@@ -102,6 +102,31 @@ where CodeFirmCr = :SourceId
 		}
 
 		[OperationContract]
+		public IList<ProducerSynonymDto> GetSynonyms(uint producerId)
+		{
+			using(var session = _factory.OpenSession())
+			{
+				return session.CreateSQLQuery(@"
+select sfc.Synonym as Name,
+sfc.SynonymFirmCrCode as Id,
+cd.ShortName as Supplier,
+cd.FirmSegment as Segment,
+r.Region,
+c.Id is not null as HaveOffers
+from farm.SynonymFirmCr sfc
+  join usersettings.PricesData pd on sfc.PriceCode = pd.PriceCode
+    join usersettings.clientsdata cd on cd.FirmCode = pd.FirmCode
+      join farm.Regions r on cd.RegionCode = r.RegionCode
+  left join farm.Core0 c on c.SynonymFirmCrCode = sfc.SynonymFirmCrCode
+where sfc.CodeFirmCr = :ProducerId and cd.BillingCode <> 921
+group by sfc.SynonymFirmCrCode")
+						.SetParameter("ProducerId", producerId)
+						.SetResultTransformer(Transformers.AliasToBean(typeof (ProducerSynonymDto)))
+						.List<ProducerSynonymDto>().ToList();
+			}
+		}
+
+		[OperationContract]
 		public IList<SynonymReportItem> ShowSynonymReport(DateTime begin, DateTime end)
 		{
 			if (begin.Date == end.Date)

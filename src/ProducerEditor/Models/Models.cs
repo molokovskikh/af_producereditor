@@ -20,42 +20,10 @@ namespace ProducerEditor.Models
 		[Property]
 		public virtual bool Checked { get; set; }
 
-/*		[Property]
-		public virtual byte Hidden { get; set; }*/
-
-		[HasMany(Inverse = true, Lazy = true, Cascade = ManyRelationCascadeEnum.Delete, ColumnKey = "CodeFirmCr")]
-		public virtual IList<ProducerSynonym> Synonyms { get; set; }
-
 		[HasMany(Inverse = true, Lazy = true, Cascade = ManyRelationCascadeEnum.Delete, ColumnKey = "ProducerId")]
 		public virtual IList<ProducerEquivalent> Equivalents { get; set; }
 
 		public virtual long HasOffers { get; set;}
-	}
-
-	[ActiveRecord(Table = "farm.SynonymFirmCr")]
-	public class ProducerSynonym : ActiveRecordLinqBase<ProducerSynonym>
-	{
-		[PrimaryKey(Column = "SynonymFirmCrCode")]
-		public virtual uint Id { get; set; }
-
-		[Property(Column = "Synonym")]
-		public virtual string Name { get; set; }
-
-		[BelongsTo(Column = "CodeFirmCr")]
-		public virtual Producer Producer { get; set; }
-	}
-
-	public class SynonymDto : ProducerSynonym
-	{
-		public string Supplier { get; set; }
-		public string Region { get; set; }
-		public byte Segment { get; set; }
-		public Int64 HaveOffers { get; set; }
-
-		public string SegmentAsString()
-		{
-			return Segment == 0 ? "Опт" : "Розница";
-		}
 	}
 
 	public class ProductAndProducer

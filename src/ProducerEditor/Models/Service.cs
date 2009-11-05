@@ -32,6 +32,29 @@ namespace ProducerEditor.Models
 	}
 
 	[DataContract(Namespace = "http://schemas.datacontract.org/2004/07/ProducerEditor.Service")]
+	public class ProducerSynonym
+	{
+		[DataMember]
+		public virtual uint Id { get; set; }
+		[DataMember]
+		public virtual string Name { get; set; }
+		[DataMember]
+		public string Supplier { get; set; }
+		[DataMember]
+		public string Region { get; set; }
+		[DataMember]
+		public byte Segment { get; set; }
+		[DataMember]
+		public Int64 HaveOffers { get; set; }
+
+		public string SegmentAsString()
+		{
+			return Segment == 0 ? "Опт" : "Розница";
+		}
+	}
+
+
+	[DataContract(Namespace = "http://schemas.datacontract.org/2004/07/ProducerEditor.Service")]
 	public class SynonymReportItem
 	{
 		[DataMember]
@@ -88,6 +111,9 @@ namespace ProducerEditor.Models
 
 		[OperationContract]
 		IList<string> GetEquivalents(uint producerId);
+
+		[OperationContract]
+		IList<ProducerSynonym> GetSynonyms(uint producerId);
 
 		[OperationContract]
 		IList<SynonymReportItem> ShowSuspiciousSynonyms();
