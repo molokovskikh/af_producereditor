@@ -4,3 +4,5 @@ obj
 build/
 src/Subway/
 src/Common.Tools/
+src/Common.Tools/
+src/Common.MySql/

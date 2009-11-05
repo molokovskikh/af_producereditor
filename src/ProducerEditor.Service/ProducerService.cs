@@ -7,6 +7,7 @@ using Common.Tools;
 using NHibernate;
 using NHibernate.Linq;
 using NHibernate.Transform;
+using ConnectionManager = Common.MySql.ConnectionManager;
 
 namespace ProducerEditor.Service
 {
@@ -39,6 +40,7 @@ namespace ProducerEditor.Service
 	{
 		private readonly ISessionFactory _factory;
 		private readonly Mailer _mailer;
+		private readonly ConnectionManager _connectionManager = new ConnectionManager();
 
 		public ProducerService(ISessionFactory sessionFactory, Mailer mailer)
 		{
@@ -49,19 +51,16 @@ namespace ProducerEditor.Service
 		[OperationContract]
 		public IList<Offer> ShowOffersBySynonym(uint producerSynonymId)
 		{
-			using (var session = _factory.OpenSession())
-			{
-				return session.CreateSQLQuery(@"
+			return Slave(s => s.CreateSQLQuery(@"
 select s.Synonym as Product, sfc.Synonym as Producer
 from farm.core0 c
 	join farm.Synonym s on s.SynonymCode = c.SynonymCode
 	join farm.SynonymFirmCr sfc on sfc.SynonymFirmCrCode = c.SynonymFirmCrCode
 where c.SynonymFirmCrCode = :producerSynonymId
 order by Product, Producer")
-					.SetResultTransformer(Transformers.AliasToBean<Offer>())
-					.SetParameter("producerSynonymId", producerSynonymId)
-					.List<Offer>();
-			}
+				.SetResultTransformer(Transformers.AliasToBean<Offer>())
+				.SetParameter("producerSynonymId", producerSynonymId)
+				.List<Offer>());
 		}
 
 		[OperationContract]
@@ -104,9 +103,7 @@ where CodeFirmCr = :SourceId
 		[OperationContract]
 		public IList<ProducerSynonymDto> GetSynonyms(uint producerId)
 		{
-			using(var session = _factory.OpenSession())
-			{
-				return session.CreateSQLQuery(@"
+			return Slave(session => session.CreateSQLQuery(@"
 select sfc.Synonym as Name,
 sfc.SynonymFirmCrCode as Id,
 cd.ShortName as Supplier,
@@ -120,10 +117,9 @@ from farm.SynonymFirmCr sfc
   left join farm.Core0 c on c.SynonymFirmCrCode = sfc.SynonymFirmCrCode
 where sfc.CodeFirmCr = :ProducerId and cd.BillingCode <> 921
 group by sfc.SynonymFirmCrCode")
-						.SetParameter("ProducerId", producerId)
-						.SetResultTransformer(Transformers.AliasToBean(typeof (ProducerSynonymDto)))
-						.List<ProducerSynonymDto>().ToList();
-			}
+				.SetParameter("ProducerId", producerId)
+				.SetResultTransformer(Transformers.AliasToBean(typeof (ProducerSynonymDto)))
+				.List<ProducerSynonymDto>().ToList());
 		}
 
 		[OperationContract]
@@ -131,25 +127,23 @@ group by sfc.SynonymFirmCrCode")
 		{
 			if (begin.Date == end.Date)
 				begin = begin.AddDays(-1);
-			using(var session = _factory.OpenSession())
-				return SynonymReportItem.Load(session, begin, end);
+
+			return Slave(s => SynonymReportItem.Load(s, begin, end));
 		}
 
 		[OperationContract]
 		public IList<SynonymReportItem> ShowSuspiciousSynonyms()
 		{
-			using(var session = _factory.OpenSession())
-				return SynonymReportItem.Suspicious(session);
+			return Slave(s => SynonymReportItem.Suspicious(s));
 		}
 
 		[OperationContract]
 		public IList<string> GetEquivalents(uint producerId)
 		{
-			using (var session = _factory.OpenSession())
-			{
-				var producer = session.Get<Producer>(producerId);
+			return Slave(s => {
+				var producer = s.Get<Producer>(producerId);
 				return producer.Equivalents.Select(e => e.Name).ToList();
-			}
+			});
 		}
 
 		[OperationContract]
@@ -217,48 +211,44 @@ group by sfc.SynonymFirmCrCode")
 		[OperationContract]
 		public Pager<AssortmentDto> ShowAssortment(uint assortimentId)
 		{
-			using (var session = _factory.OpenSession())
-			{
+			return Slave(session => {
 				var total = Assortment.TotalPages(session);
 				uint page = 1;
 				if (assortimentId != 0)
 					page = Assortment.GetPage(session, assortimentId);
 				var assortments = Assortment.Load(session, page);
 				return new Pager<AssortmentDto>(page, total, assortments);
-			}
+			});
 		}
 
 		[OperationContract]
 		public Pager<AssortmentDto> GetAssortmentPage(uint page)
 		{
-			using (var session = _factory.OpenSession())
-			{
+			return Slave(session => {
 				var total = Assortment.TotalPages(session);
 				return new Pager<AssortmentDto>(page, total, Assortment.Load(session, page));
-			}
+			});
 		}
 
 		[OperationContract]
 		public Pager<AssortmentDto> SearchAssortment(string text)
 		{
-			using (var session = _factory.OpenSession())
-			{
+			return Slave(session => {
 				var total = Assortment.TotalPages(session);
 				var page = Assortment.Find(session, text);
 				if (page == -1)
 					return null;
 				return new Pager<AssortmentDto>((uint) page, total, Assortment.Load(session, (uint) page));
-			}
+			});
 		}
 
 		[OperationContract]
 		public Pager<ExcludeDto> ShowExcludes(uint page)
 		{
-			using(var session = _factory.OpenSession())
-			{
+			return Slave(session => {
 				var total = Exclude.TotalPages(session);
 				return new Pager<ExcludeDto>(page, total, Exclude.Load(page, session));
-			}
+			});
 		}
 
 		[OperationContract]
@@ -297,6 +287,16 @@ group by sfc.SynonymFirmCrCode")
 				session.Delete(exclude);
 				session.Save(assortment);
 				transaction.Commit();
+			}
+		}
+
+		private T Slave<T>(Func<ISession, T> func)
+		{
+			using (var connection = _connectionManager.GetConnection())
+			using (var session = _factory.OpenSession(connection))
+			{
+				connection.Open();
+				return func(session);
 			}
 		}
 	}
