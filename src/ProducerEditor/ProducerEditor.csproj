@@ -89,6 +89,7 @@
   <ItemGroup>
     <Compile Include="Infrastructure\MvcHelper.cs" />
     <Compile Include="Infrastructure\UserDataSettingProvider.cs" />
+    <Compile Include="Infrastructure\UserNameInspector.cs" />
     <Compile Include="MainController.cs" />
     <Compile Include="Initializer.cs" />
     <Compile Include="Models\Service.cs" />

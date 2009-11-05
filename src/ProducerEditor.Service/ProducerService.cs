@@ -3,11 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.ServiceModel;
+using System.ServiceModel.Channels;
 using Common.Tools;
 using NHibernate;
 using NHibernate.Linq;
 using NHibernate.Transform;
 using ConnectionManager = Common.MySql.ConnectionManager;
+using ISession=NHibernate.ISession;
 
 namespace ProducerEditor.Service
 {
@@ -66,9 +68,7 @@ order by Product, Producer")
 		[OperationContract]
 		public void DoJoin(uint[] sourceProduceIds, uint targetProducerId)
 		{
-			using(var session = _factory.OpenSession())
-			using(var transaction = session.BeginTransaction())
-			{
+			Transaction(session => {
 				var target = session.Load<Producer>(targetProducerId);
 				foreach (var sourceId in sourceProduceIds)
 				{
@@ -96,8 +96,7 @@ where CodeFirmCr = :SourceId
 					session.Delete(source);
 				}
 
-				transaction.Commit();
-			}
+			});
 		}
 
 		[OperationContract]
@@ -149,63 +148,48 @@ group by sfc.SynonymFirmCrCode")
 		[OperationContract]
 		public void DeleteProducerSynonym(uint producerSynonymId)
 		{
-			using (var session = _factory.OpenSession())
-			using (var transaction = session.BeginTransaction())
-			{
+			Transaction(session => {
 				var synonym = session.Get<ProducerSynonym>(producerSynonymId);
 				session.Delete(synonym);
 				session.Save(new BlockedProducerSynonym(synonym));
 				_mailer.SynonymWasDeleted(synonym);
-				transaction.Commit();
-			}
+			});
 		}
 
 		[OperationContract]
 		public void Suspicious(uint producerSynonymId)
 		{
-			using(var session = _factory.OpenSession())
-			using (var transaction = session.BeginTransaction())
-			{
+			Transaction(session => {
 				var synonym = session.Get<ProducerSynonym>(producerSynonymId);
 				session.Save(new SuspiciousProducerSynonym(synonym));
-				transaction.Commit();
-			}
+			});
 		}
 
 		[OperationContract]
 		public void DeleteSuspicious(uint producerSynonymId)
 		{
-			using (var session = _factory.OpenSession())
-			using (var transaction = session.BeginTransaction())
-			{
+			Transaction(session => {
 				var suspicious = session.Linq<SuspiciousProducerSynonym>().Where(s => s.Synonym.Id == producerSynonymId).First();
 				session.Delete(suspicious);
-				transaction.Commit();
-			}
+			});
 		}
 
 		[OperationContract]
 		public void DeleteProducer(uint producerId)
 		{
-			using (var session = _factory.OpenSession())
-			using (var transaction = session.BeginTransaction())
-			{
+			Transaction(session => {
 				var producer = session.Get<Producer>(producerId);
 				session.Delete(producer);
-				transaction.Commit();
-			}
+			});
 		}
 
 		[OperationContract]
 		public void DeleteAssortment(uint assortmentId)
 		{
-			using (var session = _factory.OpenSession())
-			using (var transaction = session.BeginTransaction())
-			{
+			Transaction(session => {
 				var assortment = session.Get<ProductAssortment>(assortmentId);
 				session.Delete(assortment);
-				transaction.Commit();
-			}
+			});
 		}
 
 		[OperationContract]
@@ -254,22 +238,17 @@ group by sfc.SynonymFirmCrCode")
 		[OperationContract]
 		public void DoNotShow(uint excludeId)
 		{
-			using (var session = _factory.OpenSession())
-			using (var transaction = session.BeginTransaction())
-			{
+			Transaction(session => {
 				var exclude = session.Load<Exclude>(excludeId);
 				exclude.DoNotShow = false;
 				session.Update(exclude);
-				transaction.Commit();
-			}
+			});
 		}
 
 		[OperationContract]
 		public void AddToAssotrment(uint excludeId)
 		{
-			using (var session = _factory.OpenSession())
-			using (var transaction = session.BeginTransaction())
-			{
+			Transaction(session => {
 				var exclude = session.Load<Exclude>(excludeId);
 				var assortment = new Assortment(exclude.CatalogProduct, exclude.ProducerSynonym.Producer);
 
@@ -286,7 +265,34 @@ group by sfc.SynonymFirmCrCode")
 
 				session.Delete(exclude);
 				session.Save(assortment);
-				transaction.Commit();
+			});
+		}
+
+		public void Transaction(Action<ISession> action)
+		{
+			using (var session = _factory.OpenSession())
+			using (var transaction = session.BeginTransaction())
+			{
+				try
+				{
+					var host = ((RemoteEndpointMessageProperty)OperationContext.Current.IncomingMessageProperties[RemoteEndpointMessageProperty.Name]).Address;
+					var user = OperationContext.Current.IncomingMessageHeaders.GetHeader<string>("UserName", "");
+					session.CreateSQLQuery(@"
+set @InUnser = :user
+;
+set @InHost = :host
+;")
+						.SetParameter("user", user)
+						.SetParameter("host", host)
+						.ExecuteUpdate();
+					action(session);
+
+					transaction.Commit();
+				}
+				catch
+				{
+					transaction.Rollback();
+				}
 			}
 		}
 

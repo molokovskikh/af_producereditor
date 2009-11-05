@@ -19,6 +19,8 @@ namespace ProducerEditor.Service
 		public string Product { get; set; }
 		[DataMember]
 		public string Producer { get; set; }
+		[DataMember]
+		public bool Checked { get; set; }
 	}
 
 	[Class(Table = "Catalogs.Assortment")]
@@ -43,6 +45,9 @@ namespace ProducerEditor.Service
 		[ManyToOne(ClassType = typeof (Producer), Column = "ProducerId")]
 		public virtual Producer Producer { get; set; }
 
+		[Property]
+		public virtual bool Checked { get; set; }
+
 		public static IList<AssortmentDto> Load(ISession session, uint page)
 		{
 			//cсортировка должна производить по наименованию каталожного продукта и по производителю 
@@ -51,7 +56,8 @@ namespace ProducerEditor.Service
 			return session.CreateSQLQuery(@"
 select	a.Id, 
 		pr.Name as Producer,
-		c.Name as Product
+		c.Name as Product,
+		a.Checked
 from catalogs.Assortment a
 	join catalogs.Producers pr on pr.Id = a.ProducerId
 	join Catalogs.Catalog as c on c.Id = a.CatalogId
@@ -95,7 +101,8 @@ where c.Id = ?id", connection);
 			var assortiment = session.CreateSQLQuery(@"
 select	a.Id,
 		pr.Name as Producer,
-		c.Name as Product
+		c.Name as Product,
+		a.Checked
 from catalogs.Assortment a
 	join catalogs.Producers pr on pr.Id = a.ProducerId
 	join Catalogs.Catalog as c on a.CatalogId = c.id
