@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using log4net.Config;
+﻿using log4net.Config;
 using NHibernate;
 using NUnit.Framework;
 using ProducerEditor.Service;

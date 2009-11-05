@@ -20,6 +20,8 @@ namespace ProducerEditor.Models
 		public string Producer { get; set; }
 		[DataMember]
 		public string ProducerSynonym { get; set; }
+		[DataMember]
+		public uint ProducerSynonymId { get; set; }
 	}
 
 	[DataContract(Namespace = "http://schemas.datacontract.org/2004/07/ProducerEditor.Service")]

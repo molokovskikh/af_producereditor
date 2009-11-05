@@ -25,11 +25,15 @@ namespace ProducerEditor.Service
 		public static uint TotalPages(ISession session)
 		{
 			return (uint) (session.CreateSQLQuery(@"
-select count(*) 
+select count(distinct e.id)
 from farm.Excludes e
 	join usersettings.PricesData pd on pd.PriceCode = e.PriceCode
 		join usersettings.ClientsData cd on cd.FirmCode = pd.FirmCode
-where e.DoNotShow = 0 and cd.FirmSegment = 0").UniqueResult<long>() / 100);
+	join farm.SynonymFirmCr sfc on sfc.SynonymFirmCrCode = e.ProducerSynonymId
+		join Catalogs.Producers p on p.Id = sfc.CodeFirmCr
+	left join Catalogs.Assortment a on a.CatalogId = e.CatalogId
+where e.DoNotShow = 0 and cd.FirmSegment = 0 and (a.Checked = 1 or p.Checked = 1)
+").UniqueResult<long>() / 100);
 		}
 
 		public static IList<ExcludeDto> Load(uint page, ISession session)
@@ -38,6 +42,7 @@ where e.DoNotShow = 0 and cd.FirmSegment = 0").UniqueResult<long>() / 100);
 select e.Id,
 	c.Name as Catalog,
 	p.Name as Producer,
+	sfc.SynonymFirmCrCode as ProducerSynonymId,
 	sfc.Synonym as ProducerSynonym,
 	r.Region,
 	cd.ShortName as Supplier
@@ -45,10 +50,12 @@ from farm.Excludes e
 	join Catalogs.Catalog c on c.Id = e.CatalogId
 	join farm.SynonymFirmCr sfc on sfc.SynonymFirmCrCode = e.ProducerSynonymId
 		join Catalogs.Producers p on p.Id = sfc.CodeFirmCr
+		left join Catalogs.Assortment a on a.CatalogId = c.Id
 	join usersettings.PricesData pd on pd.PriceCode = e.PriceCode
 		join usersettings.ClientsData cd on cd.FirmCode = pd.FirmCode
 		join farm.Regions r on r.RegionCode = cd.RegionCode
-where e.DoNotShow = 0 and cd.FirmSegment = 0
+where e.DoNotShow = 0 and cd.FirmSegment = 0 and (a.Checked = 1 or p.Checked = 1)
+group by e.Id
 order by e.CreatedOn
 limit :begin, 100
 ")
@@ -73,5 +80,7 @@ limit :begin, 100
 		public string Producer { get; set; }
 		[DataMember]
 		public string ProducerSynonym { get; set; }
+		[DataMember]
+		public uint ProducerSynonymId { get; set; }
 	}
 }

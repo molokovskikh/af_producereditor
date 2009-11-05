@@ -2,8 +2,10 @@
 using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
+using Common.Tools;
 using ProducerEditor.Models;
 using Subway.Dom;
+using Subway.Helpers;
 using Subway.VirtualTable;
 using Subway.VirtualTable.Behaviors;
 using Subway.VirtualTable.Behaviors.Selection;
@@ -21,7 +23,8 @@ namespace ProducerEditor.Views
 
 			var tools = new ToolStrip()
 				.Button("Добавить в ассортимент", AddToAssortiment)
-				.Button("Больше не показывать", DoNotShow);
+				.Button("Больше не показывать", DoNotShow)
+				.Button("Ошибочное сопоставление (Delete)", DeleteSynonym);
 
 			var navigation = new ToolStrip()
 				.Button("Prev", "Передыдущая страница")
@@ -39,6 +42,8 @@ namespace ProducerEditor.Views
 			excludeTable.Behavior<ColumnResizeBehavior>().ColumnResized += column => WidthHolder.Update(excludeTable, column, WidthHolder.ExcludeWidths);
 			excludeTable.TemplateManager.ResetColumns();
 
+			excludeTable.Host.InputMap()
+				.KeyDown(Keys.Delete, DeleteSynonym);
 
 			excludeTable.TemplateManager.Source = pager.Content.ToList();
 
@@ -53,6 +58,20 @@ namespace ProducerEditor.Views
 			});
 
 			Shown += (s, a) => excludeTable.Host.Focus();
+		}
+
+		public void DeleteSynonym()
+		{
+			var exclude = excludeTable.Selected<Exclude>();
+			if (exclude == null)
+				return;
+
+			Action(s => s.DeleteProducerSynonym(exclude.ProducerSynonymId));
+			var excludes = ((List<Exclude>)excludeTable.TemplateManager.Source);
+			excludes.Where(e => e.ProducerSynonymId == exclude.ProducerSynonymId)
+				.ToList()
+				.Each(e => excludes.Remove(e));
+			excludeTable.RebuildViewPort();
 		}
 
 		public void AddToAssortiment()
