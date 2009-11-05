@@ -51,7 +51,7 @@ namespace ProducerEditor.Service
 		}
 
 		[OperationContract]
-		public IList<Offer> ShowOffersBySynonym(uint producerSynonymId)
+		public virtual IList<Offer> ShowOffersBySynonym(uint producerSynonymId)
 		{
 			return Slave(s => s.CreateSQLQuery(@"
 select s.Synonym as Product, sfc.Synonym as Producer
@@ -66,7 +66,7 @@ order by Product, Producer")
 		}
 
 		[OperationContract]
-		public void DoJoin(uint[] sourceProduceIds, uint targetProducerId)
+		public virtual void DoJoin(uint[] sourceProduceIds, uint targetProducerId)
 		{
 			Transaction(session => {
 				var target = session.Load<Producer>(targetProducerId);
@@ -99,7 +99,7 @@ where CodeFirmCr = :SourceId
 		}
 
 		[OperationContract]
-		public IList<ProducerSynonymDto> GetSynonyms(uint producerId)
+		public virtual IList<ProducerSynonymDto> GetSynonyms(uint producerId)
 		{
 			return Slave(session => session.CreateSQLQuery(@"
 select sfc.Synonym as Name,
@@ -121,7 +121,7 @@ group by sfc.SynonymFirmCrCode")
 		}
 
 		[OperationContract]
-		public IList<SynonymReportItem> ShowSynonymReport(DateTime begin, DateTime end)
+		public virtual IList<SynonymReportItem> ShowSynonymReport(DateTime begin, DateTime end)
 		{
 			if (begin.Date == end.Date)
 				begin = begin.AddDays(-1);
@@ -130,13 +130,13 @@ group by sfc.SynonymFirmCrCode")
 		}
 
 		[OperationContract]
-		public IList<SynonymReportItem> ShowSuspiciousSynonyms()
+		public virtual IList<SynonymReportItem> ShowSuspiciousSynonyms()
 		{
 			return Slave(s => SynonymReportItem.Suspicious(s));
 		}
 
 		[OperationContract]
-		public IList<string> GetEquivalents(uint producerId)
+		public virtual IList<string> GetEquivalents(uint producerId)
 		{
 			return Slave(s => {
 				var producer = s.Get<Producer>(producerId);
@@ -145,7 +145,7 @@ group by sfc.SynonymFirmCrCode")
 		}
 
 		[OperationContract]
-		public void DeleteProducerSynonym(uint producerSynonymId)
+		public virtual void DeleteProducerSynonym(uint producerSynonymId)
 		{
 			Transaction(session => {
 				var synonym = session.Get<ProducerSynonym>(producerSynonymId);
@@ -156,7 +156,7 @@ group by sfc.SynonymFirmCrCode")
 		}
 
 		[OperationContract]
-		public void Suspicious(uint producerSynonymId)
+		public virtual void Suspicious(uint producerSynonymId)
 		{
 			Transaction(session => {
 				var synonym = session.Get<ProducerSynonym>(producerSynonymId);
@@ -165,7 +165,7 @@ group by sfc.SynonymFirmCrCode")
 		}
 
 		[OperationContract]
-		public void DeleteSuspicious(uint producerSynonymId)
+		public virtual void DeleteSuspicious(uint producerSynonymId)
 		{
 			Transaction(session => {
 				var suspicious = session.Linq<SuspiciousProducerSynonym>().Where(s => s.Synonym.Id == producerSynonymId).First();
@@ -174,7 +174,7 @@ group by sfc.SynonymFirmCrCode")
 		}
 
 		[OperationContract]
-		public void DeleteProducer(uint producerId)
+		public virtual void DeleteProducer(uint producerId)
 		{
 			Transaction(session => {
 				var producer = session.Get<Producer>(producerId);
@@ -183,7 +183,7 @@ group by sfc.SynonymFirmCrCode")
 		}
 
 		[OperationContract]
-		public void DeleteAssortment(uint assortmentId)
+		public virtual void DeleteAssortment(uint assortmentId)
 		{
 			Transaction(session => {
 				var assortment = session.Get<ProductAssortment>(assortmentId);
@@ -192,7 +192,7 @@ group by sfc.SynonymFirmCrCode")
 		}
 
 		[OperationContract]
-		public void SetAssortmentChecked(uint assortmentId, bool @checked)
+		public virtual void SetAssortmentChecked(uint assortmentId, bool @checked)
 		{
 			Transaction(session => {
 				var assortment = session.Load<Assortment>(assortmentId);
@@ -202,7 +202,7 @@ group by sfc.SynonymFirmCrCode")
 		}
 
 		[OperationContract]
-		public Pager<AssortmentDto> ShowAssortment(uint assortimentId)
+		public virtual Pager<AssortmentDto> ShowAssortment(uint assortimentId)
 		{
 			return Slave(session => {
 				var total = Assortment.TotalPages(session);
@@ -215,7 +215,7 @@ group by sfc.SynonymFirmCrCode")
 		}
 
 		[OperationContract]
-		public Pager<AssortmentDto> GetAssortmentPage(uint page)
+		public virtual Pager<AssortmentDto> GetAssortmentPage(uint page)
 		{
 			return Slave(session => {
 				var total = Assortment.TotalPages(session);
@@ -224,7 +224,7 @@ group by sfc.SynonymFirmCrCode")
 		}
 
 		[OperationContract]
-		public Pager<AssortmentDto> SearchAssortment(string text)
+		public virtual Pager<AssortmentDto> SearchAssortment(string text)
 		{
 			return Slave(session => {
 				var total = Assortment.TotalPages(session);
@@ -236,7 +236,7 @@ group by sfc.SynonymFirmCrCode")
 		}
 
 		[OperationContract]
-		public Pager<ExcludeDto> ShowExcludes(uint page)
+		public virtual Pager<ExcludeDto> ShowExcludes(uint page)
 		{
 			return Slave(session => {
 				var total = Exclude.TotalPages(session);
@@ -245,7 +245,7 @@ group by sfc.SynonymFirmCrCode")
 		}
 
 		[OperationContract]
-		public void DoNotShow(uint excludeId)
+		public virtual void DoNotShow(uint excludeId)
 		{
 			Transaction(session => {
 				var exclude = session.Load<Exclude>(excludeId);
@@ -255,7 +255,7 @@ group by sfc.SynonymFirmCrCode")
 		}
 
 		[OperationContract]
-		public void AddToAssotrment(uint excludeId)
+		public virtual void AddToAssotrment(uint excludeId)
 		{
 			Transaction(session => {
 				var exclude = session.Load<Exclude>(excludeId);
@@ -277,7 +277,7 @@ group by sfc.SynonymFirmCrCode")
 			});
 		}
 
-		public void Transaction(Action<ISession> action)
+		private void Transaction(Action<ISession> action)
 		{
 			using (var session = _factory.OpenSession())
 			using (var transaction = session.BeginTransaction())

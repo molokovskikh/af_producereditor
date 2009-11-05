@@ -30,7 +30,9 @@ deploymentUrl = "http://publish.analit.net/ProducerEditor/"
 deployDir = "\\\\acdcserv\\publish\\ProducerEditor"
 
 Global(
-	libs : ("Common.Tools", "Common.MySql")
+	libs : ("Common.Tools", "Common.MySql", 
+		("Common.Service", 620, "http://svn.analit.net/Common/trunk/Common.Service/"),
+		"Common.Models")
 )
 	
 def Clean(path as String):

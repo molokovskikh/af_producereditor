@@ -3,9 +3,11 @@ using System.Collections.Generic;
 using System.ServiceModel;
 using System.ServiceModel.Description;
 using System.Web;
+using Castle.Core;
 using Castle.Facilities.WcfIntegration;
 using Castle.MicroKernel.Registration;
 using Castle.Windsor;
+using Common.Service.Interceptors;
 using log4net;
 using log4net.Config;
 using NHibernate;
@@ -67,11 +69,16 @@ namespace ProducerEditor.Service
 
 					Component.For<IServiceBehavior>().Instance(debug),
 					Component.For<IServiceBehavior>().Instance(metadata),
+
+					Component.For<ErrorLoggingInterceptor>(),
+
 					AllTypes.Pick()
 						.FromAssembly(typeof (ProducerService).Assembly)
 						.If(t => t.Name.Contains("Service"))
 						.Configure(c => {
-							c.Named(c.ServiceType.Name).ActAs(new DefaultServiceModel().AddEndpoints(WcfEndpoint.BoundTo(binding)).Hosted());
+							c.Named(c.ServiceType.Name)
+								.ActAs(new DefaultServiceModel().AddEndpoints(WcfEndpoint.BoundTo(binding)).Hosted())
+								.Interceptors(InterceptorReference.ForType<ErrorLoggingInterceptor>());
 						})
 				);
 
