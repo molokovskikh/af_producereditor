@@ -87,11 +87,13 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Infrastructure\FactoryHolder.cs" />
     <Compile Include="Infrastructure\MvcHelper.cs" />
     <Compile Include="Infrastructure\UserDataSettingProvider.cs" />
     <Compile Include="Infrastructure\UserNameInspector.cs" />
     <Compile Include="MainController.cs" />
     <Compile Include="Initializer.cs" />
+    <Compile Include="Infrastructure\MessageInspectorRegistrator.cs" />
     <Compile Include="Models\Service.cs" />
     <Compile Include="Settings.cs" />
     <Compile Include="Infrastructure\Helpers.cs">

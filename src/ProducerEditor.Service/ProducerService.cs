@@ -95,7 +95,6 @@ where CodeFirmCr = :SourceId
 
 					session.Delete(source);
 				}
-
 			});
 		}
 
@@ -189,6 +188,16 @@ group by sfc.SynonymFirmCrCode")
 			Transaction(session => {
 				var assortment = session.Get<ProductAssortment>(assortmentId);
 				session.Delete(assortment);
+			});
+		}
+
+		[OperationContract]
+		public void SetAssortmentChecked(uint assortmentId, bool @checked)
+		{
+			Transaction(session => {
+				var assortment = session.Load<Assortment>(assortmentId);
+				assortment.Checked = @checked;
+				session.Update(assortment);
 			});
 		}
 
@@ -292,6 +301,7 @@ set @InHost = :host
 				catch
 				{
 					transaction.Rollback();
+					throw;
 				}
 			}
 		}

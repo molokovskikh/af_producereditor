@@ -46,7 +46,6 @@ namespace ProducerEditor.Views
 	public class View : Form
 	{
 		private ILog _log = LogManager.GetLogger(typeof (Form));
-		private static ChannelFactory<ProducerService> factory = new ChannelFactory<ProducerService>(Settings.Binding, Settings.Endpoint);
 
 		protected virtual Action Controller<T>(Expression<Func<ProducerService, T>> func)
 		{
@@ -82,7 +81,7 @@ namespace ProducerEditor.Views
 			ICommunicationObject communicationObject = null;
 			try
 			{
-				var chanel = factory.CreateChannel();
+				var chanel = FactoryHolder.Factory.CreateChannel();
 				communicationObject = chanel as ICommunicationObject;
 				action(chanel);
 				communicationObject.Close();

@@ -6,6 +6,7 @@ using System.Windows.Forms;
 using ProducerEditor.Models;
 using Subway.Dom;
 using Subway.Dom.Base;
+using Subway.Dom.Input;
 using Subway.Helpers;
 using Subway.VirtualTable;
 using Subway.VirtualTable.Behaviors;
@@ -18,11 +19,11 @@ namespace ProducerEditor.Views
 	{
 		private ToolStrip tools;
 		private ToolStrip bookmarksToolStrip;
-		private VirtualTable assortimentTable;
+		private VirtualTable assortmentTable;
 
 		private Pager<Assortment> assortiments;
 		
-		public ShowAssortment(Pager<Assortment> assortiments)
+		public ShowAssortment(Pager<Assortment> assortments)
 		{
 			Text = "Ассортимент";
 			MinimumSize = new Size(640, 480);
@@ -41,25 +42,31 @@ namespace ProducerEditor.Views
 				.Label("PageLabel", "")
 				.Button("Next", "Следующая страница");
 
-			assortimentTable = new VirtualTable(new TemplateManager<List<Assortment>, Assortment>(
-				() => Row.Headers("Продукт", "Производитель"),
+			assortmentTable = new VirtualTable(new TemplateManager<List<Assortment>, Assortment>(
+				() => Row.Headers(new Header("Проверен").AddClass("CheckBoxColumn1"), "Продукт", "Производитель"),
 				a => {
-					var row = Row.Cells(a.Product, a.Producer);
+					var row = Row.Cells(new CheckBoxInput(a.Checked), a.Product, a.Producer);
 					if (a.Id == Settings.Default.BookmarkAssortimentId)
-						((IDomElementWithChildren)row.Children.First()).Prepend(new TextBlock {Class = "BookmarkGlyph"});
+						((IDomElementWithChildren)row.Children.ElementAt(1)).Prepend(new TextBlock {Class = "BookmarkGlyph"});
 					return row;
 				}));
-			assortimentTable.CellSpacing = 1;
-			assortimentTable.RegisterBehavior(new RowSelectionBehavior(),
+			assortmentTable.CellSpacing = 1;
+			assortmentTable.RegisterBehavior(new RowSelectionBehavior(),
 				new ToolTipBehavior(),
-				new ColumnResizeBehavior());
-			assortimentTable.Behavior<ColumnResizeBehavior>().ColumnResized += column => WidthHolder.Update(assortimentTable, column, WidthHolder.AssortimentWidths);
-			assortimentTable.TemplateManager.ResetColumns();
-			assortimentTable.Host
+				new ColumnResizeBehavior(),
+				new InputSupport(input => {
+					var row = (Row)input.Parent.Parent;
+					var assortment = assortmentTable.Translate<Assortment>(row);
+					assortment.Checked = ((CheckBoxInput) input).Checked;
+					Action(s => s.SetAssortmentChecked(assortment.Id, assortment.Checked));
+				}));
+			assortmentTable.Behavior<ColumnResizeBehavior>().ColumnResized += column => WidthHolder.Update(assortmentTable, column, WidthHolder.AssortimentWidths);
+			assortmentTable.TemplateManager.ResetColumns();
+			assortmentTable.Host
 				.InputMap()
 				.KeyDown(Keys.Delete, Delete);
 
-			UpdateAssortment(assortiments);
+			UpdateAssortment(assortments);
 
 			var searchText = ((ToolStripTextBox)tools.Items["SearchText"]);
 			searchText.KeyDown += (sender,args) => {
@@ -67,7 +74,7 @@ namespace ProducerEditor.Views
 					Search();
 			};
 
-			assortimentTable.Host.InputMap()
+			assortmentTable.Host.InputMap()
 				.KeyDown(Keys.Enter, Search)
 				.KeyDown(Keys.Escape, () => searchText.Text = "")
 				.KeyPress((o, a) => {
@@ -76,11 +83,11 @@ namespace ProducerEditor.Views
 					searchText.Text += a.KeyChar;
 				});
 
-			Controls.Add(assortimentTable.Host);
+			Controls.Add(assortmentTable.Host);
 			Controls.Add(bookmarksToolStrip);
 			Controls.Add(tools);
 
-			bookmarksToolStrip.ActAsPaginator(assortiments,
+			bookmarksToolStrip.ActAsPaginator(assortments,
 				page => {
 					Pager<Assortment> pager = null;
 					Action(s => {
@@ -91,18 +98,18 @@ namespace ProducerEditor.Views
 				});
 
 			MoveToBookmark();
-			Shown += (s, a) => assortimentTable.Host.Focus();
+			Shown += (s, a) => assortmentTable.Host.Focus();
 		}
 
 		private void Delete()
 		{
-			var assortment = assortimentTable.Selected<Assortment>();
+			var assortment = assortmentTable.Selected<Assortment>();
 			if (assortment == null)
 				return;
 
 			Action(s => s.DeleteAssortment(assortment.Id));
-			((List<Assortment>)assortimentTable.TemplateManager.Source).Remove(assortment);
-			assortimentTable.RebuildViewPort();
+			((List<Assortment>)assortmentTable.TemplateManager.Source).Remove(assortment);
+			assortmentTable.RebuildViewPort();
 		}
 
 		private void Search()
@@ -125,9 +132,9 @@ namespace ProducerEditor.Views
 
 		private void SetBookmark()
 		{
-			Settings.Default.BookmarkAssortimentId = assortimentTable.Selected<Assortment>().Id;
+			Settings.Default.BookmarkAssortimentId = assortmentTable.Selected<Assortment>().Id;
 			Settings.Default.Save();
-			assortimentTable.RebuildViewPort();
+			assortmentTable.RebuildViewPort();
 		}
 
 		private void MoveToBookmark()
@@ -137,14 +144,14 @@ namespace ProducerEditor.Views
 
 			Action(s => {
 				UpdateAssortment(s.ShowAssortment(Settings.Default.BookmarkAssortimentId));
-				assortimentTable.Behavior<IRowSelectionBehavior>().MoveSelectionAt(assortiments.Content.IndexOf(a => a.Id == Settings.Default.BookmarkAssortimentId));
+				assortmentTable.Behavior<IRowSelectionBehavior>().MoveSelectionAt(assortiments.Content.IndexOf(a => a.Id == Settings.Default.BookmarkAssortimentId));
 			});
 		}
 
 		private void UpdateAssortment(Pager<Assortment> pager)
 		{
 			assortiments = pager;
-			assortimentTable.TemplateManager.Source = assortiments.Content.ToList();
+			assortmentTable.TemplateManager.Source = assortiments.Content.ToList();
 		}
 	}
 }

@@ -133,6 +133,9 @@ namespace ProducerEditor.Models
 		void DeleteAssortment(uint assortmentId);
 
 		[OperationContract]
+		void SetAssortmentChecked(uint assortmentId, bool @checked);
+
+		[OperationContract]
 		void Suspicious(uint producerSynonymId);
 
 		[OperationContract]

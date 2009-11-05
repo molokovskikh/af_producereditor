@@ -98,6 +98,7 @@
     <Content Include="Web.config" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AliasToBeanResultTransformer.cs" />
     <Compile Include="Assortment.cs" />
     <Compile Include="Exclude.cs" />
     <Compile Include="Global.asax.cs">

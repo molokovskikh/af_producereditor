@@ -4,6 +4,7 @@ using System.Linq;
 using System.ServiceModel;
 using System.Windows.Forms;
 using NHibernate.Transform;
+using ProducerEditor.Infrastructure;
 using ProducerEditor.Models;
 using ProducerEditor.Views;
 
@@ -12,7 +13,7 @@ namespace ProducerEditor
 	public class MainController
 	{
 		public List<Producer> Producers { get; private set;}
-		private static ChannelFactory<ProducerService> factory = new ChannelFactory<ProducerService>(Settings.Binding, Settings.Endpoint);
+		
 
 		public IList<Producer> GetAllProducers()
 		{
@@ -62,7 +63,7 @@ order by p.Name")
 			ICommunicationObject communicationObject = null;
 			try
 			{
-				var chanel = factory.CreateChannel();
+				var chanel = FactoryHolder.Factory.CreateChannel();
 				communicationObject = chanel as ICommunicationObject;
 				action(chanel);
 				communicationObject.Close();

@@ -6,7 +6,6 @@ using MySql.Data.MySqlClient;
 using NHibernate;
 using NHibernate.Linq;
 using NHibernate.Mapping.Attributes;
-using NHibernate.Transform;
 
 namespace ProducerEditor.Service
 {
@@ -64,7 +63,7 @@ from catalogs.Assortment a
 order by Product
 limit :begin, 100")
 				.SetParameter("begin", page * 100)
-				.SetResultTransformer(Transformers.AliasToBean<AssortmentDto>())
+				.SetResultTransformer(new AliasToBeanResultTransformer(typeof(AssortmentDto)))
 				.List<AssortmentDto>();
 		}
 
@@ -109,7 +108,7 @@ from catalogs.Assortment a
 where c.Name like :text
 limit 1")
 				.SetParameter("text", text + "%")
-				.SetResultTransformer(Transformers.AliasToBean<AssortmentDto>())
+				.SetResultTransformer(new AliasToBeanResultTransformer(typeof(AssortmentDto)))
 				.UniqueResult<AssortmentDto>();
 			if (assortiment == null)
 				return -1;
