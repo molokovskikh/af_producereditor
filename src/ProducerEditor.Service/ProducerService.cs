@@ -65,6 +65,43 @@ order by Product, Producer")
 		}
 
 		[OperationContract]
+		public void DoJoin(uint[] sourceProduceIds, uint targetProducerId)
+		{
+			using(var session = _factory.OpenSession())
+			using(var transaction = session.BeginTransaction())
+			{
+				var target = session.Load<Producer>(targetProducerId);
+				foreach (var sourceId in sourceProduceIds)
+				{
+					var source = session.Load<Producer>(sourceId);
+					session.CreateSQLQuery(@"
+update farm.SynonymFirmCr
+set CodeFirmCr = :TargetId
+where CodeFirmCr = :SourceId
+;
+
+update farm.core0
+set CodeFirmCr = :TargetId
+where CodeFirmCr = :SourceId
+;
+
+update orders.orderslist
+set CodeFirmCr = :TargetId
+where CodeFirmCr = :SourceId
+;")
+						.SetParameter("SourceId", sourceId)
+						.SetParameter("TargetId", targetProducerId)
+						.ExecuteUpdate();
+					target.MergeToEquivalent(source);
+
+					session.Delete(source);
+				}
+
+				transaction.Commit();
+			}
+		}
+
+		[OperationContract]
 		public IList<SynonymReportItem> ShowSynonymReport(DateTime begin, DateTime end)
 		{
 			if (begin.Date == end.Date)

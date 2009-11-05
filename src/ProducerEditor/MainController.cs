@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.ServiceModel;
 using System.Windows.Forms;
 using NHibernate.Transform;
 using ProducerEditor.Models;
@@ -11,6 +12,7 @@ namespace ProducerEditor
 	public class MainController
 	{
 		public List<Producer> Producers { get; private set;}
+		private static ChannelFactory<ProducerService> factory = new ChannelFactory<ProducerService>(Settings.Binding, Settings.Endpoint);
 
 		public IList<Producer> GetAllProducers()
 		{
@@ -76,45 +78,31 @@ group by sfc.SynonymFirmCrCode")
 				update();
 		}
 
+		protected void WithService(Action<ProducerService> action)
+		{
+			ICommunicationObject communicationObject = null;
+			try
+			{
+				var chanel = factory.CreateChannel();
+				communicationObject = chanel as ICommunicationObject;
+				action(chanel);
+				communicationObject.Close();
+			}
+			catch (Exception e)
+			{
+				if (communicationObject != null 
+					&& communicationObject.State != CommunicationState.Closed)
+					communicationObject.Abort();
+
+				throw;
+			}
+		}
+
 		public void DoJoin(Producer[] sources, Producer target)
 		{
-			With.Master(() => With.Session(session => {
-				using (var transaction = session.BeginTransaction())
-				{
-					foreach (var source in sources)
-					{
-
-						session.CreateSQLQuery(
-							@"
-update farm.SynonymFirmCr
-set CodeFirmCr = :TargetId
-where CodeFirmCr = :SourceId
-;
-
-update farm.core0
-set CodeFirmCr = :TargetId
-where CodeFirmCr = :SourceId
-;
-
-update orders.orderslist
-set CodeFirmCr = :TargetId
-where CodeFirmCr = :SourceId
-;")
-							.SetParameter("SourceId", source.Id)
-							.SetParameter("TargetId", target.Id)
-							.ExecuteUpdate();
-						session.Save(new ProducerEquivalent
-						{
-							Name = source.Name,
-							Producer = target,
-						});
-						source.Delete();
-					}
-					transaction.Commit();
-				}
-				foreach (var source in sources)
-					Producers.Remove(source);
-			}));
+			WithService(s => s.DoJoin(sources.Select(source => source.Id).ToArray(), target.Id));
+			foreach (var source in sources)
+				Producers.Remove(source);
 		}
 
 		public List<Producer> SearchProducer(string text)

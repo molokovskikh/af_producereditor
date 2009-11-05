@@ -81,6 +81,9 @@ namespace ProducerEditor.Models
 		IList<Offer> ShowOffersBySynonym(uint producerSynonymId);
 
 		[OperationContract]
+		void DoJoin(uint[] sourceProduceIds, uint targetProducerId);
+
+		[OperationContract]
 		IList<SynonymReportItem> ShowSynonymReport(DateTime begin, DateTime end);
 
 		[OperationContract]
