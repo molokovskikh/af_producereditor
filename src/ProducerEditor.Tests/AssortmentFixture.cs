@@ -1,5 +1,7 @@
-﻿using log4net.Config;
+﻿using System.Linq;
+using log4net.Config;
 using NHibernate;
+using NHibernate.Linq;
 using NUnit.Framework;
 using ProducerEditor.Service;
 
@@ -51,6 +53,37 @@ namespace ProducerEditor.Tests
 				Assert.That(findedAssortments.Content.Count, Is.EqualTo(1));
 				Assert.That(findedAssortments.Page, Is.EqualTo(0));
 				Assert.That(findedAssortments.TotalPages, Is.EqualTo(1));
+			}
+		}
+
+		[Test]
+		public void Get_assortment_for_producer()
+		{
+			uint producerId;
+			using(var session = sessionFactory.OpenSession())
+			{
+				var testProducer = session.Linq<Producer>().FirstOrDefault(p => p.Name == "test-producer");
+				if (testProducer != null)
+					session.Delete(testProducer);
+				session.Flush();
+
+				var producer = new Producer();
+				producer.Name = "test-producer";
+				session.Save(producer);
+
+				var assortment = new Assortment(session.Linq<CatalogProduct>().First(), producer);
+				session.Save(assortment);
+				session.Flush();
+
+				producerId = producer.Id;
+			}
+
+			using (var session = sessionFactory.OpenSession())
+			{
+				var assortments = Assortment.ByProducer(session, producerId, 0);
+				Assert.That(assortments.Content.Count, Is.EqualTo(1));
+				var assortment = assortments.Content.Single();
+				Assert.That(assortment.Producer, Is.EqualTo("test-producer"));
 			}
 		}
 	}

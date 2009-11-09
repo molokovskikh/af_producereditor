@@ -131,5 +131,32 @@ where c.Name like :text")
 					&& assortment.CatalogProduct == CatalogProduct
 				select assortment).FirstOrDefault() != null;
 		}
+
+		public static Pager<AssortmentDto> ByProducer(ISession session, uint producerId, uint page)
+		{
+			var assortments = session.CreateSQLQuery(@"
+select	a.Id,
+		pr.Name as Producer,
+		c.Name as Product,
+		a.Checked
+from catalogs.Assortment a
+	join catalogs.Producers pr on pr.Id = a.ProducerId
+	join Catalogs.Catalog as c on a.CatalogId = c.id
+where a.ProducerId = :producerId
+order by c.Name
+limit :begin, 100")
+				.SetParameter("producerId", producerId)
+				.SetParameter("begin", page * 100)
+				.SetResultTransformer(new AliasToBeanResultTransformer(typeof(AssortmentDto)))
+				.List<AssortmentDto>();
+			var count = session.CreateSQLQuery(@"
+select count(*) 
+from catalogs.Assortment a 
+where a.ProducerId = :producerId")
+				.SetParameter("producerId", producerId)
+				.UniqueResult<long>();
+
+			return new Pager<AssortmentDto>(page, (uint)count, assortments);
+		}
 	}
 }

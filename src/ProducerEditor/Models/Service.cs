@@ -157,5 +157,8 @@ namespace ProducerEditor.Models
 
 		[OperationContract]
 		void AddToAssotrment(uint excludeId);
+
+		[OperationContract]
+		Pager<Assortment> ShowAssortmentForProducer(uint producerId, uint page);
 	}
 }

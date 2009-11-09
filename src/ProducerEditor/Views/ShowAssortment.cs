@@ -18,10 +18,9 @@ namespace ProducerEditor.Views
 	public class ShowAssortment : View
 	{
 		private ToolStrip tools;
-		private ToolStrip bookmarksToolStrip;
+		private ToolStrip navigationToolStrip;
 		private VirtualTable assortmentTable;
 
-		private Pager<Assortment> assortiments;
 		private string _searchText;
 		
 		public ShowAssortment(Pager<Assortment> assortments)
@@ -35,7 +34,7 @@ namespace ProducerEditor.Views
 				.Separator()
 				.Button("Удалить (Delete)", Delete);
 
-			bookmarksToolStrip = new ToolStrip()
+			navigationToolStrip = new ToolStrip()
 				.Button("К закаладке", MoveToBookmark)
 				.Button("Установить закладку", SetBookmark)
 				.Separator()
@@ -84,7 +83,7 @@ namespace ProducerEditor.Views
 						_searchText = "";
 						var pager = Request(s => s.GetAssortmentPage(0));
 						UpdateAssortment(pager);
-						bookmarksToolStrip.UpdatePaginator(pager);
+						navigationToolStrip.UpdatePaginator(pager);
 					}
 				})
 				.KeyPress((o, a) => {
@@ -94,10 +93,10 @@ namespace ProducerEditor.Views
 				});
 
 			Controls.Add(assortmentTable.Host);
-			Controls.Add(bookmarksToolStrip);
+			Controls.Add(navigationToolStrip);
 			Controls.Add(tools);
 
-			bookmarksToolStrip.ActAsPaginator(
+			navigationToolStrip.ActAsPaginator(
 				assortments,
 				page => {
 					Pager<Assortment> pager = null;
@@ -144,7 +143,7 @@ namespace ProducerEditor.Views
 					return;
 				}
 				UpdateAssortment(pager);
-				bookmarksToolStrip.UpdatePaginator(pager);
+				navigationToolStrip.UpdatePaginator(pager);
 			});
 		}
 
@@ -161,15 +160,15 @@ namespace ProducerEditor.Views
 				return;
 
 			Action(s => {
-				UpdateAssortment(s.ShowAssortment(Settings.Default.BookmarkAssortimentId));
-				assortmentTable.Behavior<IRowSelectionBehavior>().MoveSelectionAt(assortiments.Content.IndexOf(a => a.Id == Settings.Default.BookmarkAssortimentId));
+				var assortments = s.ShowAssortment(Settings.Default.BookmarkAssortimentId);
+				UpdateAssortment(assortments);
+				assortmentTable.Behavior<IRowSelectionBehavior>().MoveSelectionAt(assortments.Content.IndexOf(a => a.Id == Settings.Default.BookmarkAssortimentId));
 			});
 		}
 
 		private void UpdateAssortment(Pager<Assortment> pager)
 		{
-			assortiments = pager;
-			assortmentTable.TemplateManager.Source = assortiments.Content.ToList();
+			assortmentTable.TemplateManager.Source = pager.Content.ToList();
 		}
 	}
 }

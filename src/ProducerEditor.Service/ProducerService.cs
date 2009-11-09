@@ -234,6 +234,12 @@ group by sfc.SynonymFirmCrCode")
 		}
 
 		[OperationContract]
+		public virtual Pager<AssortmentDto> ShowAssortmentForProducer(uint producerId, uint page)
+		{
+			return Slave(s => Assortment.ByProducer(s, producerId, page));
+		}
+
+		[OperationContract]
 		public virtual Pager<ExcludeDto> ShowExcludes(uint page)
 		{
 			return Slave(session => {

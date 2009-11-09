@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Forms;
 using Common.Tools;
+using ProducerEditor.Infrastructure;
 using ProducerEditor.Models;
 using Subway.Dom;
 using Subway.Dom.Base;
@@ -36,7 +37,8 @@ namespace ProducerEditor.Views
 				.Button("Объединить (F3)", ShowJoinView)
 				.Button("Удалить (Delete)", Delete)
 				.Separator()
-				.Button("Продукты (Enter)", ShowProductsAndProducersOrOffers);
+				.Button("Продукты (Enter)", ShowProductsAndProducersOrOffers)
+				.Button("Показать в ассортименте", ShowAssortmentForProducer);
 
 			var bookmarksToolStrip = new ToolStrip()
 				.Button("К закаладке", MoveToBookmark)
@@ -167,7 +169,11 @@ namespace ProducerEditor.Views
 
 		private void SetBookmark()
 		{
-			BookmarkProducerId = producerTable.Behavior<IRowSelectionBehavior>().Selected<Producer>().Id;
+			var producer = producerTable.Selected<Producer>();
+			if (producer == null)
+				return;
+
+			BookmarkProducerId = producer.Id;
 			Settings.Default.BookmarkProducerId = BookmarkProducerId;
 			Settings.Default.Save();
 			producerTable.RebuildViewPort();
@@ -177,6 +183,19 @@ namespace ProducerEditor.Views
 		{
 			ReseteFilter();
 			producerTable.Behavior<IRowSelectionBehavior>().MoveSelectionAt(controller.Producers.IndexOf(p => p.Id == BookmarkProducerId));
+		}
+
+		private void ShowAssortmentForProducer()
+		{
+			var producer = producerTable.Selected<Producer>();
+			if (producer == null)
+				return;
+
+
+			MvcHelper.ShowDialog(
+				typeof (ShowAssortmentForProducer), 
+				producer.Id,
+				Request(s => s.ShowAssortmentForProducer(producer.Id, 0)));
 		}
 
 		private void Delete()
