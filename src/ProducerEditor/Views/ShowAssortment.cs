@@ -22,6 +22,7 @@ namespace ProducerEditor.Views
 		private VirtualTable assortmentTable;
 
 		private Pager<Assortment> assortiments;
+		private string _searchText;
 		
 		public ShowAssortment(Pager<Assortment> assortments)
 		{
@@ -76,7 +77,16 @@ namespace ProducerEditor.Views
 
 			assortmentTable.Host.InputMap()
 				.KeyDown(Keys.Enter, Search)
-				.KeyDown(Keys.Escape, () => searchText.Text = "")
+				.KeyDown(Keys.Escape, () => {
+					searchText.Text = "";
+					if (!String.IsNullOrEmpty(_searchText))
+					{
+						_searchText = "";
+						var pager = Request(s => s.GetAssortmentPage(0));
+						UpdateAssortment(pager);
+						bookmarksToolStrip.UpdatePaginator(pager);
+					}
+				})
 				.KeyPress((o, a) => {
 					if (!Char.IsLetterOrDigit(a.KeyChar))
 						return;
@@ -87,13 +97,19 @@ namespace ProducerEditor.Views
 			Controls.Add(bookmarksToolStrip);
 			Controls.Add(tools);
 
-			bookmarksToolStrip.ActAsPaginator(assortments,
+			bookmarksToolStrip.ActAsPaginator(
+				assortments,
 				page => {
 					Pager<Assortment> pager = null;
-					Action(s => {
-						pager = s.GetAssortmentPage(page);
-						UpdateAssortment(pager);
-					});
+					if (String.IsNullOrEmpty(_searchText))
+						Action(s => {
+							pager = s.GetAssortmentPage(page);
+						});
+					else
+						Action(s => {
+							pager = s.SearchAssortment(_searchText, page);
+						});
+					UpdateAssortment(pager);
 					return pager;
 				});
 
@@ -118,8 +134,10 @@ namespace ProducerEditor.Views
 			if (String.IsNullOrEmpty(searchText))
 				return;
 
+			_searchText = searchText;
+
 			Action(s => {
-				var pager = s.SearchAssortment(searchText);
+				var pager = s.SearchAssortment(searchText, 0);
 				if (pager == null)
 				{
 					MessageBox.Show("По вашему запросу ничего не найдено");

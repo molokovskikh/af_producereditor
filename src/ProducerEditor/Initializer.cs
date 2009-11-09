@@ -52,17 +52,21 @@ namespace ProducerEditor
 				.Set(StyleElementType.Height, 15)
 				.Set(StyleElementType.CustomBackgroundDraw, DrawBookmarkGlyph);
 
+			InitializeAR();
+		}
+
+		public static void InitializeAR()
+		{
 			var config = new InPlaceConfigurationSource();
 			config.Add(typeof (ActiveRecordBase),
-			           new Dictionary<string, string>
-			           	{
-			           		{Environment.Dialect, "NHibernate.Dialect.MySQLDialect"},
-			           		{Environment.ConnectionDriver, "NHibernate.Driver.MySqlDataDriver"},
-			           		{Environment.ConnectionProvider, "NHibernate.Connection.DriverConnectionProvider"},
-			           		{Environment.ConnectionStringName, "Slave"},
-			           		{Environment.ProxyFactoryFactoryClass,"NHibernate.ByteCode.Castle.ProxyFactoryFactory, NHibernate.ByteCode.Castle"},
-			           		{Environment.Hbm2ddlKeyWords, "none"}
-			           	});
+				new Dictionary<string, string> {
+					{Environment.Dialect, "NHibernate.Dialect.MySQLDialect"},
+					{Environment.ConnectionDriver, "NHibernate.Driver.MySqlDataDriver"},
+					{Environment.ConnectionProvider, "NHibernate.Connection.DriverConnectionProvider"},
+					{Environment.ConnectionStringName, "Slave"},
+					{Environment.ProxyFactoryFactoryClass, "NHibernate.ByteCode.Castle.ProxyFactoryFactory, NHibernate.ByteCode.Castle" },
+					{Environment.Hbm2ddlKeyWords, "none"}
+				});
 			ActiveRecordStarter.Initialize(new[] {Assembly.Load("ProducerEditor")}, config);
 		}
 

@@ -304,10 +304,10 @@ namespace ProducerEditor.Views
 
 		public static void UpdatePaginator<T>(this ToolStrip toolStrip, Pager<T> pager)
 		{
-			toolStrip.Items["PageLabel"].Text = String.Format("Страница {0} из {1}", pager.Page, pager.TotalPages);
+			toolStrip.Items["PageLabel"].Text = String.Format("Страница {0} из {1}", pager.Page + 1, pager.TotalPages);
 
 			var next = toolStrip.Items["Next"];
-			next.Enabled = pager.Page < pager.TotalPages;
+			next.Enabled = pager.Page < pager.TotalPages - 1;
 			if (next.Enabled)
 				next.Tag = pager.Page + 1;
 			else

@@ -69,7 +69,7 @@ limit :begin, 100")
 
 		public static uint TotalPages(ISession session)
 		{
-			return (uint) session.CreateSQLQuery(@"select count(*) from catalogs.Assortment").UniqueResult<long>() / 100;
+			return (uint) session.CreateSQLQuery(@"select count(*) from catalogs.Assortment").UniqueResult<long>();
 		}
 
 		public static uint GetPage(ISession session, uint assortimentId)
@@ -92,12 +92,12 @@ where c.Id = ?id", connection);
 
 			if (value == DBNull.Value)
 				return 0;
-			return Convert.ToUInt32(value) / 100;
+			return (Convert.ToUInt32(value) / 100);
 		}
 
-		public static int Find(ISession session, string text)
+		public static Pager<AssortmentDto> Find(ISession session, string text, uint page)
 		{
-			var assortiment = session.CreateSQLQuery(@"
+			var assortments = session.CreateSQLQuery(@"
 select	a.Id,
 		pr.Name as Producer,
 		c.Name as Product,
@@ -106,13 +106,21 @@ from catalogs.Assortment a
 	join catalogs.Producers pr on pr.Id = a.ProducerId
 	join Catalogs.Catalog as c on a.CatalogId = c.id
 where c.Name like :text
-limit 1")
-				.SetParameter("text", text + "%")
+order by c.Name
+limit :begin, 100")
+				.SetParameter("text", "%" + text + "%")
+				.SetParameter("begin", page * 100)
 				.SetResultTransformer(new AliasToBeanResultTransformer(typeof(AssortmentDto)))
-				.UniqueResult<AssortmentDto>();
-			if (assortiment == null)
-				return -1;
-			return (int) GetPage(session, assortiment.Id);
+				.List<AssortmentDto>();
+			var count = session.CreateSQLQuery(@"
+select count(*) 
+from catalogs.Assortment a 
+	join Catalogs.Catalog as c on a.CatalogId = c.id
+where c.Name like :text")
+				.SetParameter("text", "%" + text + "%")
+				.UniqueResult<long>();
+
+			return new Pager<AssortmentDto>(page, (uint)count, assortments);
 		}
 
 		public virtual bool Exist(ISession session)

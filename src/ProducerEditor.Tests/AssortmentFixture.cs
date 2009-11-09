@@ -47,7 +47,10 @@ namespace ProducerEditor.Tests
 			using (var session = sessionFactory.OpenSession())
 			{
 				var assortments = Assortment.Load(session, 5);
-				Assert.That(Assortment.Find(session, assortments[1].Product), Is.EqualTo(5));
+				var findedAssortments = Assortment.Find(session, assortments[1].Product, 0);
+				Assert.That(findedAssortments.Content.Count, Is.EqualTo(1));
+				Assert.That(findedAssortments.Page, Is.EqualTo(0));
+				Assert.That(findedAssortments.TotalPages, Is.EqualTo(1));
 			}
 		}
 	}

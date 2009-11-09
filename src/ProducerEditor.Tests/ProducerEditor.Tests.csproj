@@ -89,6 +89,10 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Common.Tools\Common.Tools\Common.Tools.csproj">
+      <Project>{72AFCFE8-C9E9-45FA-9698-BEE896A517A3}</Project>
+      <Name>Common.Tools</Name>
+    </ProjectReference>
     <ProjectReference Include="..\ProducerEditor.Service\ProducerEditor.Service.csproj">
       <Project>{7A48EB44-15FC-4EBB-A3CE-2FBF3E8465E5}</Project>
       <Name>ProducerEditor.Service</Name>

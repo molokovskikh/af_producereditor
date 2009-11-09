@@ -129,7 +129,7 @@ namespace ProducerEditor.Models
 		Pager<Assortment> GetAssortmentPage(uint page);
 
 		[OperationContract]
-		Pager<Assortment> SearchAssortment(string text);
+		Pager<Assortment> SearchAssortment(string text, uint page);
 
 		[OperationContract]
 		void DeleteAssortment(uint assortmentId);

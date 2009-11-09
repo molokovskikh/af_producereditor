@@ -1,4 +1,5 @@
 ﻿using System.Linq;
+using Common.Tools;
 using log4net.Config;
 using NHibernate;
 using NHibernate.Linq;
@@ -24,7 +25,28 @@ namespace ProducerEditor.Tests
 		{
 			using(var session = sessionFactory.OpenSession())
 			{
-				session.Linq<SuspiciousProducerSynonym>().Where(s => s.Synonym.Id == 516849u).First();
+				var all = session.Linq<SuspiciousProducerSynonym>().ToList();
+				all.Each(session.Delete);
+				var testSynonym =  session.Linq<ProducerSynonym>().Where(s => s.Name == "test").FirstOrDefault();
+				if (testSynonym != null)
+					session.Delete(testSynonym);
+				session.Flush();
+
+				var synonym = new ProducerSynonym();
+				synonym.Producer = session.Linq<Producer>().First();
+				synonym.Price = session.Linq<Price>().First();
+				synonym.Name = "test";
+				session.Save(synonym);
+				session.Flush();
+
+				session.Save(new SuspiciousProducerSynonym(synonym));
+				session.Flush();
+			}
+
+			using(var session = sessionFactory.OpenSession())
+			{
+				var suspisioses = SynonymReportItem.Suspicious(session);
+				Assert.That(suspisioses.Count, Is.EqualTo(1));
 			}
 		}
 	}

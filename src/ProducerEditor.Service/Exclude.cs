@@ -24,7 +24,7 @@ namespace ProducerEditor.Service
 
 		public static uint TotalPages(ISession session)
 		{
-			return (uint) (session.CreateSQLQuery(@"
+			return (uint)(session.CreateSQLQuery(@"
 select count(distinct e.id)
 from farm.Excludes e
 	join usersettings.PricesData pd on pd.PriceCode = e.PriceCode
@@ -33,7 +33,7 @@ from farm.Excludes e
 		join Catalogs.Producers p on p.Id = sfc.CodeFirmCr
 	left join Catalogs.Assortment a on a.CatalogId = e.CatalogId
 where e.DoNotShow = 0 and cd.FirmSegment = 0 and (a.Checked = 1 or p.Checked = 1)
-").UniqueResult<long>() / 100);
+").UniqueResult<long>());
 		}
 
 		public static IList<ExcludeDto> Load(uint page, ISession session)

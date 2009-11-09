@@ -11,10 +11,9 @@ namespace ProducerEditor.Tests
 	[TestFixture]
 	public class ActiveRecordFixture
 	{
-		[SetUp]
-		public void Setup()
+		static ActiveRecordFixture()
 		{
-			Initializer.Initialize();
+			Initializer.InitializeAR();
 		}
 
 		[Test]

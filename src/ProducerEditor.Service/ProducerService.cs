@@ -29,10 +29,14 @@ namespace ProducerEditor.Service
 		[DataMember]
 		public IList<T> Content { get; set; }
 
-		public Pager(uint page, uint totalPages, IList<T> content)
+		public Pager(uint page, uint total, IList<T> content)
 		{
 			Page = page;
-			TotalPages = totalPages;
+			TotalPages = total / 100;
+			if (TotalPages == 0)
+				TotalPages = 1;
+			else if (total % 100 != 0)
+				TotalPages++;
 			Content = content;
 		}
 	}
@@ -224,15 +228,9 @@ group by sfc.SynonymFirmCrCode")
 		}
 
 		[OperationContract]
-		public virtual Pager<AssortmentDto> SearchAssortment(string text)
+		public virtual Pager<AssortmentDto> SearchAssortment(string text, uint page)
 		{
-			return Slave(session => {
-				var total = Assortment.TotalPages(session);
-				var page = Assortment.Find(session, text);
-				if (page == -1)
-					return null;
-				return new Pager<AssortmentDto>((uint) page, total, Assortment.Load(session, (uint) page));
-			});
+			return Slave(session => Assortment.Find(session, text, page));
 		}
 
 		[OperationContract]
