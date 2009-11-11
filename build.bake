@@ -25,12 +25,13 @@ def GeneratePublishPage(file as string, version as string, projectName as string
 project = "ProducerEditor"
 projectFile = Path.GetFullPath("src/${project}/${project}.csproj")
 output = Path.GetFullPath("./build/${project}");
-version = "0.5.2"
+version = "0.6.0"
 deploymentUrl = "http://publish.analit.net/ProducerEditor/"
 deployDir = "\\\\acdcserv\\publish\\ProducerEditor"
 
 Global(
-	libs : ("Common.Tools", "Common.MySql", 
+	libs : ("Common.Tools", 
+		"Common.MySql", 
 		("Common.Service", 620, "http://svn.analit.net/Common/trunk/Common.Service/"),
 		"Common.Models")
 )
