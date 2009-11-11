@@ -41,7 +41,7 @@ FROM logs.SynonymFirmCrLogs sfcl
       join usersettings.clientsdata cd on pd.FirmCode = cd.FirmCode
         join farm.Regions r on r.RegionCode = cd.RegionCode
     join Catalogs.Producers pr on pr.Id = sfc.CodeFirmCr
-where ((sfcl.Operation = 0 and sfcl.OperatorName != 'ProcessingSvc') or sfcl.Operation = 1) and sfcl.LogTime between :begin and :end
+where ((sfcl.Operation = 0 and sfcl.OperatorName != 'ProcessingSvc') or (sfcl.Operation = 1 and sfcl.OperatorName != 'ProducerEditor' and sfcl.OPeratorHost like 'OPT%')) and sfcl.LogTime between :begin and :end
 group by sfc.SynonymFirmCrCode
 order by sfc.Synonym;")
 					.SetParameter("begin", begin)
@@ -74,7 +74,7 @@ FROM logs.SynonymFirmCrLogs sfcl
       join usersettings.clientsdata cd on pd.FirmCode = cd.FirmCode
         join farm.Regions r on r.RegionCode = cd.RegionCode
     join Catalogs.Producers pr on pr.Id = sfc.CodeFirmCr
-where ((sfcl.Operation = 0 and sfcl.OperatorName != 'ProcessingSvc') or sfcl.Operation = 1)
+where ((sfcl.Operation = 0 and sfcl.OperatorName != 'ProcessingSvc') or (sfcl.Operation = 1 and sfcl.OperatorName != 'ProducerEditor' and sfcl.OPeratorHost like 'OPT%'))
 group by sfc.SynonymFirmCrCode
 order by sfc.Synonym;")
 					.SetResultTransformer(Transformers.AliasToBean(typeof (SynonymReportItem)))
