@@ -11,5 +11,12 @@ namespace ProducerEditor.Tests
 		{
 			Global.InitializeNHibernate();
 		}
+
+		[Test]
+		public void Try_to_resolve_service()
+		{
+			var container = Global.Setup();
+			var service = container.Resolve<ProducerService>();
+		}
 	}
 }

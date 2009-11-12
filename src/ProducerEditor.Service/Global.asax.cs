@@ -27,7 +27,7 @@ namespace ProducerEditor.Service
 			try
 			{
 				XmlConfigurator.Configure();
-				Setup();
+				container = Setup();
 			}
 			catch (Exception ex)
 			{
@@ -35,7 +35,7 @@ namespace ProducerEditor.Service
 			}
 		}
 
-		private void Setup()
+		public static IWindsorContainer Setup()
 		{
 			var debug = new ServiceDebugBehavior
 			{
@@ -61,7 +61,7 @@ namespace ProducerEditor.Service
 
 			var factory = InitializeNHibernate();
 
-			container = new WindsorContainer()
+			var container = new WindsorContainer()
 				.AddFacility<WcfFacility>()
 				.Register(
 					Component.For<ISessionFactory>().Instance(factory),
@@ -76,12 +76,12 @@ namespace ProducerEditor.Service
 						.FromAssembly(typeof (ProducerService).Assembly)
 						.If(t => t.Name.Contains("Service"))
 						.Configure(c => {
-							c.Named(c.ServiceType.Name)
+							var conf = c.Named(c.ServiceType.Name)
 								.ActAs(new DefaultServiceModel().AddEndpoints(WcfEndpoint.BoundTo(binding)).Hosted())
-								.Interceptors(InterceptorReference.ForType<ErrorLoggingInterceptor>());
+								.Interceptors(InterceptorReference.ForType<ErrorLoggingInterceptor>()).Anywhere;
 						})
 				);
-
+			return container;
 		}
 
 		public static ISessionFactory InitializeNHibernate()
