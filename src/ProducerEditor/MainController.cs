@@ -87,7 +87,8 @@ order by p.Name")
 
 		public List<Producer> SearchProducer(string text)
 		{
-			return Producers.Where(p => p.Name.Contains((text ?? "").ToUpper())).ToList();
+			text = text ?? "";
+			return Producers.Where(p => p.Name.ToLower().Contains(text.ToLower())).ToList();
 		}
 
 		public List<OfferView> FindOffers(uint catalogId, uint producerId)
