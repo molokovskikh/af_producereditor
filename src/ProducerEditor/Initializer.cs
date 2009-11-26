@@ -63,7 +63,7 @@ namespace ProducerEditor
 					{Environment.Dialect, "NHibernate.Dialect.MySQLDialect"},
 					{Environment.ConnectionDriver, "NHibernate.Driver.MySqlDataDriver"},
 					{Environment.ConnectionProvider, "NHibernate.Connection.DriverConnectionProvider"},
-					{Environment.ConnectionStringName, "Slave"},
+					{Environment.ConnectionStringName, "Master"},
 					{Environment.ProxyFactoryFactoryClass, "NHibernate.ByteCode.Castle.ProxyFactoryFactory, NHibernate.ByteCode.Castle" },
 					{Environment.Hbm2ddlKeyWords, "none"}
 				});
