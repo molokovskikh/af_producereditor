@@ -117,7 +117,7 @@ from farm.SynonymFirmCr sfc
     join usersettings.clientsdata cd on cd.FirmCode = pd.FirmCode
       join farm.Regions r on cd.RegionCode = r.RegionCode
   left join farm.Core0 c on c.SynonymFirmCrCode = sfc.SynonymFirmCrCode
-where sfc.CodeFirmCr = :ProducerId and cd.BillingCode <> 921
+where sfc.CodeFirmCr = :ProducerId and cd.BillingCode <> 921 and cd.FirmSegment <> 1
 group by sfc.SynonymFirmCrCode")
 				.SetParameter("ProducerId", producerId)
 				.SetResultTransformer(Transformers.AliasToBean(typeof (ProducerSynonymDto)))
@@ -190,8 +190,17 @@ group by sfc.SynonymFirmCrCode")
 		public virtual void DeleteAssortment(uint assortmentId)
 		{
 			Transaction(session => {
-				var assortment = session.Get<ProductAssortment>(assortmentId);
-				session.Delete(assortment);
+				var productAssortment = session.Get<ProductAssortment>(assortmentId);
+				session.Delete(productAssortment);
+
+				var assortment = session.Get<Assortment>(assortmentId);
+				session.CreateSQLQuery(@"
+delete from farm.Core0
+where CodeFirmCr = :ProducerId and ProductId in (
+	select id from catalogs.Products where CatalogId = :CatalogId)")
+				.SetParameter("CatalogId", assortment.CatalogProduct.Id)
+				.SetParameter("ProducerId", assortment.Producer.Id)
+				.ExecuteUpdate();
 			});
 		}
 
