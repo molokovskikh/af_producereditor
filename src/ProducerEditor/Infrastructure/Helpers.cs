@@ -12,6 +12,7 @@ using NHibernate;
 using ProducerEditor.Models;
 using Subway.Helpers;
 using Subway.VirtualTable;
+using System.Collections.Generic;
 
 namespace ProducerEditor.Views
 {
@@ -275,6 +276,8 @@ namespace ProducerEditor.Views
 
 	public static class PaginatorExtention
 	{
+		public static string TableName = "TableHost";
+
 		public static ToolStrip ActAsPaginator<T>(this ToolStrip toolStrip, Pager<T> pager, Func<uint, Pager<T>> page)
 		{
 			Action<ToolStripButton> move = b => {
@@ -294,8 +297,16 @@ namespace ProducerEditor.Views
 			var form = toolStrip.Parent;
 			if (form == null)
 				throw new Exception("У paginatora нет родителя, всего скорее ты нужно добавлять поведение позже");
-			var table = form.Controls.OfType<TableHost>().First();
 
+			var controls = (form.Controls.Cast<Control>()).Flat<Control>(control => {
+				return control.Controls.Cast<Control>();
+			} );
+			var tables = controls.Where(control => control is TableHost);
+			Control table;
+			if (tables.Count() > 1)
+				table = tables.Where(control => String.Compare(control.Tag.ToString(), TableName) == 0).First();
+			else
+				table = tables.First();
 			table.InputMap()
 				.KeyDown(Keys.Left, () => move((ToolStripButton) toolStrip.Items["Prev"]))
 				.KeyDown(Keys.Right, () => move((ToolStripButton) toolStrip.Items["Next"]));

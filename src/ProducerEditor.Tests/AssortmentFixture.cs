@@ -4,6 +4,8 @@ using NHibernate;
 using NHibernate.Linq;
 using NUnit.Framework;
 using ProducerEditor.Service;
+using System;
+using Castle.Windsor.Installer;
 
 namespace ProducerEditor.Tests
 {
@@ -84,6 +86,95 @@ namespace ProducerEditor.Tests
 				Assert.That(assortments.Content.Count, Is.EqualTo(1));
 				var assortment = assortments.Content.Single();
 				Assert.That(assortment.Producer, Is.EqualTo("test-producer"));
+			}
+		}
+
+		private Producer CreateTestProducer(ISession session)
+		{
+			const string ProducerName = "test-producer";
+
+			var testProducer = session.Linq<Producer>().FirstOrDefault(p => p.Name == ProducerName);
+			if (testProducer != null)
+				session.Delete(testProducer);
+			session.Flush();
+
+			var producer = new Producer();
+			producer.Name = ProducerName;
+			session.Save(producer);
+			return producer;
+		}
+
+		[Test]
+		public void DeleteAssortmentPosition()
+		{
+			uint assortmentId;
+			uint countOffers = 0;
+			uint startOfferId = 118375;
+			using (var session = sessionFactory.OpenSession())
+			{
+				var producer = CreateTestProducer(session);
+				// Создаем позицию в ассортименте
+				var assortment = new Assortment(session.Linq<CatalogProduct>().First(), producer);
+				session.Save(assortment);
+				session.Flush();
+				var producerId = assortment.Producer.Id;				
+				var catalogId = assortment.CatalogProduct.Id;
+				assortmentId = assortment.Id;
+
+				var queryGetProductId = @"
+select Id 
+from Catalogs.Products
+where CatalogId = :CatalogId
+";
+				// Получаем идентификаторы продуктов по Id каталога
+				var productsIds = session.CreateSQLQuery(queryGetProductId)
+					.SetParameter("CatalogId", catalogId).List();
+
+				// Создаем запись предложений (записи в Core0)
+				var queryInsertOffer = @"
+insert into farm.Core0
+values(:OfferId, 307, :ProductId, :CodeFirmCr, 1808805, 9832, :EmptyString, 
+	:EmptyString, :EmptyString, :EmptyString, :EmptyString, :EmptyString, 
+	:EmptyString, :EmptyString, 0, 0, NULL, 0, NULL, NULL, NULL, NULL, NULL, now(), now())";
+
+				var offerId = startOfferId;
+				foreach (var productId in productsIds)
+				{
+					session.CreateSQLQuery("delete from farm.Core0 where Id = :OfferId")
+						.SetParameter("OfferId", offerId)
+						.ExecuteUpdate();
+
+					session.CreateSQLQuery(queryInsertOffer)
+							.SetParameter("OfferId", offerId)
+							.SetParameter("ProductId", productId)
+							.SetParameter("CodeFirmCr", producerId)
+							.SetParameter("EmptyString", "")
+							.ExecuteUpdate();
+					offerId++;
+					countOffers++;
+				}
+				session.Flush();				
+			}
+
+			var service = new ProducerService(Global.InitializeNHibernate(), new Mailer());
+			service.DeleteAssortment(assortmentId);
+
+			using (var session = sessionFactory.OpenSession())
+			{				
+				var querySelect = @"
+select Id
+from farm.Core0
+where Id = :OfferId
+";
+				var offerId = startOfferId;
+				for (var i = 0; i < countOffers; i++)
+				{
+					var count = session.CreateSQLQuery(querySelect)
+						.SetParameter("OfferId", offerId++)
+						.List().Count;
+					session.Flush();
+					Assert.IsTrue(count == 0, "Для данной записи в ассортименте не все предложения были удалены");
+				}
 			}
 		}
 	}
