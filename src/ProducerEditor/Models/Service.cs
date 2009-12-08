@@ -45,14 +45,7 @@ namespace ProducerEditor.Models
 		[DataMember]
 		public string Region { get; set; }
 		[DataMember]
-		public byte Segment { get; set; }
-		[DataMember]
 		public Int64 HaveOffers { get; set; }
-
-		public string SegmentAsString()
-		{
-			return Segment == 0 ? "Опт" : "Розница";
-		}
 	}
 
 

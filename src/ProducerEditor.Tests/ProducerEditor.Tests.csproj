@@ -98,6 +98,7 @@
     <Compile Include="InitializationFixture.cs" />
     <Compile Include="ModelsFixture.cs" />
     <Compile Include="MvcHelperFixture.cs" />
+    <Compile Include="ProducerServiceFixture.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

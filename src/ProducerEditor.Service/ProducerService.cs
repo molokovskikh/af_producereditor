@@ -109,7 +109,6 @@ where CodeFirmCr = :SourceId
 select sfc.Synonym as Name,
 sfc.SynonymFirmCrCode as Id,
 cd.ShortName as Supplier,
-cd.FirmSegment as Segment,
 r.Region,
 c.Id is not null as HaveOffers
 from farm.SynonymFirmCr sfc
@@ -117,7 +116,7 @@ from farm.SynonymFirmCr sfc
     join usersettings.clientsdata cd on cd.FirmCode = pd.FirmCode
       join farm.Regions r on cd.RegionCode = r.RegionCode
   left join farm.Core0 c on c.SynonymFirmCrCode = sfc.SynonymFirmCrCode
-where sfc.CodeFirmCr = :ProducerId and cd.BillingCode <> 921 and cd.FirmSegment <> 1
+where sfc.CodeFirmCr = :ProducerId and cd.BillingCode <> 921 and cd.FirmSegment = 0
 group by sfc.SynonymFirmCrCode")
 				.SetParameter("ProducerId", producerId)
 				.SetResultTransformer(Transformers.AliasToBean(typeof (ProducerSynonymDto)))

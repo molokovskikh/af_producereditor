@@ -110,17 +110,12 @@ namespace ProducerEditor.Views
 					header.InlineStyle.Set(StyleElementType.Width, WidthHolder.ProducerWidths[2]);
 					row.Append(header);
 
-					header = new Header("Сегмент").Sortable("Segment");
-					header.InlineStyle.Set(StyleElementType.Width, WidthHolder.ProducerWidths[3]);
-					row.Append(header);
-
 					return row;
 				},
 				synonym => {
 					var row = Row.Cells(synonym.Name,
 						synonym.Supplier,
-						synonym.Region,
-						synonym.SegmentAsString());
+						synonym.Region);
 					if (synonym.HaveOffers == 0)
 						row.AddClass("WithoutOffers");
 					return row;
