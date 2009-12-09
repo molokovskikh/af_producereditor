@@ -59,7 +59,9 @@ union
 select
 c.ProductId, c.CodeFirmCr, 0 as OffersCount, 0 as OrdersCount, 0 as ExistsInRls
 from farm.core0 c
-  join farm.core0 sibling on c.ProductId = sibling.ProductId
+	join catalogs.Products products on products.Id = c.ProductId
+		join catalogs.Products p on p.CatalogId = products.CatalogId
+			join farm.core0 sibling on sibling.ProductId = p.Id
 where sibling.CodeFirmCr = :ProducerId and c.CodeFirmCr is not null
 group by c.ProductId, c.CodeFirmCr;
 
