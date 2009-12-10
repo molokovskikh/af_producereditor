@@ -102,12 +102,21 @@ NULL, 0, 0, NULL, 0, 0, 0, 0, 0, NULL, NULL, 0)
 				session.CreateSQLQuery(queryDeleteFirm)
 					.SetParameter("FirmCode", firmCode)
 					.ExecuteUpdate();
+				session.CreateSQLQuery(queryDeleteFirm)
+					.SetParameter("FirmCode", firmCode + 1)
+					.ExecuteUpdate();
 
 				session.CreateSQLQuery(queryInsertFirm)
 					.SetParameter("FirmCode", firmCode)
 					.SetParameter("FirmSegment", 0)
 					.SetParameter("BillingCode", billingCode)
 					.ExecuteUpdate();
+				session.CreateSQLQuery(queryInsertFirm)
+					.SetParameter("FirmCode", firmCode + 1)
+					.SetParameter("FirmSegment", 1)
+					.SetParameter("BillingCode", billingCode)
+					.ExecuteUpdate();
+
 
 				session.CreateSQLQuery(queryDeletePrice)
 					.SetParameter("PriceCode", priceCode)
