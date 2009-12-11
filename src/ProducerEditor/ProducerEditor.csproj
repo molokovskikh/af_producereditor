@@ -99,6 +99,9 @@
     <Compile Include="Infrastructure\Helpers.cs">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="Views\CreateEquivalentView.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="Views\JoinView.cs">
       <SubType>Form</SubType>
     </Compile>

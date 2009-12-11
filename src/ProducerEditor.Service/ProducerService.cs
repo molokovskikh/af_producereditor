@@ -148,6 +148,15 @@ group by sfc.SynonymFirmCrCode")
 		}
 
 		[OperationContract]
+		public virtual void CreateEquivalentForProducer(uint producerId, string equivalentName)
+		{
+			Transaction(session => {
+                var producer = session.Get<Producer>(producerId);
+                producer.Equivalents.Add(new ProducerEquivalent(producer, equivalentName));
+            });
+		}
+
+		[OperationContract]
 		public virtual void DeleteProducerSynonym(uint producerSynonymId)
 		{
 			Transaction(session => {
@@ -296,8 +305,13 @@ where CodeFirmCr = :ProducerId and ProductId in (
 			{
 				try
 				{
-					var host = ((RemoteEndpointMessageProperty)OperationContext.Current.IncomingMessageProperties[RemoteEndpointMessageProperty.Name]).Address;
-					var user = OperationContext.Current.IncomingMessageHeaders.GetHeader<string>("UserName", "");
+					var host = Environment.MachineName;
+					var user = Environment.UserName;
+					if (OperationContext.Current != null)
+					{
+						host = ((RemoteEndpointMessageProperty)OperationContext.Current.IncomingMessageProperties[RemoteEndpointMessageProperty.Name]).Address;
+						user = OperationContext.Current.IncomingMessageHeaders.GetHeader<string>("UserName", "");
+					}
 					session.CreateSQLQuery(@"
 set @InUnser = :user
 ;

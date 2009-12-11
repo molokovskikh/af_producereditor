@@ -38,7 +38,9 @@ namespace ProducerEditor.Views
 				.Button("Удалить (Delete)", Delete)
 				.Separator()
 				.Button("Продукты (Enter)", ShowProductsAndProducersOrOffers)
-				.Button("Показать в ассортименте", ShowAssortmentForProducer);
+				.Button("Показать в ассортименте", ShowAssortmentForProducer)
+				.Separator()
+				.Button("Создать эквивалент", ShowCreateEquivalentForProducer);
 
 			var bookmarksToolStrip = new ToolStrip()
 				.Button("К закаладке", MoveToBookmark)
@@ -302,6 +304,21 @@ namespace ProducerEditor.Views
 		{
 			var producers = controller.GetAllProducers();
 			producerTable.TemplateManager.Source = producers;
+		}
+
+		private void ShowCreateEquivalentForProducer()
+		{
+			var producer = producerTable.Selected<Producer>();
+			if (producer == null)
+				return;
+			IList<String> equivalents = null;
+			Action(s => { equivalents = s.GetEquivalents(producer.Id).ToList(); });
+			var createEquivalent = new CreateEquivalentView(producer, equivalents, 
+				(text, producerId) => Action(s => s.CreateEquivalentForProducer(producerId, text)));
+			if (createEquivalent.ShowDialog() != DialogResult.Cancel)
+			{
+				SelectedProducerChanged(producerTable.Selected<Producer>());
+			}
 		}
 	}
 }

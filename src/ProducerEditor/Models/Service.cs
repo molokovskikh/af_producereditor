@@ -153,5 +153,8 @@ namespace ProducerEditor.Models
 
 		[OperationContract]
 		Pager<Assortment> ShowAssortmentForProducer(uint producerId, uint page);
+
+		[OperationContract]
+		void CreateEquivalentForProducer(uint producerId, string equivalentName);
 	}
 }
