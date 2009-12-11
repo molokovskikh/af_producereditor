@@ -261,7 +261,7 @@ where CodeFirmCr = :ProducerId and ProductId in (
 		{
 			Transaction(session => {
 				var exclude = session.Load<Exclude>(excludeId);
-				exclude.DoNotShow = false;
+				exclude.DoNotShow = true;
 				session.Update(exclude);
 			});
 		}
