@@ -32,8 +32,8 @@ namespace ProducerEditor.Views
 				.Button("Next", "Следующая страница");
 
 			excludeTable = new VirtualTable(new TemplateManager<List<Exclude>, Exclude>(
-				() => Row.Headers("Продукт", "Производитель", "Синоним", "Поставщик", "Регион"),
-				e => Row.Cells(e.Catalog, e.Producer, e.ProducerSynonym, e.Supplier, e.Region)));
+				() => Row.Headers("Продукт", "Оригинальное наименование", "Производитель", "Синоним", "Поставщик", "Регион"),
+				e => Row.Cells(e.Catalog, e.OriginalSynonym, e.Producer, e.ProducerSynonym, e.Supplier, e.Region)));
 
 			excludeTable.CellSpacing = 1;
 			excludeTable.RegisterBehavior(new RowSelectionBehavior(),

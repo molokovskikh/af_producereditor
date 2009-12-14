@@ -45,9 +45,11 @@ select e.Id,
 	sfc.SynonymFirmCrCode as ProducerSynonymId,
 	sfc.Synonym as ProducerSynonym,
 	r.Region,
-	cd.ShortName as Supplier
+	cd.ShortName as Supplier,
+	syn.Synonym as OriginalSynonym
 from farm.Excludes e
 	join Catalogs.Catalog c on c.Id = e.CatalogId
+	left join farm.Synonym syn on syn.SynonymCode = e.OriginalSynonymId
 	join farm.SynonymFirmCr sfc on sfc.SynonymFirmCrCode = e.ProducerSynonymId
 		join Catalogs.Producers p on p.Id = sfc.CodeFirmCr
 		left join Catalogs.Assortment a on a.CatalogId = c.Id
@@ -82,5 +84,7 @@ limit :begin, 100
 		public string ProducerSynonym { get; set; }
 		[DataMember]
 		public uint ProducerSynonymId { get; set; }
+		[DataMember]
+		public string OriginalSynonym { get; set; }
 	}
 }
