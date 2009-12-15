@@ -148,7 +148,6 @@ namespace ProducerEditor.Views
 			{
 				Dock = DockStyle.Fill,
 			};
-			InputLanguageHelper.SetToRussian();
 			producersToEquivalentsSplit.Panel1.Controls.Add(producerTable.Host);
 			producersToEquivalentsSplit.Panel2.Controls.Add(equivalentTable.Host);
 
