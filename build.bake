@@ -9,6 +9,7 @@ import Microsoft.Build.Utilities.TaskItem from "Microsoft.Build.Utilities.v3.5" 
 import ICSharpCode.SharpZipLib.Zip from "lib/ICSharpCode.SharpZipLib.dll"
 import Bake.Win32.Helper
 import file from lib.bake
+import file from deploy.bake
 
 def Clean(path as String):
 	if not Exist(path):
@@ -25,11 +26,12 @@ def GeneratePublishPage(file as string, version as string, projectName as string
 project = "ProducerEditor"
 projectFile = Path.GetFullPath("src/${project}/${project}.csproj")
 output = Path.GetFullPath("./build/${project}");
-version = "0.6.4"
+version = "0.7.0"
 deploymentUrl = "http://publish.analit.net/ProducerEditor/"
 deployDir = "\\\\acdcserv\\publish\\ProducerEditor"
 
 Global(
+	humanReadableName : "Редактор производителей",
 	libs : ("Common.Tools", 
 		"Common.MySql", 
 		("Common.Service", 620, "http://svn.analit.net/Common/trunk/Common.Service/"),
@@ -170,7 +172,7 @@ Task @cleanDeployPackage:
 	Clean("build/${project}.Setup")
 	Clean("build/bootstrapper")
 	
-Task @deploy, [@buildDeployPackage, @cleanDeployDir, @deployService]:
+Task @deploy, [@buildDeployPackage, @cleanDeployDir, @deployService, @SendDeployNotification]:
 	Cp(FileSet("**/*.*", BaseDirectory : "build/${project}.Setup"), deployDir)
 	
 Task @cleanDeployDir:
