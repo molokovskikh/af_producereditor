@@ -7,6 +7,7 @@ using Castle.Core;
 using Castle.Facilities.WcfIntegration;
 using Castle.MicroKernel.Registration;
 using Castle.Windsor;
+using Common.Service;
 using Common.Service.Interceptors;
 using log4net;
 using log4net.Config;
@@ -37,6 +38,9 @@ namespace ProducerEditor.Service
 
 		public static IWindsorContainer Setup()
 		{
+#if DEBUG
+			ServiceContext.GetUserName = () => System.Environment.UserName;
+#endif
 			var debug = new ServiceDebugBehavior
 			{
 #if DEBUG
@@ -81,6 +85,7 @@ namespace ProducerEditor.Service
 								.Interceptors(InterceptorReference.ForType<ErrorLoggingInterceptor>()).Anywhere;
 						})
 				);
+
 			return container;
 		}
 
