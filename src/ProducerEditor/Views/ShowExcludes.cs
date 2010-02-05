@@ -9,6 +9,7 @@ using Subway.Helpers;
 using Subway.VirtualTable;
 using Subway.VirtualTable.Behaviors;
 using Subway.VirtualTable.Behaviors.Selection;
+using Subway.VirtualTable.Behaviors.Specialized;
 
 namespace ProducerEditor.Views
 {
@@ -32,12 +33,30 @@ namespace ProducerEditor.Views
 				.Button("Next", "Следующая страница");
 
 			excludeTable = new VirtualTable(new TemplateManager<List<Exclude>, Exclude>(
-				() => Row.Headers("Продукт", "Оригинальное наименование", "Производитель", "Синоним", "Поставщик", "Регион"),
-				e => Row.Cells(e.Catalog, e.OriginalSynonym, e.Producer, e.ProducerSynonym, e.Supplier, e.Region)));
+				() =>
+					{
+						var row = Row.Headers();
+						var header = new Header("Продукт").Sortable("Catalog");
+						row.Append(header);
+						header = new Header("Оригинальное наименование").Sortable("Catalog");
+						row.Append(header);
+						header = new Header("Производитель").Sortable("Producer");
+						row.Append(header);
+						header = new Header("Синоним").Sortable("ProducerSynonym");
+						row.Append(header);
+						header = new Header("Поставщик").Sortable("Supplier");
+						row.Append(header);
+						header = new Header("Регион").Sortable("Region");
+						row.Append(header);
+						return row;
+					},
+				e => Row.Cells(e.Catalog, e.OriginalSynonym, e.Producer, e.ProducerSynonym, e.Supplier, e.Region)
+				));
 
 			excludeTable.CellSpacing = 1;
 			excludeTable.RegisterBehavior(new RowSelectionBehavior(),
 				new ToolTipBehavior(),
+				new SortInList(),
 				new ColumnResizeBehavior());
 			excludeTable.Behavior<ColumnResizeBehavior>().ColumnResized += column => WidthHolder.Update(excludeTable, column, WidthHolder.ExcludeWidths);
 			excludeTable.TemplateManager.ResetColumns();
