@@ -70,6 +70,8 @@ namespace ProducerEditor.Models
 		public string Products { get; set; }
 		[DataMember]
 		public int IsSuspicious { get; set; }
+		[DataMember]
+		public uint SupplierId { get; set; }
 	}
 
 	[DataContract(Namespace = "http://schemas.datacontract.org/2004/07/ProducerEditor.Service")]
@@ -158,5 +160,8 @@ namespace ProducerEditor.Models
 
 		[OperationContract]
 		void CreateEquivalentForProducer(uint producerId, string equivalentName);
+
+		[OperationContract]
+		string GetSupplierEmails(uint supplierId);
 	}
 }

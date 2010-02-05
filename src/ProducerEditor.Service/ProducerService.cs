@@ -4,6 +4,7 @@ using System.Linq;
 using System.Runtime.Serialization;
 using System.ServiceModel;
 using System.ServiceModel.Channels;
+using Common.MySql;
 using Common.Tools;
 using NHibernate;
 using NHibernate.Linq;
@@ -296,6 +297,36 @@ where CodeFirmCr = :ProducerId and ProductId in (
 				session.Delete(exclude);
 				session.Save(assortment);
 			});
+		}
+
+		[OperationContract]
+		public string GetSupplierEmails(uint supplierId)
+		{
+			var sql = @"
+select distinct c.contactText
+from usersettings.clientsdata cd
+  join contacts.contact_groups cg on cd.ContactGroupOwnerId = cg.ContactGroupOwnerId
+    join contacts.contacts c on cg.Id = c.ContactOwnerId
+where
+    firmcode = :FirmCode
+and cg.Type = 2
+and c.Type = 0
+
+union
+
+select distinct c.contactText
+from usersettings.clientsdata cd
+  join contacts.contact_groups cg on cd.ContactGroupOwnerId = cg.ContactGroupOwnerId
+    join contacts.persons p on cg.id = p.ContactGroupId
+      join contacts.contacts c on p.Id = c.ContactOwnerId
+where
+    firmcode = :FirmCode
+and cg.Type = 2
+and c.Type = 0";
+			IList<string> emails = null;
+			Transaction(s => emails = s.CreateSQLQuery(sql).SetParameter("FirmCode", supplierId).List<string>());
+			var emailList = emails.Aggregate("", (s, a) => s + a + "; ");
+			return emailList;
 		}
 
 		private void Transaction(Action<ISession> action)

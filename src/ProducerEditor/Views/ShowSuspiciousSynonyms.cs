@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
@@ -25,7 +26,8 @@ namespace ProducerEditor.Views
 			var widths = WidthHolder.SyspiciosSynonyms;
 			var tools = new ToolStrip()
 				.Button("Удалить (Delete)", Delete)
-				.Button("Не подозрительный (Пробел)", NotSuspicious);
+				.Button("Не подозрительный (Пробел)", NotSuspicious)
+				.Button("Отправить уведомление поставщику", SendNotificationToSupplier);
 
 			report = new VirtualTable(new TemplateManager<List<SynonymReportItem>, SynonymReportItem>(
 				() => { 
@@ -91,6 +93,20 @@ namespace ProducerEditor.Views
 				((IList<SynonymReportItem>)report.TemplateManager.Source).Remove(item);
 				report.RebuildViewPort();
 			})();
+		}
+
+		private void SendNotificationToSupplier()
+		{
+			var addressList = String.Empty;
+			Controller(s => {
+				var item = CurrentItem();
+				if (item == null)
+					return;
+				addressList = s.GetSupplierEmails(item.SupplierId);
+           	})();
+			if (!String.IsNullOrEmpty(addressList))
+				Process.Start(String.Format("mailto:{0}?Subject={1}&Body={2}",
+					addressList, "Неверная связка товар/производитель", ""));
 		}
 
 		private void Delete()

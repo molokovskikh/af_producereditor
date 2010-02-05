@@ -16,6 +16,7 @@ namespace ProducerEditor.Service
 		public string Producer { get; set; }
 		public string Products { get; set; }
 		public int IsSuspicious { get; set; }
+		public uint SupplierId { get; set; }
 
 		public static IList<SynonymReportItem> Load(ISession session, DateTime begin, DateTime end)
 		{
@@ -59,6 +60,7 @@ SELECT sfc.SynonymFirmCrCode as Id,
        r.Region,
        sfc.Synonym,
        pr.Name as Producer,
+	   cd.FirmCode as SupplierId,
        ss.id is not null as IsSuspicious,
        (select group_concat(distinct concat(cn.Name, ' ', cf.Form) separator ', ')
         from farm.core0 c
