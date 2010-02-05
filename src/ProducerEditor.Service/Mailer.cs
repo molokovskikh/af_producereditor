@@ -28,5 +28,17 @@ namespace ProducerEditor.Service
 ", synonym.Name,
 					synonym.Producer.Name, synonym.Price.Supplier.ShortName, synonym.Price.Supplier.Region.Name));
 		}
+
+		public void SynonymWasDeleted(Synonym synonym)
+		{
+			var smtp = new SmtpClient(_smtpServer);
+			smtp.Send("tech@analit.net",
+				_synonymDeleteNotificationMail,
+				"Удален синоним наименования",
+				String.Format(@"Синоним: {0}
+Поставщик: {1}
+Регион: {2}
+", synonym.Name, synonym.Price.Supplier.ShortName, synonym.Price.Supplier.Region.Name));			
+		}
 	}
 }

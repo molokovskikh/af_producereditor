@@ -24,6 +24,8 @@ namespace ProducerEditor.Models
 		public uint ProducerSynonymId { get; set; }
 		[DataMember]
 		public string OriginalSynonym { get; set; }
+		[DataMember]
+		public uint OriginalSynonymId { get; set; }
 	}
 
 	[DataContract(Namespace = "http://schemas.datacontract.org/2004/07/ProducerEditor.Service")]
@@ -163,5 +165,8 @@ namespace ProducerEditor.Models
 
 		[OperationContract]
 		string GetSupplierEmails(uint supplierId);
+
+		[OperationContract]
+		void DeleteSynonym(uint synonymId);
 	}
 }

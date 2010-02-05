@@ -91,6 +91,26 @@ namespace ProducerEditor.Service
 		public virtual Price Price { get; set; }
 	}
 
+	[Class(Table = "farm.Synonym")]
+	public class Synonym
+	{
+		[Id(0, Name = "Id", Column = "SynonymCode")]
+		[Generator(1, Class = "native")]
+		public virtual uint Id { get; set; }
+
+		[Property(Column = "Synonym")]
+		public virtual string Name { get; set; }
+
+		[Property(Column = "Junk")]
+		public virtual bool Junk { get; set; }
+
+		[Property(Column = "ProductId")]
+		public virtual uint ProductId { get; set; }
+
+		[ManyToOne(ClassType = typeof(Price), Column = "PriceCode")]
+		public virtual Price Price { get; set; }
+	}
+
 	[DataContract(Name = "ProducerSynonym", Namespace = "http://schemas.datacontract.org/2004/07/ProducerEditor.Service")]
 	public class ProducerSynonymDto
 	{

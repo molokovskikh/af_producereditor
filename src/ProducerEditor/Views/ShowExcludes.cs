@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
@@ -25,7 +26,8 @@ namespace ProducerEditor.Views
 			var tools = new ToolStrip()
 				.Button("Добавить в ассортимент", AddToAssortiment)
 				.Button("Больше не показывать", DoNotShow)
-				.Button("Ошибочное сопоставление (Delete)", DeleteSynonym);
+				.Button("Ошибочное сопоставление (Delete)", DeleteProducerSynonym)
+				.Button("Ошибочное сопоставление по наименованию", DeleteSynonym);
 
 			var navigation = new ToolStrip()
 				.Button("Prev", "Передыдущая страница")
@@ -62,7 +64,7 @@ namespace ProducerEditor.Views
 			excludeTable.TemplateManager.ResetColumns();
 
 			excludeTable.Host.InputMap()
-				.KeyDown(Keys.Delete, DeleteSynonym);
+				.KeyDown(Keys.Delete, DeleteProducerSynonym);
 
 			excludeTable.TemplateManager.Source = pager.Content.ToList();
 
@@ -79,7 +81,7 @@ namespace ProducerEditor.Views
 			Shown += (s, a) => excludeTable.Host.Focus();
 		}
 
-		public void DeleteSynonym()
+		public void DeleteProducerSynonym()
 		{
 			var exclude = excludeTable.Selected<Exclude>();
 			if (exclude == null)
@@ -88,6 +90,25 @@ namespace ProducerEditor.Views
 			Action(s => s.DeleteProducerSynonym(exclude.ProducerSynonymId));
 			var excludes = ((List<Exclude>)excludeTable.TemplateManager.Source);
 			excludes.Where(e => e.ProducerSynonymId == exclude.ProducerSynonymId)
+				.ToList()
+				.Each(e => excludes.Remove(e));
+			excludeTable.RebuildViewPort();
+		}
+
+		public void DeleteSynonym()
+		{
+			var exclude = excludeTable.Selected<Exclude>();
+			if (exclude == null)
+				return;
+			if (String.IsNullOrEmpty(exclude.OriginalSynonym) && exclude.OriginalSynonymId == 0)
+			{
+				MessageBox.Show("Для выбранного исключения не задано оригинальное наименование", "Предупреждение",
+					MessageBoxButtons.OK, MessageBoxIcon.Warning);
+				return;	
+			}
+			Action(s => s.DeleteSynonym(exclude.OriginalSynonymId));
+			var excludes = ((List<Exclude>)excludeTable.TemplateManager.Source);
+			excludes.Where(e => e.OriginalSynonymId == exclude.OriginalSynonymId)
 				.ToList()
 				.Each(e => excludes.Remove(e));
 			excludeTable.RebuildViewPort();

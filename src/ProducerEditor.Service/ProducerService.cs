@@ -169,6 +169,18 @@ group by sfc.SynonymFirmCrCode")
 		}
 
 		[OperationContract]
+		public virtual void DeleteSynonym(uint synonymId)
+		{
+			Transaction(session => {
+    			var synonym = session.Get<Synonym>(synonymId);
+				if (synonym == null)
+					return;
+    			session.Delete(synonym);
+				_mailer.SynonymWasDeleted(synonym);
+    		});
+		}
+
+		[OperationContract]
 		public virtual void Suspicious(uint producerSynonymId)
 		{
 			Transaction(session => {
