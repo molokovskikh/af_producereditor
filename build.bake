@@ -26,7 +26,7 @@ def GeneratePublishPage(file as string, version as string, projectName as string
 project = "ProducerEditor"
 projectFile = Path.GetFullPath("src/${project}/${project}.csproj")
 output = Path.GetFullPath("./build/${project}");
-version = "0.7.1"
+version = "0.7.2"
 deploymentUrl = "http://publish.analit.net/ProducerEditor/"
 deployDir = "\\\\acdcserv\\publish\\ProducerEditor"
 
@@ -155,7 +155,7 @@ Task @buildDeployPackage, [@build, @buildService, @buildInstaller, @cleanDeployP
 	Mv("${output}setup.exe", "${output}${project}.Setup.exe")
 	
 	cert = X509Certificate2(System.IO.File.ReadAllBytes(certPath), password)	
-	Sh("\"${Sdk().Path()}/signtool\" sign /sha1 ${cert.Thumbprint} ${output}${project}.Setup.exe").Execute()
+	Sh("\"${Sdk().Path()}/signtool\" sign /sha1 ${cert.Thumbprint} ${output}${project}.Setup.exe")
 	
 	GeneratePublishPage("${output}/publish.htm", version, project)
 		
