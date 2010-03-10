@@ -209,7 +209,6 @@ namespace ProducerEditor.Views
 					((IList<Producer>)producerTable.TemplateManager.Source).Remove(producer);
 					controller.Producers.Remove(producer);
 				});
-
 				SelectedProducerChanged(producerTable.Selected<Producer>());
 				producerTable.RebuildViewPort();
 			}
@@ -293,6 +292,8 @@ namespace ProducerEditor.Views
 
 		private void SelectedProducerChanged(Producer producer)
 		{
+			if (producer == null)
+				return;
 			Action(s => {
 				synonymsTable.TemplateManager.Source = s.GetSynonyms(producer.Id).ToList();
 				equivalentTable.TemplateManager.Source = s.GetEquivalents(producer.Id).ToList();
