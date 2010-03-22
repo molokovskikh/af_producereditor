@@ -74,7 +74,7 @@ namespace ProducerEditor.Service
 					Component.For<IServiceBehavior>().Instance(debug),
 					Component.For<IServiceBehavior>().Instance(metadata),
 
-					Component.For<ErrorLoggingInterceptorDeadlockSafe>(),
+					Component.For<ErrorLoggingInterceptor>(),
 
 					AllTypes.Pick()
 						.FromAssembly(typeof (ProducerService).Assembly)
@@ -82,7 +82,7 @@ namespace ProducerEditor.Service
 						.Configure(c => {
 							var conf = c.Named(c.ServiceType.Name)
 								.ActAs(new DefaultServiceModel().AddEndpoints(WcfEndpoint.BoundTo(binding)).Hosted())
-								.Interceptors(InterceptorReference.ForType<ErrorLoggingInterceptorDeadlockSafe>()).Anywhere;
+								.Interceptors(InterceptorReference.ForType<ErrorLoggingInterceptor>()).Anywhere;
 						})
 				);
 

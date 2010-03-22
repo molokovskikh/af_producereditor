@@ -210,7 +210,8 @@ group by sfc.SynonymFirmCrCode")
 		[OperationContract]
 		public virtual void DeleteAssortment(uint assortmentId)
 		{
-			Transaction(session => {
+			With.DeadlockWraper(() => 
+				Transaction(session => {
 				var productAssortment = session.Get<ProductAssortment>(assortmentId);
 				session.Delete(productAssortment);
 
@@ -222,7 +223,7 @@ where CodeFirmCr = :ProducerId and ProductId in (
 				.SetParameter("CatalogId", assortment.CatalogProduct.Id)
 				.SetParameter("ProducerId", assortment.Producer.Id)
 				.ExecuteUpdate();
-			});
+			}));
 		}
 
 		[OperationContract]
