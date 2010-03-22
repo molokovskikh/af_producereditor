@@ -1,11 +1,15 @@
 ﻿using System.Linq;
+using System.Reflection;
 using log4net.Config;
+using MySql.Data.MySqlClient;
 using NHibernate;
 using NHibernate.Linq;
 using NUnit.Framework;
 using ProducerEditor.Service;
 using System;
 using Castle.Windsor.Installer;
+using ProducerEditor.Service.Helpers;
+using Rhino.Mocks;
 
 namespace ProducerEditor.Tests
 {
@@ -175,6 +179,40 @@ where Id = :OfferId
 					session.Flush();
 					Assert.IsTrue(count == 0, "Для данной записи в ассортименте не все предложения были удалены");
 				}
+			}
+		}
+
+		private delegate void TestDelegate(Action<ISession> action);
+
+		private static MySqlException GetMySqlException(int errorCode, string message)
+		{
+			return (MySqlException)typeof(MySqlException)
+				.GetConstructor(BindingFlags.Instance | BindingFlags.NonPublic, null, new[] { typeof(string), typeof(int) }, null)
+				.Invoke(new object[] { message, errorCode });
+		}
+
+		[Test]
+		public void Delete_assortment_with_deadlock()
+		{
+			var _sessionFactory = Global.InitializeNHibernate();
+			var count = 0;
+			try
+			{
+				var repository = new MockRepository();
+				var callback = new TestDelegate(action => {
+					count++;
+					throw GetMySqlException(1205, "test");
+				});
+				var executor = (Executor) repository.StrictMock(typeof (Executor), _sessionFactory);
+				var service = new ProducerService(_sessionFactory, new Mailer(), executor);
+				executor.Stub((ex) => ex.WithTransaction(s => { })).IgnoreArguments().Do(callback);
+				repository.ReplayAll();
+
+				service.DeleteAssortment(1);
+			}
+			catch (Exception)
+			{
+				Assert.That(count, Is.EqualTo(50));
 			}
 		}
 	}

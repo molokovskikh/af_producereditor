@@ -11,6 +11,7 @@ using NHibernate.Linq;
 using NHibernate.Transform;
 using ConnectionManager = Common.MySql.ConnectionManager;
 using ISession=NHibernate.ISession;
+using ProducerEditor.Service.Helpers;
 
 namespace ProducerEditor.Service
 {
@@ -48,11 +49,20 @@ namespace ProducerEditor.Service
 		private readonly ISessionFactory _factory;
 		private readonly Mailer _mailer;
 		private readonly ConnectionManager _connectionManager = new ConnectionManager();
+		private readonly Executor _execute;
 
 		public ProducerService(ISessionFactory sessionFactory, Mailer mailer)
 		{
 			_factory = sessionFactory;
 			_mailer = mailer;
+			_execute = new Executor(_factory);
+		}
+
+		public ProducerService(ISessionFactory sessionFactory, Mailer mailer, Executor executor)
+		{
+			_factory = sessionFactory;
+			_mailer = mailer;
+			_execute = executor;
 		}
 
 		[OperationContract]
@@ -210,7 +220,7 @@ group by sfc.SynonymFirmCrCode")
 		[OperationContract]
 		public virtual void DeleteAssortment(uint assortmentId)
 		{
-			With.DeadlockWraper(() => 
+			With.DeadlockWraper(() =>
 				Transaction(session => {
 				var productAssortment = session.Get<ProductAssortment>(assortmentId);
 				session.Delete(productAssortment);
@@ -341,39 +351,10 @@ and c.Type = 0";
 			var emailList = emails.Aggregate("", (s, a) => s + a + "; ");
 			return emailList;
 		}
-
+		
 		private void Transaction(Action<ISession> action)
 		{
-			using (var session = _factory.OpenSession())
-			using (var transaction = session.BeginTransaction())
-			{
-				try
-				{
-					var host = Environment.MachineName;
-					var user = Environment.UserName;
-					if (OperationContext.Current != null)
-					{
-						host = ((RemoteEndpointMessageProperty)OperationContext.Current.IncomingMessageProperties[RemoteEndpointMessageProperty.Name]).Address;
-						user = OperationContext.Current.IncomingMessageHeaders.GetHeader<string>("UserName", "");
-					}
-					session.CreateSQLQuery(@"
-set @InUnser = :user
-;
-set @InHost = :host
-;")
-						.SetParameter("user", user)
-						.SetParameter("host", host)
-						.ExecuteUpdate();
-					action(session);
-
-					transaction.Commit();
-				}
-				catch
-				{
-					transaction.Rollback();
-					throw;
-				}
-			}
+			_execute.WithTransaction(action);
 		}
 
 		private T Slave<T>(Func<ISession, T> func)
