@@ -1,6 +1,6 @@
 ﻿import System
 import System.IO
-import System.Xml
+import System.Xml from "C:\\Windows\\Microsoft.NET\\Framework\\v2.0.50727\\System.Xml.dll"
 import System.Security.Cryptography.X509Certificates
 import System.Net.Mail
 import System.Threading
@@ -28,7 +28,8 @@ projectFile = Path.GetFullPath("src/${project}/${project}.csproj")
 output = Path.GetFullPath("./build/${project}");
 version = "0.7.3"
 deploymentUrl = "http://publish.analit.net/ProducerEditor/"
-deployDir = "\\\\acdcserv\\publish\\ProducerEditor"
+#deployDir = "\\\\acdcserv\\publish\\ProducerEditor"
+deployDir = "\\\\acdcserv\\WebPublish\\ProducerEditor"
 
 Global(
 	humanReadableName : "Редактор производителей",
@@ -81,10 +82,12 @@ Task @cleanService:
 	Clean("build/ProducerEditor.Service")
 
 Task @deployService, [@buildService, @cleanServiceDeployDir]: 
-	Cp(FileSet("**/*.*", BaseDirectory : "build/ProducerEditor.Service/"), "\\\\acdcserv\\ios\\ProducerEditor.Service\\")
+	Cp(FileSet("**/*.*", BaseDirectory : "build/ProducerEditor.Service/"), "\\\\acdcserv\\WebApps\\ProducerEditor.Service\\")
+	#Cp(FileSet("**/*.*", BaseDirectory : "build/ProducerEditor.Service/"), "\\\\acdcserv\\ios\\ProducerEditor.Service\\")
 
 Task @cleanServiceDeployDir:
-	Clean("\\\\acdcserv\\ios\\ProducerEditor.Service\\")
+	Clean("\\\\acdcserv\\WebApps\\ProducerEditor.Service\\")
+	#Clean("\\\\acdcserv\\ios\\ProducerEditor.Service\\")
 
 
 Task @buildDeployPackage, [@build, @buildService, @buildInstaller, @cleanDeployPackage]:
@@ -98,7 +101,7 @@ Task @buildDeployPackage, [@build, @buildService, @buildInstaller, @cleanDeployP
 			 TaskItem("Microsoft.Windows.Installer.3.1", {"Visible" : "false", "Install" : "true"}))
 	bootstrapper = Path.GetFullPath("build/bootstrapper/")
 		
-	Cp(FileSet("**/*.*", BaseDirectory : Path.GetFullPath("bootstrapper")), bootstrapper, true)
+	Cp(FileSet("**/*.*", BaseDirectory : Path.GetFullPath("bootstrapper"), Excludes : ["**/.svn/**"]), bootstrapper, true)
 	
 	installer = "build/Installer/"
 	Cp(FileSet("*.*", BaseDirectory : installer), "build/bootstrapper/Packages/${project}")
