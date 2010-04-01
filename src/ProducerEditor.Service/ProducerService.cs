@@ -172,6 +172,8 @@ group by sfc.SynonymFirmCrCode")
 		{
 			Transaction(session => {
 				var synonym = session.Get<ProducerSynonym>(producerSynonymId);
+				if (synonym == null)
+					throw new Exception("Невозможно удалить выбранный синоним, т.к. запись отсутствует в БД");
 				session.Delete(synonym);
 				session.Save(new BlockedProducerSynonym(synonym));
 				_mailer.SynonymWasDeleted(synonym);
@@ -223,6 +225,8 @@ group by sfc.SynonymFirmCrCode")
 			With.DeadlockWraper(() =>
 				Transaction(session => {
 				var productAssortment = session.Get<ProductAssortment>(assortmentId);
+				if (productAssortment == null)
+					throw new Exception("Невозможно удалить выбранную запись, т.к. эта запись отсутствует в БД");
 				session.Delete(productAssortment);
 
 				var assortment = session.Get<Assortment>(assortmentId);

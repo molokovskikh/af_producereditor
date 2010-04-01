@@ -232,7 +232,13 @@ where Id = {0}" , assortment.Id);
 
 		private void SetBookmark()
 		{
-			Settings.Default.BookmarkAssortimentId = assortmentTable.Selected<Assortment>().Id;
+			var selectedItem = assortmentTable.Selected<Assortment>();
+			if (selectedItem == null)
+			{
+				MessageBox.Show("Выделите позицию в ассортименте");
+				return;
+			}
+			Settings.Default.BookmarkAssortimentId = selectedItem.Id;
 			Settings.Default.Save();
 			assortmentTable.RebuildViewPort();
 		}
