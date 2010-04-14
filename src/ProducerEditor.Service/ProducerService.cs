@@ -224,12 +224,10 @@ group by sfc.SynonymFirmCrCode")
 		{
 			With.DeadlockWraper(() =>
 				Transaction(session => {
-				var productAssortment = session.Get<ProductAssortment>(assortmentId);
-				if (productAssortment == null)
-					throw new Exception("Невозможно удалить выбранную запись, т.к. эта запись отсутствует в БД");
+				var productAssortment = session.Load<ProductAssortment>(assortmentId);
 				session.Delete(productAssortment);
 
-				var assortment = session.Get<Assortment>(assortmentId);
+				var assortment = session.Load<Assortment>(assortmentId);
 				session.CreateSQLQuery(@"
 delete from farm.Core0
 where CodeFirmCr = :ProducerId and ProductId in (
