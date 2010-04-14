@@ -171,9 +171,7 @@ group by sfc.SynonymFirmCrCode")
 		public virtual void DeleteProducerSynonym(uint producerSynonymId)
 		{
 			Transaction(session => {
-				var synonym = session.Get<ProducerSynonym>(producerSynonymId);
-				if (synonym == null)
-					throw new Exception("Невозможно удалить выбранный синоним, т.к. запись отсутствует в БД");
+				var synonym = session.Load<ProducerSynonym>(producerSynonymId);
 				session.Delete(synonym);
 				session.Save(new BlockedProducerSynonym(synonym));
 				_mailer.SynonymWasDeleted(synonym);
