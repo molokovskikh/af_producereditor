@@ -152,6 +152,9 @@ namespace ProducerEditor.Models
 		Pager<Exclude> ShowExcludes(uint page);
 
 		[OperationContract]
+		Pager<Exclude> SearchExcludes(string text, uint page);
+
+		[OperationContract]
 		void DoNotShow(uint excludeId);
 
 		[OperationContract]

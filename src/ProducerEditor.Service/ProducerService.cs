@@ -290,6 +290,12 @@ where CodeFirmCr = :ProducerId and ProductId in (
 		}
 
 		[OperationContract]
+		public virtual Pager<ExcludeDto> SearchExcludes(string text, uint page)
+		{
+			return Slave(session => Exclude.Find(session, text, page));
+		}
+
+		[OperationContract]
 		public virtual void DoNotShow(uint excludeId)
 		{
 			Transaction(session => {
@@ -318,6 +324,7 @@ where CodeFirmCr = :ProducerId and ProductId in (
 				excludes.Each(session.Delete);
 
 				session.Delete(exclude);
+				assortment.Checked = true;
 				session.Save(assortment);
 			});
 		}

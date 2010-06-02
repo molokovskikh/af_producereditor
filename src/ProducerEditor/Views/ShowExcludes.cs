@@ -17,19 +17,30 @@ namespace ProducerEditor.Views
 	public class ShowExcludes : View
 	{
 		private VirtualTable excludeTable;
+		private ToolStrip tools;
+		private ToolStrip navigation;
+		private string _searchText;
 
 		public ShowExcludes(Pager<Exclude> pager)
 		{
 			Text = "Исключения";
 			MinimumSize = new Size(640, 480);
 
-			var tools = new ToolStrip()
+			tools = new ToolStrip()
+				.Edit("SearchText")
+				.Button("Поиск", Search)
+				.Separator()
 				.Button("Добавить в ассортимент", AddToAssortiment)
 				.Button("Больше не показывать", DoNotShow)
 				.Button("Ошибочное сопоставление (Delete)", DeleteProducerSynonym)
 				.Button("Ошибочное сопоставление по наименованию", DeleteSynonym);
+			var searchText = ((ToolStripTextBox)tools.Items["SearchText"]);
+			searchText.KeyDown += (sender, args) => {
+				if (args.KeyCode == Keys.Enter)
+					Search();
+			};
 
-			var navigation = new ToolStrip()
+			navigation = new ToolStrip()
 				.Button("Prev", "Передыдущая страница")
 				.Label("PageLabel", "")
 				.Button("Next", "Следующая страница");
@@ -73,9 +84,13 @@ namespace ProducerEditor.Views
 			Controls.Add(tools);
 
 			navigation.ActAsPaginator(pager, page => {
-				var result = Request(s => s.ShowExcludes(page));
-				excludeTable.TemplateManager.Source = result.Content.ToList();
-				return result;
+				Pager<Exclude> paginator = null;
+				if (String.IsNullOrEmpty(_searchText))
+					paginator = Request(s => s.ShowExcludes(page));
+				else
+					paginator = Request(s => s.SearchExcludes(_searchText, page));
+				excludeTable.TemplateManager.Source = paginator.Content.ToList();
+				return paginator;
 			});
 
 			Shown += (s, a) => excludeTable.Host.Focus();
@@ -112,6 +127,31 @@ namespace ProducerEditor.Views
 				.ToList()
 				.Each(e => excludes.Remove(e));
 			excludeTable.RebuildViewPort();
+		}
+
+		private void Search()
+		{
+			var searchText = tools.Items["SearchText"].Text;
+			if (searchText == null || (String.IsNullOrEmpty(searchText) && String.IsNullOrEmpty(_searchText)))
+				return;
+
+			_searchText = searchText;
+
+			Action(s => {
+				var pager = s.SearchExcludes(searchText, 0);
+				if (pager == null)
+				{
+					MessageBox.Show("По вашему запросу ничего не найдено");
+					return;
+				}
+				UpdateExcludes(pager);
+				navigation.UpdatePaginator(pager);
+			});
+		}
+
+		private void UpdateExcludes(Pager<Exclude> pager)
+		{
+			excludeTable.TemplateManager.Source = pager.Content.ToList();
 		}
 
 		public void AddToAssortiment()

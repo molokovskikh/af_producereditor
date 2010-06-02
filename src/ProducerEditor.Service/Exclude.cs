@@ -66,6 +66,57 @@ limit :begin, 100
 				.SetParameter("begin", page * 100)
 				.List<ExcludeDto>();
 		}
+
+		public static Pager<ExcludeDto> Find(ISession session, string text, uint page)
+		{
+			var excludes = session.CreateSQLQuery(@"
+select	e.Id,
+	e.ProducerSynonymId,
+	e.OriginalSynonymId,
+	c.Name as Catalog,
+	r.Region,
+	p.Name as Producer,
+	sfc.SynonymFirmCrCode as ProducerSynonymId,
+	cd.ShortName as Supplier,
+	syn.Synonym as OriginalSynonym,
+	e.OriginalSynonymId
+from Farm.Excludes e
+	join Catalogs.Catalog c on c.Id = e.CatalogId
+	left join farm.Synonym syn on syn.SynonymCode = e.OriginalSynonymId
+	join farm.SynonymFirmCr sfc on sfc.SynonymFirmCrCode = e.ProducerSynonymId
+		join Catalogs.Producers p on p.Id = sfc.CodeFirmCr
+		left join Catalogs.Assortment a on a.CatalogId = c.Id
+	join usersettings.PricesData pd on pd.PriceCode = e.PriceCode
+		join usersettings.ClientsData cd on cd.FirmCode = pd.FirmCode
+		join farm.Regions r on r.RegionCode = cd.RegionCode
+where (e.DoNotShow = 0 and cd.FirmSegment = 0 and (a.Checked = 1 or p.Checked = 1)) and
+		(p.Name like :text or c.Name like :text)
+group by e.Id
+order by e.CreatedOn
+limit :begin, 100")
+				.SetParameter("text", "%" + text + "%")
+				.SetResultTransformer(new AliasToBeanResultTransformer(typeof(ExcludeDto)))
+				.SetParameter("begin", page * 100)
+				.List<ExcludeDto>();
+
+			var excludesCount = session.CreateSQLQuery(@"
+select	e.Id
+from Farm.Excludes e
+	join Catalogs.Catalog c on c.Id = e.CatalogId
+	join farm.SynonymFirmCr sfc on sfc.SynonymFirmCrCode = e.ProducerSynonymId
+		join Catalogs.Producers p on p.Id = sfc.CodeFirmCr
+		left join Catalogs.Assortment a on a.CatalogId = c.Id
+	join usersettings.PricesData pd on pd.PriceCode = e.PriceCode
+		join usersettings.ClientsData cd on cd.FirmCode = pd.FirmCode
+		join farm.Regions r on r.RegionCode = cd.RegionCode
+where (e.DoNotShow = 0 and cd.FirmSegment = 0 and (a.Checked = 1 or p.Checked = 1)) and
+		(p.Name like :text or c.Name like :text)
+group by e.Id")
+				.SetParameter("text", "%" + text + "%")
+				.List<uint>().Count;
+
+			return new Pager<ExcludeDto>(page, (uint)excludesCount, excludes);
+		}
 	}
 
 	[DataContract(Namespace = "http://schemas.datacontract.org/2004/07/ProducerEditor.Service", Name = "Exclude")]
