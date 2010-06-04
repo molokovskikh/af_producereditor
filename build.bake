@@ -10,6 +10,7 @@ import ICSharpCode.SharpZipLib.Zip from "lib/ICSharpCode.SharpZipLib.dll"
 import Bake.Win32.Helper
 import file from lib.bake
 import file from deploy.bake
+import file from Migration.bake
 
 def Clean(path as String):
 	if not Exist(path):
@@ -81,7 +82,7 @@ Task @cleanService:
 			FrameworkVersion : "3.5").Execute()
 	Clean("build/ProducerEditor.Service")
 
-Task @deployService, [@buildService, @cleanServiceDeployDir]: 
+Task @deployService, [@buildService, @cleanServiceDeployDir, @SendDeployNotification]: 
 	Cp(FileSet("**/*.*", BaseDirectory : "build/ProducerEditor.Service/"), "\\\\acdcserv\\WebApps\\ProducerEditor.Service\\")
 	#Cp(FileSet("**/*.*", BaseDirectory : "build/ProducerEditor.Service/"), "\\\\acdcserv\\ios\\ProducerEditor.Service\\")
 
@@ -175,7 +176,7 @@ Task @cleanDeployPackage:
 	Clean("build/${project}.Setup")
 	Clean("build/bootstrapper")
 	
-Task @deploy, [@buildDeployPackage, @cleanDeployDir, @deployService, @SendDeployNotification]:
+Task @deploy, [@buildDeployPackage, @Migrate, @cleanDeployDir, @deployService, @SendDeployNotification]:
 	Cp(FileSet("**/*.*", BaseDirectory : "build/${project}.Setup"), deployDir)
 	
 Task @cleanDeployDir:
