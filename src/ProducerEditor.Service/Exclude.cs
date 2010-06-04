@@ -77,6 +77,7 @@ select	e.Id,
 	r.Region,
 	p.Name as Producer,
 	sfc.SynonymFirmCrCode as ProducerSynonymId,
+	sfc.Synonym as ProducerSynonym,
 	cd.ShortName as Supplier,
 	syn.Synonym as OriginalSynonym,
 	e.OriginalSynonymId
