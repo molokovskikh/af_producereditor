@@ -19,6 +19,7 @@ namespace ProducerEditor.Views
 		private VirtualTable excludeTable;
 		private ToolStrip tools;
 		private ToolStrip navigation;
+		private uint _currentPage;
 		private string _searchText;
 
 		public ShowExcludes(Pager<Exclude> pager)
@@ -83,17 +84,23 @@ namespace ProducerEditor.Views
 			Controls.Add(navigation);
 			Controls.Add(tools);
 
+			_currentPage = 0;
 			navigation.ActAsPaginator(pager, page => {
 				Pager<Exclude> paginator = null;
-				if (String.IsNullOrEmpty(_searchText))
-					paginator = Request(s => s.ShowExcludes(page));
-				else
-					paginator = Request(s => s.SearchExcludes(_searchText, page));
+				paginator = RequestExcludes(page);
 				excludeTable.TemplateManager.Source = paginator.Content.ToList();
+				_currentPage = page;
 				return paginator;
 			});
 
 			Shown += (s, a) => excludeTable.Host.Focus();
+		}
+
+		private Pager<Exclude> RequestExcludes(uint page)
+		{
+			if (String.IsNullOrEmpty(_searchText))
+				return Request(s => s.ShowExcludes(page));
+			return Request(s => s.SearchExcludes(_searchText, page));
 		}
 
 		public void DeleteProducerSynonym()
@@ -157,13 +164,15 @@ namespace ProducerEditor.Views
 		public void AddToAssortiment()
 		{
 			var exclude = excludeTable.Selected<Exclude>();
-
+			var selectedIndex = excludeTable.Behavior<IRowSelectionBehavior>().SelectedRowIndex;
 			if (exclude == null)
 				return;
 
 			Action(s => s.AddToAssotrment(exclude.Id));
-			((List<Exclude>)excludeTable.TemplateManager.Source).Remove(exclude);
-			excludeTable.RebuildViewPort();
+
+			var paginator = RequestExcludes(_currentPage);
+			UpdateExcludes(paginator);
+			excludeTable.Behavior<IRowSelectionBehavior>().MoveSelectionAt(selectedIndex);
 		}
 
 		public void DoNotShow()
