@@ -1,12 +1,12 @@
 ﻿
-Microsoft Visual Studio Solution File, Format Version 10.00
-# Visual Studio 2008
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "lib", "lib", "{7DFA5487-0A2F-44B4-9239-C7AD8B8F8309}"
+EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProducerEditor", "ProducerEditor\ProducerEditor.csproj", "{6FCA4BD0-283F-495D-BC9C-C7FB4E3F0140}"
 	ProjectSection(ProjectDependencies) = postProject
 		{7A48EB44-15FC-4EBB-A3CE-2FBF3E8465E5} = {7A48EB44-15FC-4EBB-A3CE-2FBF3E8465E5}
 	EndProjectSection
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "lib", "lib", "{7DFA5487-0A2F-44B4-9239-C7AD8B8F8309}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProducerEditor.Tests", "ProducerEditor.Tests\ProducerEditor.Tests.csproj", "{47058B7A-8114-428A-AF8B-E4C2B71EEDD9}"
 EndProject
