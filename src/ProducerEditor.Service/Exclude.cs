@@ -46,11 +46,12 @@ select e.Id,
 	sfc.Synonym as ProducerSynonym,
 	r.Region,
 	cd.ShortName as Supplier,
-	syn.Synonym as OriginalSynonym,
+	ifnull(syn.Synonym, synarch.Synonym) as OriginalSynonym,
 	e.OriginalSynonymId
 from farm.Excludes e
 	join Catalogs.Catalog c on c.Id = e.CatalogId
 	left join farm.Synonym syn on syn.SynonymCode = e.OriginalSynonymId
+	left join farm.SynonymArchive synarch on synarch.SynonymCode = e.OriginalSynonymId
 	join farm.SynonymFirmCr sfc on sfc.SynonymFirmCrCode = e.ProducerSynonymId
 		join Catalogs.Producers p on p.Id = sfc.CodeFirmCr
 		left join Catalogs.Assortment a on a.CatalogId = c.Id
