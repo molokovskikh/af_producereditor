@@ -52,7 +52,7 @@ Task @build, [@clean]:
 	MsBuild(projectFile,
 			Parameters : { "OutDir" : output + "\\" ,
 						   "Configuration" : "release"},
-			FrameworkVersion : "3.5").Execute()
+			FrameworkVersion : "4.0.30319").Execute()
 	Cp("src/${project}/App.release.config", "${output}/${project}.exe.config", true)
 	Rm(FileSet("*.*", 
 			   BaseDirectory : output,
@@ -61,14 +61,14 @@ Task @clean:
 	MsBuild(projectFile,
 			Target : "clean",
 			Parameters : { "Configuration" : "release" },
-			FrameworkVersion : "3.5").Execute()
+			FrameworkVersion : "4.0.30319").Execute()
 	Clean(output)
 
 Task @buildService, [@cleanService]:
 	MsBuild(Path.GetFullPath("src/ProducerEditor.Service/ProducerEditor.Service.csproj"),
 			Parameters : { "OutDir" : Path.GetFullPath("build/ProducerEditor.Service/bin") + "\\" ,
 						   "Configuration" : "release"},
-			FrameworkVersion : "3.5").Execute()
+			FrameworkVersion : "4.0.30319").Execute()
 	Cp("src/ProducerEditor.Service/Web.release.config", "build/ProducerEditor.Service/Web.config", true)
 	Rm(FileSet("*.*", 
 			   BaseDirectory : "build/ProducerEditor.Service/bin",
@@ -79,7 +79,7 @@ Task @cleanService:
 	MsBuild("src/ProducerEditor.Service/ProducerEditor.Service.csproj",
 			Target : @clean,
 			Parameters : { @Configuration : @release },
-			FrameworkVersion : "3.5").Execute()
+			FrameworkVersion : "4.0.30319").Execute()
 	Clean("build/ProducerEditor.Service")
 
 Task @deployService, [@buildService, @cleanServiceDeployDir, @SendDeployNotification]: 
@@ -169,7 +169,7 @@ Task @buildInstaller:
 	MsBuild(projectFile,
 			Parameters : { "OutDir" : output,
 						   "Configuration" : "release" },
-			FrameworkVersion : "3.5").Execute()
+			FrameworkVersion : "4.0.30319").Execute()
 	Rm(FileSet("*.*", Excludes : ["*.dll", "*.exe", "*.config"], BaseDirectory : output))
 	
 Task @cleanDeployPackage:
