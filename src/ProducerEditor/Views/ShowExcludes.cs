@@ -4,6 +4,7 @@ using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
 using Common.Tools;
+using log4net;
 using ProducerEditor.Models;
 using Subway.Dom;
 using Subway.Helpers;
@@ -171,6 +172,13 @@ namespace ProducerEditor.Views
 			Action(s => s.AddToAssotrment(exclude.Id));
 
 			var paginator = RequestExcludes(_currentPage);
+			if (paginator.Content.ToList().Contains(exclude))
+			{
+				var logger = LogManager.GetLogger(typeof(ShowExcludes));
+				logger.Error("Предупреждение в Редакторе производителей", new Exception(@"
+После добавления исключения в ассортимент и удаления этой и других записей(с таким же CatalogId и ProducerId) из таблицы исключений, эти записи выбраны снова.
+Slave не обновлен."));
+			}
 			UpdateExcludes(paginator);
 			excludeTable.Behavior<IRowSelectionBehavior>().MoveSelectionAt(selectedIndex);
 		}
