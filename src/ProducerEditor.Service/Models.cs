@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
 using Common.Tools;
+using NHibernate;
+using NHibernate.Linq;
 using NHibernate.Mapping.Attributes;
 
 namespace ProducerEditor.Service
@@ -155,14 +157,24 @@ namespace ProducerEditor.Service
 		[OneToMany(2, ClassType = typeof (ProducerEquivalent))]
 		public virtual IList<ProducerEquivalent> Equivalents { get; set; }
 
-		public virtual void MergeToEquivalent(Producer producer)
+		public virtual void MergeToEquivalent(Producer producer, ISession session)
 		{
 			Equivalents.Add(new ProducerEquivalent(this, producer.Name));
 
 			producer.Assortments
 				.Where(a => Assortments.All(x => x.CatalogProduct.Id != a.CatalogProduct.Id))
 				.Select(a => new Assortment(a.CatalogProduct, this))
-				.Each(a => Assortments.Add(a));
+				.Each(a => {
+					Assortments.Add(a);
+
+					var excludes = (
+						from ex in session.Linq<Exclude>()
+						where ex.CatalogProduct == a.CatalogProduct
+							&& ex.ProducerSynonym.Producer == a.Producer
+						select ex).ToList();
+
+					excludes.Each(session.Delete);
+				});
 
 			producer.Equivalents
 				.Select(e => new ProducerEquivalent(this, e.Name))

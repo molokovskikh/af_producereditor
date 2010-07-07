@@ -117,7 +117,7 @@ drop temporary table if exists catalogs.TempForUpdateAssortment;
 						.SetParameter("SourceId", sourceId)
 						.SetParameter("TargetId", targetProducerId)
 						.ExecuteUpdate();
-					target.MergeToEquivalent(source);
+					target.MergeToEquivalent(source, session);
 
 					session.Delete(source);
 				}
