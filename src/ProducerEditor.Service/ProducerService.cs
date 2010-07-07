@@ -323,10 +323,10 @@ where CodeFirmCr = :ProducerId and ProductId in (
 				if (existingExcludes.Where(ex => ex.Id == excludeId).Count() > 0)
 				{
 					var logger = log4net.LogManager.GetLogger(typeof(ProducerService));
-					logger.Error(String.Format(@"
-После добавления исключения в ассортимент и удаления этой и других записей(с таким же CatalogId и ProducerId) из таблицы исключений, эти записи выбраны снова.
+					logger.Error("Предупреждение в Редакторе производителей", new Exception(String.Format(@"
 ExcludeId = {0}
-Slave не обновлен.", excludeId));
+После добавления исключения в ассортимент эта запись была удалена, однако при следующем запросе выбрана снова.
+Slave не обновлен.", excludeId)));
 				}
 			}
 		}
