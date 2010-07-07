@@ -301,6 +301,47 @@ where CodeFirmCr = :ProducerId and ProductId in (
 		}
 
 		[OperationContract]
+		public virtual Pager<ExcludeDto> ShowExcludes2(uint page, IList<uint> deletedExcludesIds)
+		{
+			return Slave(session => {
+				var total = Exclude.TotalPages(session);
+
+				var pager = new Pager<ExcludeDto>(page, total, Exclude.Load(page, session));
+				LogIfExcludeLoaded(pager, deletedExcludesIds);
+				return pager;
+			});
+		}
+
+		private void LogIfExcludeLoaded(Pager<ExcludeDto> pager, IList<uint> deletedExcludesIds)
+		{
+			if ((deletedExcludesIds == null) || (pager == null))
+				return;
+
+			var existingExcludes = pager.Content.ToList();
+			foreach (var excludeId in deletedExcludesIds)
+			{
+				if (existingExcludes.Where(ex => ex.Id == excludeId).Count() > 0)
+				{
+					var logger = log4net.LogManager.GetLogger(typeof(ProducerService));
+					logger.Error(String.Format(@"
+После добавления исключения в ассортимент и удаления этой и других записей(с таким же CatalogId и ProducerId) из таблицы исключений, эти записи выбраны снова.
+ExcludeId = {0}
+Slave не обновлен.", excludeId));
+				}
+			}
+		}
+
+		[OperationContract]
+		public virtual Pager<ExcludeDto> SearchExcludes2(string text, uint page, IList<uint> deletedExcludesIds)
+		{
+			return Slave(session => {
+				var pager = Exclude.Find(session, text, page);
+				LogIfExcludeLoaded(pager, deletedExcludesIds);
+				return pager;
+			});
+		}
+
+		[OperationContract]
 		public virtual Pager<ExcludeDto> SearchExcludes(string text, uint page)
 		{
 			return Slave(session => Exclude.Find(session, text, page));
@@ -317,8 +358,10 @@ where CodeFirmCr = :ProducerId and ProductId in (
 		}
 
 		[OperationContract]
-		public virtual void AddToAssotrment(uint excludeId)
+		public virtual IList<uint> AddToAssotrment(uint excludeId)
 		{
+			var deletedExcludesIds = new List<uint>();
+
 			Transaction(session => {
 				var exclude = session.Load<Exclude>(excludeId);
 				var assortment = new Assortment(exclude.CatalogProduct, exclude.ProducerSynonym.Producer);
@@ -332,12 +375,14 @@ where CodeFirmCr = :ProducerId and ProductId in (
 						&& ex.ProducerSynonym.Producer == assortment.Producer
 					select ex).ToList();
 
+				excludes.Each(e => deletedExcludesIds.Add(e.Id));
 				excludes.Each(session.Delete);
 
 				session.Delete(exclude);
 				assortment.Checked = true;
 				session.Save(assortment);
 			});
+			return deletedExcludesIds;
 		}
 
 		[OperationContract]

@@ -104,6 +104,13 @@ namespace ProducerEditor.Views
 			return Request(s => s.SearchExcludes(_searchText, page));
 		}
 
+		private Pager<Exclude> RequestExcludes(uint page, IList<uint> deletedExcludesIds)
+		{
+			if (String.IsNullOrEmpty(_searchText))
+				return Request(s => s.ShowExcludes2(page, deletedExcludesIds));
+			return Request(s => s.SearchExcludes2(_searchText, page, deletedExcludesIds));
+		}
+
 		public void DeleteProducerSynonym()
 		{
 			var exclude = excludeTable.Selected<Exclude>();
@@ -164,21 +171,16 @@ namespace ProducerEditor.Views
 
 		public void AddToAssortiment()
 		{
+			IList<uint> deletedExcludesIds = null;
+
 			var exclude = excludeTable.Selected<Exclude>();
 			var selectedIndex = excludeTable.Behavior<IRowSelectionBehavior>().SelectedRowIndex;
 			if (exclude == null)
 				return;
 
-			Action(s => s.AddToAssotrment(exclude.Id));
+			Action(s => deletedExcludesIds = s.AddToAssotrment(exclude.Id));
 
-			var paginator = RequestExcludes(_currentPage);
-			if (paginator.Content.ToList().Contains(exclude))
-			{
-				var logger = LogManager.GetLogger(typeof(ShowExcludes));
-				logger.Error("Предупреждение в Редакторе производителей", new Exception(@"
-После добавления исключения в ассортимент и удаления этой и других записей(с таким же CatalogId и ProducerId) из таблицы исключений, эти записи выбраны снова.
-Slave не обновлен."));
-			}
+			var paginator = RequestExcludes(_currentPage, deletedExcludesIds);
 			UpdateExcludes(paginator);
 			excludeTable.Behavior<IRowSelectionBehavior>().MoveSelectionAt(selectedIndex);
 		}

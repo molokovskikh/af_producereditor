@@ -151,14 +151,26 @@ namespace ProducerEditor.Models
 		[OperationContract]
 		Pager<Exclude> ShowExcludes(uint page);
 
+		// Ётот метод по большей части дл€ того, чтобы пон€ть, почему возникает ошибка 
+		// "Ќе найдена запись в Excludes" при добавлении в ассортимент.
+		// Excludes - это исключени€, которые имеют такие же CatalogId и ProducerId, как то, которое добавл€ли в ассортимент
+		[OperationContract]
+		Pager<Exclude> ShowExcludes2(uint page, IList<uint> deletedExcludesIds);
+
 		[OperationContract]
 		Pager<Exclude> SearchExcludes(string text, uint page);
+
+		// Ётот метод по большей части дл€ того, чтобы пон€ть, почему возникает ошибка 
+		// "Ќе найдена запись в Excludes" при добавлении в ассортимент.
+		// Excludes - это исключени€, которые имеют такие же CatalogId и ProducerId, как то, которое добавл€ли в ассортимент
+		[OperationContract]
+		Pager<Exclude> SearchExcludes2(string text, uint page, IList<uint> deletedExcludesIds);
 
 		[OperationContract]
 		void DoNotShow(uint excludeId);
 
 		[OperationContract]
-		void AddToAssotrment(uint excludeId);
+		IList<uint> AddToAssotrment(uint excludeId);
 
 		[OperationContract]
 		Pager<Assortment> ShowAssortmentForProducer(uint producerId, uint page);
