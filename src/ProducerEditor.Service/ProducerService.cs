@@ -305,8 +305,18 @@ where CodeFirmCr = :ProducerId and ProductId in (
 		}
 
 		[OperationContract]
-		public virtual Pager<ExcludeDto> ShowExcludes(uint page)
+		public virtual Pager<ExcludeDto> ShowExcludes(uint page, bool isRefresh)
 		{
+			Pager<ExcludeDto> pager = null;
+
+			if (isRefresh)
+			{
+				Transaction(session => {
+					var total = Exclude.TotalPages(session);
+					pager = new Pager<ExcludeDto>(page, total, Exclude.Load(page, session));
+				});
+				return pager;
+			}
 			return Slave(session => {
 				var total = Exclude.TotalPages(session);
 				return new Pager<ExcludeDto>(page, total, Exclude.Load(page, session));
@@ -314,49 +324,17 @@ where CodeFirmCr = :ProducerId and ProductId in (
 		}
 
 		[OperationContract]
-		public virtual Pager<ExcludeDto> ShowExcludes2(uint page, IList<uint> deletedExcludesIds)
+		public virtual Pager<ExcludeDto> SearchExcludes(string text, uint page, bool isRefresh)
 		{
-			return Slave(session => {
-				var total = Exclude.TotalPages(session);
-
-				var pager = new Pager<ExcludeDto>(page, total, Exclude.Load(page, session));
-				LogIfExcludeLoaded(pager, deletedExcludesIds);
-				return pager;
-			});
-		}
-
-		private void LogIfExcludeLoaded(Pager<ExcludeDto> pager, IList<uint> deletedExcludesIds)
-		{
-			if ((deletedExcludesIds == null) || (pager == null))
-				return;
-
-			var existingExcludes = pager.Content.ToList();
-			foreach (var excludeId in deletedExcludesIds)
+			if (isRefresh)
 			{
-				if (existingExcludes.Where(ex => ex.Id == excludeId).Count() > 0)
-				{
-					var logger = log4net.LogManager.GetLogger(typeof(ProducerService));
-					logger.Error("Предупреждение в Редакторе производителей", new Exception(String.Format(@"
-ExcludeId = {0}
-После добавления исключения в ассортимент эта запись была удалена, однако при следующем запросе выбрана снова.
-Slave не обновлен.", excludeId)));
-				}
-			}
-		}
-
-		[OperationContract]
-		public virtual Pager<ExcludeDto> SearchExcludes2(string text, uint page, IList<uint> deletedExcludesIds)
-		{
-			return Slave(session => {
-				var pager = Exclude.Find(session, text, page);
-				LogIfExcludeLoaded(pager, deletedExcludesIds);
+				Pager<ExcludeDto> pager = null;
+				Transaction(session => {
+					var total = Exclude.TotalPages(session);
+					pager = new Pager<ExcludeDto>(page, total, Exclude.Load(page, session));
+				});
 				return pager;
-			});
-		}
-
-		[OperationContract]
-		public virtual Pager<ExcludeDto> SearchExcludes(string text, uint page)
-		{
+			}
 			return Slave(session => Exclude.Find(session, text, page));
 		}
 

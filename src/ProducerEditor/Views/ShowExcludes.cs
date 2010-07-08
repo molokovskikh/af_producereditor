@@ -88,7 +88,7 @@ namespace ProducerEditor.Views
 			_currentPage = 0;
 			navigation.ActAsPaginator(pager, page => {
 				Pager<Exclude> paginator = null;
-				paginator = RequestExcludes(page);
+				paginator = RequestExcludes(page, false);
 				excludeTable.TemplateManager.Source = paginator.Content.ToList();
 				_currentPage = page;
 				return paginator;
@@ -97,33 +97,32 @@ namespace ProducerEditor.Views
 			Shown += (s, a) => excludeTable.Host.Focus();
 		}
 
-		private Pager<Exclude> RequestExcludes(uint page)
+		// Если флажок isRefresh равен true, тогда данные выбираются из мастера.
+		// Это нужно, потому что возникали ситуации, когда из мастера запись удалили, а она снова выбралась из слейва
+		// (репликация не успела)
+		private Pager<Exclude> RequestExcludes(uint page, bool isRefresh)
 		{
 			if (String.IsNullOrEmpty(_searchText))
-				return Request(s => s.ShowExcludes(page));
-			return Request(s => s.SearchExcludes(_searchText, page));
-		}
-
-		private Pager<Exclude> RequestExcludes(uint page, IList<uint> deletedExcludesIds)
-		{
-			if (String.IsNullOrEmpty(_searchText))
-				return Request(s => s.ShowExcludes2(page, deletedExcludesIds));
-			return Request(s => s.SearchExcludes2(_searchText, page, deletedExcludesIds));
+				return Request(s => s.ShowExcludes(page, isRefresh));
+			return Request(s => s.SearchExcludes(_searchText, page, isRefresh));
 		}
 
 		public void DeleteProducerSynonym()
 		{
 			var exclude = excludeTable.Selected<Exclude>();
+			var selectedIndex = excludeTable.Behavior<IRowSelectionBehavior>().SelectedRowIndex;
 			if (exclude == null)
 				return;
 
 			Action(s => s.DeleteProducerSynonym(exclude.ProducerSynonymId));
 			RefreshTable();
+			excludeTable.Behavior<IRowSelectionBehavior>().MoveSelectionAt(selectedIndex);
 		}
 
 		public void DeleteSynonym()
 		{
 			var exclude = excludeTable.Selected<Exclude>();
+			var selectedIndex = excludeTable.Behavior<IRowSelectionBehavior>().SelectedRowIndex;
 			if (exclude == null)
 				return;
 			if (String.IsNullOrEmpty(exclude.OriginalSynonym) && exclude.OriginalSynonymId == 0)
@@ -134,11 +133,12 @@ namespace ProducerEditor.Views
 			}
 			Action(s => s.DeleteSynonym(exclude.OriginalSynonymId));
 			RefreshTable();
+			excludeTable.Behavior<IRowSelectionBehavior>().MoveSelectionAt(selectedIndex);
 		}
 
 		private void RefreshTable()
 		{
-			var paginator = RequestExcludes(_currentPage);
+			var paginator = RequestExcludes(_currentPage, true);
 			excludeTable.TemplateManager.Source = paginator.Content.ToList();
 		}
 
@@ -151,7 +151,7 @@ namespace ProducerEditor.Views
 			_searchText = searchText;
 
 			Action(s => {
-				var pager = s.SearchExcludes(searchText, 0);
+				var pager = s.SearchExcludes(searchText, 0, false);
 				if (pager == null)
 				{
 					MessageBox.Show("По вашему запросу ничего не найдено");
@@ -177,9 +177,7 @@ namespace ProducerEditor.Views
 				return;
 
 			Action(s => deletedExcludesIds = s.AddToAssotrment(exclude.Id));
-
-			var paginator = RequestExcludes(_currentPage, deletedExcludesIds);
-			UpdateExcludes(paginator);
+			RefreshTable();
 			excludeTable.Behavior<IRowSelectionBehavior>().MoveSelectionAt(selectedIndex);
 		}
 
