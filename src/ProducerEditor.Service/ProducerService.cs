@@ -184,6 +184,12 @@ group by sfc.SynonymFirmCrCode")
 			Transaction(session => {
 				var synonym = session.Load<ProducerSynonym>(producerSynonymId);
 				session.Delete(synonym);
+
+				session.CreateSQLQuery(@"
+DELETE FROM Farm.Excludes WHERE ProducerSynonymId = :ProducerSynonymId")
+					.SetParameter("ProducerSynonymId", producerSynonymId)
+					.ExecuteUpdate();
+
 				session.Save(new BlockedProducerSynonym(synonym));
 				_mailer.SynonymWasDeleted(synonym);
 			});
@@ -193,7 +199,14 @@ group by sfc.SynonymFirmCrCode")
 		public virtual void DeleteSynonym(uint synonymId)
 		{
 			Transaction(session => {
-    			var synonym = session.Get<Synonym>(synonymId);
+				var synonym = session.Get<Synonym>(synonymId);
+
+				session.CreateSQLQuery(@"
+DELETE FROM Farm.Excludes
+WHERE OriginalSynonymId = :SynonymId")
+					.SetParameter("SynonymId", synonymId)
+					.ExecuteUpdate();
+
 				if (synonym == null)
 					return;
     			session.Delete(synonym);

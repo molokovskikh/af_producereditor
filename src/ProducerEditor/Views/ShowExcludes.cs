@@ -118,11 +118,7 @@ namespace ProducerEditor.Views
 				return;
 
 			Action(s => s.DeleteProducerSynonym(exclude.ProducerSynonymId));
-			var excludes = ((List<Exclude>)excludeTable.TemplateManager.Source);
-			excludes.Where(e => e.ProducerSynonymId == exclude.ProducerSynonymId)
-				.ToList()
-				.Each(e => excludes.Remove(e));
-			excludeTable.RebuildViewPort();
+			RefreshTable();
 		}
 
 		public void DeleteSynonym()
@@ -134,14 +130,16 @@ namespace ProducerEditor.Views
 			{
 				MessageBox.Show("Для выбранного исключения не задано оригинальное наименование", "Предупреждение",
 					MessageBoxButtons.OK, MessageBoxIcon.Warning);
-				return;	
+				return;
 			}
 			Action(s => s.DeleteSynonym(exclude.OriginalSynonymId));
-			var excludes = ((List<Exclude>)excludeTable.TemplateManager.Source);
-			excludes.Where(e => e.OriginalSynonymId == exclude.OriginalSynonymId)
-				.ToList()
-				.Each(e => excludes.Remove(e));
-			excludeTable.RebuildViewPort();
+			RefreshTable();
+		}
+
+		private void RefreshTable()
+		{
+			var paginator = RequestExcludes(_currentPage);
+			excludeTable.TemplateManager.Source = paginator.Content.ToList();
 		}
 
 		private void Search()
