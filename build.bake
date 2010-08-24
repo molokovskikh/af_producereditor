@@ -11,6 +11,7 @@ import Bake.Win32.Helper
 import file from lib.bake
 import file from deploy.bake
 import file from Migration.bake
+import file from Tools.bake
 
 def Clean(path as String):
 	if not Exist(path):
