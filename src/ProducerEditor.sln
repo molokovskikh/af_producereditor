@@ -16,13 +16,13 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Common.Tools.Tests", "Commo
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Installer", "Installer\Installer.csproj", "{723F5C11-CFB0-4B43-80D7-CDC096BD4EC2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Subway", "Subway\trunk\src\Subway\Subway.csproj", "{C6AA1C77-7848-4555-AEFE-6025DF0AA6F1}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Subway", "Subway\src\Subway\Subway.csproj", "{C6AA1C77-7848-4555-AEFE-6025DF0AA6F1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Subway.Tests", "Subway\trunk\src\Subway.Tests\Subway.Tests.csproj", "{ABCD0EA4-9165-4A94-8A52-77DB2561F5F7}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Subway.Tests", "Subway\src\Subway.Tests\Subway.Tests.csproj", "{ABCD0EA4-9165-4A94-8A52-77DB2561F5F7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DevAge.Core", "Subway\trunk\src\DevAgeSourcePack4_9\DevAge.Core\DevAge.Core.csproj", "{3EB346D6-5AE2-42BE-98F9-BFAC1C2C719C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DevAge.Core", "Subway\src\DevAgeSourcePack4_9\DevAge.Core\DevAge.Core.csproj", "{3EB346D6-5AE2-42BE-98F9-BFAC1C2C719C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DevAge.Windows.Forms", "Subway\trunk\src\DevAgeSourcePack4_9\DevAge.Windows.Forms\DevAge.Windows.Forms.csproj", "{3DF8B880-8A23-4F10-9EAB-D72EF0672C3E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DevAge.Windows.Forms", "Subway\src\DevAgeSourcePack4_9\DevAge.Windows.Forms\DevAge.Windows.Forms.csproj", "{3DF8B880-8A23-4F10-9EAB-D72EF0672C3E}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProducerEditor.Service", "ProducerEditor.Service\ProducerEditor.Service.csproj", "{7A48EB44-15FC-4EBB-A3CE-2FBF3E8465E5}"
 EndProject

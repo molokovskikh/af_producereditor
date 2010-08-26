@@ -10,3 +10,9 @@
 [submodule "src/Test.Support"]
 	path = src/Test.Support
 	url = ssh://kvasov@git.analit.net/var/www/git/Test.Support
+[submodule "src/Subway"]
+	path = src/Subway
+	url = ssh://kvasov@git.analit.net/var/www/git/Subway
+[submodule "src/Common.Tools"]
+	path = src/Common.Tools
+	url = ssh://kvasov@git.analit.net/var/www/git/Common.Tools

@@ -34,13 +34,10 @@ deploymentUrl = "http://publish.analit.net/ProducerEditor/"
 deployDir = "\\\\acdcserv\\WebPublish\\ProducerEditor"
 
 Global(
-	humanReadableName : "Редактор производителей",
-	libs : ("Common.Tools", 
-		"Common.MySql", 
-		("Common.Service", 620, "http://svn.analit.net/Common/trunk/Common.Service/"),
-		"Common.Models")
+	Project : "ProducerEditor",
+	HumanReadableName : "Редактор производителей"
 )
-	
+
 def Clean(path as String):
 	if not Exist(path):
 		MkDir(path)
@@ -85,12 +82,9 @@ Task @cleanService:
 
 Task @deployService, [@buildService, @cleanServiceDeployDir, @SendDeployNotification]: 
 	Cp(FileSet("**/*.*", BaseDirectory : "build/ProducerEditor.Service/"), "\\\\acdcserv\\WebApps\\ProducerEditor.Service\\")
-	#Cp(FileSet("**/*.*", BaseDirectory : "build/ProducerEditor.Service/"), "\\\\acdcserv\\ios\\ProducerEditor.Service\\")
 
 Task @cleanServiceDeployDir:
 	Clean("\\\\acdcserv\\WebApps\\ProducerEditor.Service\\")
-	#Clean("\\\\acdcserv\\ios\\ProducerEditor.Service\\")
-
 
 Task @buildDeployPackage, [@build, @buildService, @buildInstaller, @cleanDeployPackage]:
 	output = Path.GetFullPath("build/${project}.Setup/")
@@ -159,7 +153,7 @@ Task @buildDeployPackage, [@build, @buildService, @buildInstaller, @cleanDeployP
 						 Culture : "ru").Execute()
 	Mv("${output}setup.exe", "${output}${project}.Setup.exe")
 	
-	cert = X509Certificate2(System.IO.File.ReadAllBytes(certPath), password)	
+	cert = X509Certificate2(System.IO.File.ReadAllBytes(certPath), password)
 	Sh("\"${Sdk().Path()}/signtool\" sign /sha1 ${cert.Thumbprint} ${output}${project}.Setup.exe")
 	
 	GeneratePublishPage("${output}/publish.htm", version, project)
