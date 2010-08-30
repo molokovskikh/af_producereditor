@@ -26,17 +26,13 @@ namespace ProducerEditor.Tests
 		}
 
 		[Test]
-		public void Load_assortment()
-		{
-			using (var session = sessionFactory.OpenSession())
-				Assortment.Load(session, 0);
-		}
-
-		[Test]
 		public void Total()
 		{
 			using (var session = sessionFactory.OpenSession())
-				Assert.That(Assortment.TotalPages(session), Is.GreaterThan(0));
+			{
+				var assortments = Assortment.Search(session, 0, null);
+				Assert.That(assortments.TotalPages, Is.GreaterThan(0));
+			}
 		}
 
 		[Test]
@@ -44,8 +40,9 @@ namespace ProducerEditor.Tests
 		{
 			using (var session = sessionFactory.OpenSession())
 			{
-				var assortments = Assortment.Load(session, 3);
-				Assert.That(Assortment.GetPage(session, assortments[3].Id), Is.EqualTo(3));
+				var assortments = Assortment.Search(session, 3, null);
+				Console.WriteLine(assortments.Content[3].Id);
+				Assert.That(Assortment.GetPage(session, assortments.Content[3].Id), Is.EqualTo(3));
 			}
 		}
 
@@ -54,8 +51,8 @@ namespace ProducerEditor.Tests
 		{
 			using (var session = sessionFactory.OpenSession())
 			{
-				var assortments = Assortment.Load(session, 5);
-				var findedAssortments = Assortment.Find(session, assortments[1].Product, 0);
+				var assortments = Assortment.Search(session, 5, null);
+				var findedAssortments = Assortment.Search(session, 0, new Query("ProducerId", assortments.Content[1].Product));
 				Assert.That(findedAssortments.Content.Count, Is.EqualTo(1));
 				Assert.That(findedAssortments.Page, Is.EqualTo(0));
 				Assert.That(findedAssortments.TotalPages, Is.EqualTo(1));
@@ -86,7 +83,7 @@ namespace ProducerEditor.Tests
 
 			using (var session = sessionFactory.OpenSession())
 			{
-				var assortments = Assortment.ByProducer(session, producerId, 0);
+				var assortments = Assortment.Search(session, 0, new Query("ProducerId", producerId));
 				Assert.That(assortments.Content.Count, Is.EqualTo(1));
 				var assortment = assortments.Content.Single();
 				Assert.That(assortment.Producer, Is.EqualTo("test-producer"));

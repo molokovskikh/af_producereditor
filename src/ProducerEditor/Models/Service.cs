@@ -1,10 +1,61 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
-using System.ServiceModel;
 
 namespace ProducerEditor.Models
 {
+	[DataContract(Namespace = "http://schemas.datacontract.org/2004/07/ProducerEditor.Service")]
+	public class OfferView
+	{
+		[DataMember]
+		public string ProductSynonym { get; set; }
+		[DataMember]
+		public string ProducerSynonym { get; set; }
+		[DataMember]
+		public string Supplier { get; set; }
+		[DataMember]
+		public byte Segment { get; set; }
+
+		public string SegmentAsString()
+		{
+			return Segment == 0 ? "Опт" : "Розница";
+		}
+	}
+
+	[DataContract(Namespace = "http://schemas.datacontract.org/2004/07/ProducerEditor.Service")]
+	public class ProducerDto
+	{
+		[DataMember]
+		public virtual uint Id { get; set; }
+		[DataMember]
+		public virtual string Name { get; set; }
+		[DataMember]
+		public virtual bool Checked { get; set; }
+		[DataMember]
+		public virtual bool HasOffers { get; set;}
+	}
+
+	[DataContract(Namespace = "http://schemas.datacontract.org/2004/07/ProducerEditor.Service")]
+	public class ProductAndProducer
+	{
+		[DataMember]
+		public bool Selected { get; set; }
+		[DataMember]
+		public long ExistsInRls { get; set; }
+		[DataMember]
+		public uint ProducerId { get; set; }
+		[DataMember]
+		public string Producer { get; set; }
+		[DataMember]
+		public uint CatalogId { get; set; }
+		[DataMember]
+		public string Product { get; set; }
+		[DataMember]
+		public long OrdersCount { get; set; }
+		[DataMember]
+		public long OffersCount { get; set; }
+	}
+
 	[DataContract(Namespace = "http://schemas.datacontract.org/2004/07/ProducerEditor.Service")]
 	public class Exclude
 	{
@@ -17,24 +68,11 @@ namespace ProducerEditor.Models
 		[DataMember]
 		public string Catalog { get; set; }
 		[DataMember]
-		public string Producer { get; set; }
-		[DataMember]
 		public string ProducerSynonym { get; set; }
-		[DataMember]
-		public uint ProducerSynonymId { get; set; }
 		[DataMember]
 		public string OriginalSynonym { get; set; }
 		[DataMember]
 		public uint OriginalSynonymId { get; set; }
-	}
-
-	[DataContract(Namespace = "http://schemas.datacontract.org/2004/07/ProducerEditor.Service")]
-	public class Offer
-	{
-		[DataMember]
-		public string Product { get; set; }
-		[DataMember]
-		public string Producer { get; set; }
 	}
 
 	[DataContract(Namespace = "http://schemas.datacontract.org/2004/07/ProducerEditor.Service")]
@@ -86,6 +124,8 @@ namespace ProducerEditor.Models
 		[DataMember]
 		public string Producer { get; set; }
 		[DataMember]
+		public uint ProducerId { get; set; }
+		[DataMember]
 		public bool Checked { get; set; }
 	}
 
@@ -100,76 +140,18 @@ namespace ProducerEditor.Models
 		public IList<T> Content { get; set; }
 	}
 
-	[ServiceContract]
-	public interface ProducerService
+	[DataContract(Namespace = "http://schemas.datacontract.org/2004/07/ProducerEditor.Service")]
+	public class OffersQuery
 	{
-		[OperationContract]
-		IList<Offer> ShowOffersBySynonym(uint producerSynonymId);
+		public OffersQuery(string field, uint value)
+		{
+			Field = field;
+			Value = value;
+		}
 
-		[OperationContract]
-		void DoJoin(uint[] sourceProduceIds, uint targetProducerId);
-
-		[OperationContract]
-		IList<SynonymReportItem> ShowSynonymReport(DateTime begin, DateTime end);
-
-		[OperationContract]
-		IList<string> GetEquivalents(uint producerId);
-
-		[OperationContract]
-		IList<ProducerSynonym> GetSynonyms(uint producerId);
-
-		[OperationContract]
-		IList<SynonymReportItem> ShowSuspiciousSynonyms();
-
-		[OperationContract]
-		Pager<Assortment> ShowAssortment(uint assortimentId);
-
-		[OperationContract]
-		Pager<Assortment> GetAssortmentPage(uint page);
-
-		[OperationContract]
-		Pager<Assortment> SearchAssortment(string text, uint page);
-
-		[OperationContract]
-		void DeleteAssortment(uint assortmentId);
-
-		[OperationContract]
-		void SetAssortmentChecked(uint assortmentId, bool @checked);
-
-		[OperationContract]
-		void Suspicious(uint producerSynonymId);
-
-		[OperationContract]
-		void DeleteSuspicious(uint producerSynonymId);
-
-		[OperationContract]
-		void DeleteProducerSynonym(uint producerSynonymId);
-
-		[OperationContract]
-		void DeleteProducer(uint producerId);
-
-		[OperationContract]
-		Pager<Exclude> ShowExcludes(uint page, bool isRefresh);
-
-		[OperationContract]
-		Pager<Exclude> SearchExcludes(string text, uint page, bool isRefresh);
-
-		[OperationContract]
-		void DoNotShow(uint excludeId);
-
-		[OperationContract]
-		IList<uint> AddToAssotrment(uint excludeId);
-
-		[OperationContract]
-		Pager<Assortment> ShowAssortmentForProducer(uint producerId, uint page);
-
-		[OperationContract]
-		void CreateEquivalentForProducer(uint producerId, string equivalentName);
-
-		[OperationContract]
-		string GetSupplierEmails(uint supplierId);
-
-		[OperationContract]
-		void DeleteSynonym(uint synonymId);
+		[DataMember]
+		public string Field { get; set; }
+		[DataMember]
+		public object Value { get; set; }
 	}
 }

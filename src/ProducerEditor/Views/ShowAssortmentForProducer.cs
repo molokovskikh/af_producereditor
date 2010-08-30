@@ -4,11 +4,13 @@ using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
+using ProducerEditor.Infrastructure;
 using ProducerEditor.Models;
 using Subway.Dom;
 using Subway.Dom.Base;
 using Subway.Dom.Input;
 using Subway.Helpers;
+using Subway.Table;
 using Subway.VirtualTable;
 using Subway.VirtualTable.Behaviors;
 using Subway.VirtualTable.Behaviors.Selection;
@@ -35,21 +37,18 @@ namespace ProducerEditor.Views
 			assortmentTable = new VirtualTable(new TemplateManager<List<Assortment>, Assortment>(
 				() => Row.Headers(new Header("Проверен").AddClass("CheckBoxColumn1"), "Продукт", "Производитель"),
 				a => {
-					var row = Row.Cells(new CheckBoxInput(a.Checked), a.Product, a.Producer);
+					var row = Row.Cells(new CheckBoxInput(a.Checked).Attr("Name", "Checked"), a.Product, a.Producer);
 					if (a.Id == Settings.Default.BookmarkAssortimentId)
 						((IDomElementWithChildren)row.Children.ElementAt(1)).Prepend(new TextBlock {Class = "BookmarkGlyph"});
 					return row;
 				}));
 			assortmentTable.CellSpacing = 1;
-			assortmentTable.RegisterBehavior(new RowSelectionBehavior(),
+			assortmentTable.RegisterBehavior(
+				new RowSelectionBehavior(),
 				new ToolTipBehavior(),
 				new ColumnResizeBehavior(),
-				new InputSupport(input => {
-					var row = (Row)input.Parent.Parent;
-					var assortment = assortmentTable.Translate<Assortment>(row);
-					assortment.Checked = ((CheckBoxInput) input).Checked;
-					Action(s => s.SetAssortmentChecked(assortment.Id, assortment.Checked));
-				}));
+				new InputController()
+			);
 			assortmentTable.Behavior<ColumnResizeBehavior>().ColumnResized += column => WidthHolder.Update(assortmentTable, column, WidthHolder.AssortimentWidths);
 			assortmentTable.TemplateManager.ResetColumns();
 			assortmentTable.Host

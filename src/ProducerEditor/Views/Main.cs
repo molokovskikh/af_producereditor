@@ -57,11 +57,6 @@ namespace ProducerEditor.Views
 			});
 		}
 
-		protected Action Controller(Action<ProducerService> action)
-		{
-			return () => WithService(action);
-		}
-
 		protected T Request<T>(Func<ProducerService, T> func)
 		{
 			var result = default(T);

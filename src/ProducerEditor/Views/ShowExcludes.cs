@@ -5,6 +5,7 @@ using System.Linq;
 using System.Windows.Forms;
 using Common.Tools;
 using log4net;
+using ProducerEditor.Infrastructure;
 using ProducerEditor.Models;
 using Subway.Dom;
 using Subway.Helpers;
@@ -34,7 +35,6 @@ namespace ProducerEditor.Views
 				.Separator()
 				.Button("Добавить в ассортимент", AddToAssortiment)
 				.Button("Больше не показывать", DoNotShow)
-				.Button("Ошибочное сопоставление (Delete)", DeleteProducerSynonym)
 				.Button("Ошибочное сопоставление по наименованию", DeleteSynonym);
 			var searchText = ((ToolStripTextBox)tools.Items["SearchText"]);
 			searchText.KeyDown += (sender, args) => {
@@ -48,36 +48,27 @@ namespace ProducerEditor.Views
 				.Button("Next", "Следующая страница");
 
 			excludeTable = new VirtualTable(new TemplateManager<List<Exclude>, Exclude>(
-				() =>
-					{
-						var row = Row.Headers();
-						var header = new Header("Продукт").Sortable("Catalog");
-						row.Append(header);
-						header = new Header("Оригинальное наименование").Sortable("Catalog");
-						row.Append(header);
-						header = new Header("Производитель").Sortable("Producer");
-						row.Append(header);
-						header = new Header("Синоним").Sortable("ProducerSynonym");
-						row.Append(header);
-						header = new Header("Поставщик").Sortable("Supplier");
-						row.Append(header);
-						header = new Header("Регион").Sortable("Region");
-						row.Append(header);
-						return row;
-					},
-				e => Row.Cells(e.Catalog, e.OriginalSynonym, e.Producer, e.ProducerSynonym, e.Supplier, e.Region)
-				));
+				() => {
+					var row = Row.Headers(
+						new Header("Продукт").Sortable("Catalog"),
+						new Header("Оригинальное наименование").Sortable("Catalog"),
+						new Header("Синоним").Sortable("ProducerSynonym"),
+						new Header("Поставщик").Sortable("Supplier"),
+						new Header("Регион").Sortable("Region")
+					);
+					return row;
+				},
+				e => Row.Cells(e.Catalog, e.OriginalSynonym, e.ProducerSynonym, e.Supplier, e.Region)
+			));
 
 			excludeTable.CellSpacing = 1;
-			excludeTable.RegisterBehavior(new RowSelectionBehavior(),
+			excludeTable.RegisterBehavior(
+				new RowSelectionBehavior(),
 				new ToolTipBehavior(),
 				new SortInList(),
 				new ColumnResizeBehavior());
 			excludeTable.Behavior<ColumnResizeBehavior>().ColumnResized += column => WidthHolder.Update(excludeTable, column, WidthHolder.ExcludeWidths);
 			excludeTable.TemplateManager.ResetColumns();
-
-			excludeTable.Host.InputMap()
-				.KeyDown(Keys.Delete, DeleteProducerSynonym);
 
 			excludeTable.TemplateManager.Source = pager.Content.ToList();
 
@@ -105,18 +96,6 @@ namespace ProducerEditor.Views
 			if (String.IsNullOrEmpty(_searchText))
 				return Request(s => s.ShowExcludes(page, isRefresh));
 			return Request(s => s.SearchExcludes(_searchText, page, isRefresh));
-		}
-
-		public void DeleteProducerSynonym()
-		{
-			var exclude = excludeTable.Selected<Exclude>();
-			var selectedIndex = excludeTable.Behavior<IRowSelectionBehavior>().SelectedRowIndex;
-			if (exclude == null)
-				return;
-
-			Action(s => s.DeleteProducerSynonym(exclude.ProducerSynonymId));
-			RefreshTable();
-			excludeTable.Behavior<IRowSelectionBehavior>().MoveSelectionAt(selectedIndex);
 		}
 
 		public void DeleteSynonym()
@@ -176,9 +155,13 @@ namespace ProducerEditor.Views
 			if (exclude == null)
 				return;
 
-			Action(s => deletedExcludesIds = s.AddToAssotrment(exclude.Id));
-			RefreshTable();
-			excludeTable.Behavior<IRowSelectionBehavior>().MoveSelectionAt(selectedIndex);
+			var view = new AddToAssortmentView(exclude, ShowProducers.producers);
+			if (view.ShowDialog() == DialogResult.OK)
+			{
+				//Action(s => deletedExcludesIds = s.AddToAssotrment(exclude.Id));
+				RefreshTable();
+				excludeTable.Behavior<IRowSelectionBehavior>().MoveSelectionAt(selectedIndex);
+			}
 		}
 
 		public void DoNotShow()

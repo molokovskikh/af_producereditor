@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using ProducerEditor.Infrastructure;
 using ProducerEditor.Models;
 using System.Windows.Forms;
 
@@ -9,7 +10,7 @@ namespace ProducerEditor.Views
 {
 	public class CreateEquivalentView : Dialog
 	{		
-		public CreateEquivalentView(Producer producer, IEnumerable<string> existsEquivalents, Action<string, uint> actionCreateEquivalent)
+		public CreateEquivalentView(ProducerDto producer, IEnumerable<string> existsEquivalents, Action<string, uint> actionCreateEquivalent)
 		{
 			var errorProvider = new ErrorProvider();
 			

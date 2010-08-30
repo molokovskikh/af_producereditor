@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
+using ProducerEditor.Infrastructure;
 using ProducerEditor.Models;
 using Subway.Dom;
 using Subway.Dom.Styles;
@@ -85,25 +86,25 @@ namespace ProducerEditor.Views
 
 		private void NotSuspicious()
 		{
-			Controller(s => {
+			Action(s => {
 				var item = CurrentItem();
 				if (item == null)
 					return;
 				s.DeleteProducerSynonym(item.Id);
 				((IList<SynonymReportItem>)report.TemplateManager.Source).Remove(item);
 				report.RebuildViewPort();
-			})();
+			});
 		}
 
 		private void SendNotificationToSupplier()
 		{
 			var addressList = String.Empty;
-			Controller(s => {
+			Action(s => {
 				var item = CurrentItem();
 				if (item == null)
 					return;
 				addressList = s.GetSupplierEmails(item.SupplierId);
-           	})();
+			});
 			if (!String.IsNullOrEmpty(addressList))
 				Process.Start(String.Format("mailto:{0}?Subject={1}&Body={2}",
 					addressList, "Неверная связка товар/производитель", ""));
@@ -111,14 +112,14 @@ namespace ProducerEditor.Views
 
 		private void Delete()
 		{
-			Controller(s => {
+			Action(s => {
 				var item = CurrentItem();
 				if (item == null)
 					return;
 				s.DeleteSuspicious(item.Id);
 				((IList<SynonymReportItem>)report.TemplateManager.Source).Remove(item);
 				report.RebuildViewPort();
-			})();
+			});
 		}
 
 		private SynonymReportItem CurrentItem()

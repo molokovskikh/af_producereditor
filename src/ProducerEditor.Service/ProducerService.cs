@@ -3,44 +3,49 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.ServiceModel;
-using System.ServiceModel.Channels;
+using Common.Models.Helpers;
 using Common.MySql;
 using Common.Tools;
 using NHibernate;
 using NHibernate.Linq;
-using NHibernate.Transform;
 using ConnectionManager = Common.MySql.ConnectionManager;
 using ISession=NHibernate.ISession;
 using ProducerEditor.Service.Helpers;
 
 namespace ProducerEditor.Service
 {
-	public class Offer
+	[DataContract(Namespace = "http://schemas.datacontract.org/2004/07/ProducerEditor.Service")]
+	public class ProductAndProducer
 	{
-		public string Product { get; set; }
+		[DataMember]
+		public bool Selected { get; set; }
+		[DataMember]
+		public long ExistsInRls { get; set; }
+		[DataMember]
+		public uint ProducerId { get; set; }
+		[DataMember]
 		public string Producer { get; set; }
+		[DataMember]
+		public uint CatalogId { get; set; }
+		[DataMember]
+		public string Product { get; set; }
+		[DataMember]
+		public long OrdersCount { get; set; }
+		[DataMember]
+		public long OffersCount { get; set; }
 	}
 
-	[DataContract]
-	public class Pager<T>
+	[DataContract(Namespace = "http://schemas.datacontract.org/2004/07/ProducerEditor.Service")]
+	public class OfferView
 	{
 		[DataMember]
-		public uint Page { get; set; }
+		public string ProductSynonym { get; set; }
 		[DataMember]
-		public uint TotalPages { get; set; }
+		public string ProducerSynonym { get; set; }
 		[DataMember]
-		public IList<T> Content { get; set; }
-
-		public Pager(uint page, uint total, IList<T> content)
-		{
-			Page = page;
-			TotalPages = total / 100;
-			if (TotalPages == 0)
-				TotalPages = 1;
-			else if (total % 100 != 0)
-				TotalPages++;
-			Content = content;
-		}
+		public string Supplier { get; set; }
+		[DataMember]
+		public byte Segment { get; set; }
 	}
 
 	[ServiceContract]
@@ -66,18 +71,118 @@ namespace ProducerEditor.Service
 		}
 
 		[OperationContract]
-		public virtual IList<Offer> ShowOffersBySynonym(uint producerSynonymId)
+		public void UpdateProducer(ProducerDto item)
+		{
+			if (!String.IsNullOrEmpty(item.Name))
+				item.Name = item.Name.ToUpper();
+
+			Update(item);
+		}
+
+		[OperationContract]
+		public void UpdateAssortment(AssortmentDto item)
+		{
+			Update(item);
+		}
+
+		[OperationContract]
+		public void Update(object item)
+		{
+			if (item is ProducerDto || item is AssortmentDto)
+			{
+				Transaction(s => {
+					var id = item.GetType().GetProperty("Id").GetValue(item, null);
+					var entity = s.Load("ProducerEditor.Service." + item.GetType().Name.Replace("Dto", ""), id);
+
+					var value = item.GetType().GetProperty("Checked").GetValue(item, null);
+					entity.GetType().GetProperty("Checked").SetValue(entity, value, null);
+
+					if (item is ProducerDto)
+						((Producer) entity).Name = ((ProducerDto) item).Name;
+
+					s.Update(entity);
+				});
+			}
+			else
+				throw new Exception(String.Format("Не знаю как применять изменения для объекта {0}", item));
+		}
+
+		[OperationContract]
+		public virtual IList<ProducerDto> GetProducers()
 		{
 			return Slave(s => s.CreateSQLQuery(@"
-select s.Synonym as Product, sfc.Synonym as Producer
+select p.Id,
+p.Name,
+p.Checked,
+c.Id != 0 as HasOffers
+from Catalogs.Producers p
+	left join farm.core0 c on c.CodeFirmCr = p.Id
+group by p.Id
+order by p.Name")
+				.SetResultTransformer(new AliasToPropertyTransformer(typeof (ProducerDto)))
+				.List<ProducerDto>());
+		}
+
+		[OperationContract]
+		public virtual List<OfferView> ShowOffers(OffersQuery query)
+		{
+			return Slave(s => query.Apply(s).List<OfferView>()).ToList();
+		}
+
+		[OperationContract]
+		public virtual List<ProductAndProducer> ShowProductsAndProducers(uint producerId)
+		{
+			return Slave(s => s.CreateSQLQuery(@"
+drop temporary table if exists ProductFromOrders;
+create temporary table ProductFromOrders engine 'memory'
+select productid
+from orders.orderslist
+where CodeFirmCr = :ProducerId
+group by ProductId;
+
+drop temporary table if exists ProductsAndProducers;
+create temporary table ProductsAndProducers engine 'memory'
+select
+ol.ProductId, ol.CodeFirmCr, 0 as OffersCount, 0 as OrdersCount, 0 as ExistsInRls
+from orders.orderslist ol
+  join ProductFromOrders p on ol.ProductId = p.ProductId
+where ol.CodeFirmCr is not null
+group by ol.ProductId, ol.CodeFirmCr
+union
+select
+c.ProductId, c.CodeFirmCr, 0 as OffersCount, 0 as OrdersCount, 0 as ExistsInRls
 from farm.core0 c
-	join farm.Synonym s on s.SynonymCode = c.SynonymCode
-	join farm.SynonymFirmCr sfc on sfc.SynonymFirmCrCode = c.SynonymFirmCrCode
-where c.SynonymFirmCrCode = :producerSynonymId
-order by Product, Producer")
-				.SetResultTransformer(Transformers.AliasToBean<Offer>())
-				.SetParameter("producerSynonymId", producerSynonymId)
-				.List<Offer>());
+	join catalogs.Products products on products.Id = c.ProductId
+		join catalogs.Products p on p.CatalogId = products.CatalogId
+			join farm.core0 sibling on sibling.ProductId = p.Id
+where sibling.CodeFirmCr = :ProducerId and c.CodeFirmCr is not null
+group by c.ProductId, c.CodeFirmCr;
+
+update ProductsAndProducers pap
+set pap.OffersCount = (select count(*) from farm.core0 c where c.CodeFirmCr = pap.CodeFirmCr and c.ProductId = pap.ProductId),
+    pap.OrdersCount = (select count(*) from orders.orderslist ol where ol.CodeFirmCr = pap.CodeFirmCr and ol.ProductId = pap.ProductId);
+
+update ProductsAndProducers pap
+set ExistsInRls = exists(select * from farm.core0 c where c.CodeFirmCr = pap.CodeFirmCr and c.ProductId = pap.ProductId and c.PriceCode = 1864);
+
+select p.CatalogId,
+	   concat(cn.Name, ' ', cf.Form) as Product,
+	   pr.Id as ProducerId,
+       pr.Name as Producer,
+	   pap.OrdersCount,
+	   pap.OffersCount,
+	   pap.ExistsInRls
+from ProductsAndProducers pap
+  join catalogs.Products as p on p.id = pap.productid
+	  join Catalogs.Catalog as c on p.catalogid = c.id
+    	JOIN Catalogs.CatalogNames cn on cn.id = c.nameid
+    	JOIN Catalogs.CatalogForms cf on cf.id = c.formid
+  join Catalogs.Producers pr on pr.Id = pap.CodeFirmCr
+group by pap.ProductId, pap.CodeFirmCr
+order by p.Id;")
+				.SetParameter("ProducerId", producerId)
+				.SetResultTransformer(new AliasToPropertyTransformer(typeof (ProductAndProducer)))
+				.List<ProductAndProducer>()).ToList();
 		}
 
 		[OperationContract]
@@ -135,13 +240,13 @@ r.Region,
 c.Id is not null as HaveOffers
 from farm.SynonymFirmCr sfc
   join usersettings.PricesData pd on sfc.PriceCode = pd.PriceCode
-    join usersettings.clientsdata cd on cd.FirmCode = pd.FirmCode
-      join farm.Regions r on cd.RegionCode = r.RegionCode
+	join usersettings.clientsdata cd on cd.FirmCode = pd.FirmCode
+	  join farm.Regions r on cd.RegionCode = r.RegionCode
   left join farm.Core0 c on c.SynonymFirmCrCode = sfc.SynonymFirmCrCode
 where sfc.CodeFirmCr = :ProducerId and cd.BillingCode <> 921 and cd.FirmSegment = 0
 group by sfc.SynonymFirmCrCode")
 				.SetParameter("ProducerId", producerId)
-				.SetResultTransformer(Transformers.AliasToBean(typeof (ProducerSynonymDto)))
+				.SetResultTransformer(new AliasToPropertyTransformer(typeof (ProducerSynonymDto)))
 				.List<ProducerSynonymDto>().ToList());
 		}
 
@@ -173,9 +278,9 @@ group by sfc.SynonymFirmCrCode")
 		public virtual void CreateEquivalentForProducer(uint producerId, string equivalentName)
 		{
 			Transaction(session => {
-                var producer = session.Get<Producer>(producerId);
-                producer.Equivalents.Add(new ProducerEquivalent(producer, equivalentName));
-            });
+				var producer = session.Get<Producer>(producerId);
+				producer.Equivalents.Add(new ProducerEquivalent(producer, equivalentName));
+			});
 		}
 
 		[OperationContract]
@@ -184,11 +289,6 @@ group by sfc.SynonymFirmCrCode")
 			Transaction(session => {
 				var synonym = session.Load<ProducerSynonym>(producerSynonymId);
 				session.Delete(synonym);
-
-				session.CreateSQLQuery(@"
-DELETE FROM Farm.Excludes WHERE ProducerSynonymId = :ProducerSynonymId")
-					.SetParameter("ProducerSynonymId", producerSynonymId)
-					.ExecuteUpdate();
 
 				session.Save(new BlockedProducerSynonym(synonym));
 				_mailer.SynonymWasDeleted(synonym);
@@ -209,9 +309,9 @@ WHERE OriginalSynonymId = :SynonymId")
 
 				if (synonym == null)
 					return;
-    			session.Delete(synonym);
+				session.Delete(synonym);
 				_mailer.SynonymWasDeleted(synonym);
-    		});
+			});
 		}
 
 		[OperationContract]
@@ -260,6 +360,7 @@ where CodeFirmCr = :ProducerId and ProductId in (
 			}));
 		}
 
+/*
 		[OperationContract]
 		public virtual void SetAssortmentChecked(uint assortmentId, bool @checked)
 		{
@@ -269,39 +370,35 @@ where CodeFirmCr = :ProducerId and ProductId in (
 				session.Update(assortment);
 			});
 		}
+*/
 
 		[OperationContract]
 		public virtual Pager<AssortmentDto> ShowAssortment(uint assortimentId)
 		{
 			return Slave(session => {
-				var total = Assortment.TotalPages(session);
-				uint page = 1;
+				uint page = 0;
 				if (assortimentId != 0)
 					page = Assortment.GetPage(session, assortimentId);
-				var assortments = Assortment.Load(session, page);
-				return new Pager<AssortmentDto>(page, total, assortments);
+				return Assortment.Search(session, page, null);
 			});
 		}
 
 		[OperationContract]
 		public virtual Pager<AssortmentDto> GetAssortmentPage(uint page)
 		{
-			return Slave(session => {
-				var total = Assortment.TotalPages(session);
-				return new Pager<AssortmentDto>(page, total, Assortment.Load(session, page));
-			});
+			return Slave(session => Assortment.Search(session, page, null));
 		}
 
 		[OperationContract]
 		public virtual Pager<AssortmentDto> SearchAssortment(string text, uint page)
 		{
-			return Slave(session => Assortment.Find(session, text, page));
+			return Slave(session => Assortment.Search(session, page, new Query("CatalogName", "%" + text + "%")));
 		}
 
 		[OperationContract]
 		public virtual Pager<AssortmentDto> ShowAssortmentForProducer(uint producerId, uint page)
 		{
-			return Slave(s => Assortment.ByProducer(s, producerId, page));
+			return Slave(session => Assortment.Search(session, page, new Query("ProducerId", producerId)));
 		}
 
 		[OperationContract]
@@ -349,6 +446,30 @@ where CodeFirmCr = :ProducerId and ProductId in (
 		}
 
 		[OperationContract]
+		public void AddToAssotrment(uint excludeId, uint producerId, string equivalent)
+		{
+			Transaction(s => {
+				var exclude = s.Load<Exclude>(excludeId);
+				var producer = s.Load<Producer>(producerId);
+				var assortment = new Assortment(exclude.CatalogProduct, producer);
+
+				if (assortment.Exist(s))
+					throw new Exception("Запись в ассортименте уже существует");
+
+				if (!String.IsNullOrEmpty(equivalent))
+				{
+					equivalent = equivalent.Trim();
+					if (!producer.Equivalents.Any(e => e.Name.Equals(equivalent, StringComparison.CurrentCultureIgnoreCase)))
+						s.Save(new ProducerEquivalent(producer, equivalent));
+				}
+
+				s.Delete(exclude);
+				s.Save(assortment);
+			});
+		}
+
+/*
+		[OperationContract]
 		public virtual IList<uint> AddToAssotrment(uint excludeId)
 		{
 			var deletedExcludesIds = new List<uint>();
@@ -375,6 +496,7 @@ where CodeFirmCr = :ProducerId and ProductId in (
 			});
 			return deletedExcludesIds;
 		}
+*/
 
 		[OperationContract]
 		public string GetSupplierEmails(uint supplierId)
@@ -383,9 +505,9 @@ where CodeFirmCr = :ProducerId and ProductId in (
 select distinct c.contactText
 from usersettings.clientsdata cd
   join contacts.contact_groups cg on cd.ContactGroupOwnerId = cg.ContactGroupOwnerId
-    join contacts.contacts c on cg.Id = c.ContactOwnerId
+	join contacts.contacts c on cg.Id = c.ContactOwnerId
 where
-    firmcode = :FirmCode
+	firmcode = :FirmCode
 and cg.Type = 2
 and c.Type = 0
 
@@ -394,10 +516,10 @@ union
 select distinct c.contactText
 from usersettings.clientsdata cd
   join contacts.contact_groups cg on cd.ContactGroupOwnerId = cg.ContactGroupOwnerId
-    join contacts.persons p on cg.id = p.ContactGroupId
-      join contacts.contacts c on p.Id = c.ContactOwnerId
+	join contacts.persons p on cg.id = p.ContactGroupId
+	  join contacts.contacts c on p.Id = c.ContactOwnerId
 where
-    firmcode = :FirmCode
+	firmcode = :FirmCode
 and cg.Type = 2
 and c.Type = 0";
 			IList<string> emails = null;
@@ -411,7 +533,7 @@ and c.Type = 0";
 			_execute.WithTransaction(action);
 		}
 
-		private T Slave<T>(Func<ISession, T> func)
+		public T Slave<T>(Func<ISession, T> func)
 		{
 			using (var connection = _connectionManager.GetConnection())
 			using (var session = _factory.OpenSession(connection))

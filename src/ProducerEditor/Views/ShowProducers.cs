@@ -10,6 +10,7 @@ using Subway.Dom.Base;
 using Subway.Dom.Input;
 using Subway.Dom.Styles;
 using Subway.Helpers;
+using Subway.Table;
 using Subway.VirtualTable;
 using Subway.VirtualTable.Behaviors;
 using Subway.VirtualTable.Behaviors.Selection;
@@ -19,13 +20,14 @@ namespace ProducerEditor.Views
 {
 	public class ShowProducers : View
 	{
-		private readonly MainController controller = new MainController();
 		private readonly VirtualTable producerTable;
 		private readonly VirtualTable synonymsTable;
 		private readonly ToolStrip toolStrip;
 
 		private uint BookmarkProducerId = Settings.Default.BookmarkProducerId;
 		private VirtualTable equivalentTable;
+
+		public static List<ProducerDto> producers;
 
 		public ShowProducers()
 		{
@@ -52,25 +54,22 @@ namespace ProducerEditor.Views
 					SearchProducer();
 			};
 
-			producerTable = new VirtualTable(new TemplateManager<List<Producer>, Producer>(
+			producerTable = new VirtualTable(new TemplateManager<List<ProducerDto>, ProducerDto>(
 				() => Row.Headers(new Header("Проверен").AddClass("CheckBoxColumn1"), "Производитель"), 
 				producer => {
-					var row = Row.Cells(new CheckBoxInput(producer.Checked), producer.Name);
-					if (producer.HasOffers == 0)
+					var row = Row.Cells(new CheckBoxInput(producer.Checked).Attr("Name", "Checked"), producer.Name);
+					if (producer.HasOffers)
 						row.AddClass("WithoutOffers");
 					if (producer.Id == BookmarkProducerId)
 						((IDomElementWithChildren)row.Children.Last()).Prepend(new TextBlock {Class = "BookmarkGlyph"});
 					return row;
 				}));
 			producerTable.CellSpacing = 1;
-			producerTable.RegisterBehavior(new RowSelectionBehavior(),
+			producerTable.RegisterBehavior(
+				new RowSelectionBehavior(),
 				new ToolTipBehavior(),
-				new InputSupport(input => {
-					var row = (Row)input.Parent.Parent;
-					var producer = producerTable.Translate<Producer>(row);
-					producer.Checked = ((CheckBoxInput) input).Checked;
-					controller.Update(producer);
-				}));
+				new InputController()
+			);
 			producerTable.Host.KeyDown += (sender, args) => {
 				if (args.KeyCode == Keys.Enter && String.IsNullOrEmpty(searchText.Text))
 					ShowProductsAndProducersOrOffers();
@@ -95,7 +94,7 @@ namespace ProducerEditor.Views
 			};
 
 			var behavior = producerTable.Behavior<IRowSelectionBehavior>();
-			behavior.SelectedRowChanged += (oldRow, newRow) => SelectedProducerChanged(behavior.Selected<Producer>());
+			behavior.SelectedRowChanged += (oldRow, newRow) => SelectedProducerChanged(behavior.Selected<ProducerDto>());
 
 			synonymsTable = new VirtualTable(new TemplateManager<List<ProducerSynonym>, ProducerSynonym>(
 				() =>{
@@ -165,7 +164,7 @@ namespace ProducerEditor.Views
 
 		private void SetBookmark()
 		{
-			var producer = producerTable.Selected<Producer>();
+			var producer = producerTable.Selected<ProducerDto>();
 			if (producer == null)
 				return;
 
@@ -178,12 +177,12 @@ namespace ProducerEditor.Views
 		private void MoveToBookmark()
 		{
 			ReseteFilter();
-			producerTable.Behavior<IRowSelectionBehavior>().MoveSelectionAt(controller.Producers.IndexOf(p => p.Id == BookmarkProducerId));
+			producerTable.Behavior<IRowSelectionBehavior>().MoveSelectionAt(producers.IndexOf(p => p.Id == BookmarkProducerId));
 		}
 
 		private void ShowAssortmentForProducer()
 		{
-			var producer = producerTable.Selected<Producer>();
+			var producer = producerTable.Selected<ProducerDto>();
 			if (producer == null)
 				return;
 
@@ -198,7 +197,7 @@ namespace ProducerEditor.Views
 		{
 			if (producerTable.Host.Focused)
 			{
-				var producer = producerTable.Selected<Producer>();
+				var producer = producerTable.Selected<ProducerDto>();
 				if (producer == null)
 					return;
 				if (MessageBox.Show(String.Format("Удалить производителя \"{0}\"", producer.Name), "Удаление производителя", MessageBoxButtons.OKCancel, MessageBoxIcon.Question) == DialogResult.Cancel)
@@ -206,10 +205,10 @@ namespace ProducerEditor.Views
 
 				Action(s => {
 					s.DeleteProducer(producer.Id);
-					((IList<Producer>)producerTable.TemplateManager.Source).Remove(producer);
-					controller.Producers.Remove(producer);
+					((IList<ProducerDto>)producerTable.TemplateManager.Source).Remove(producer);
+					producers.Remove(producer);
 				});
-				SelectedProducerChanged(producerTable.Selected<Producer>());
+				SelectedProducerChanged(producerTable.Selected<ProducerDto>());
 				producerTable.RebuildViewPort();
 			}
 			else if (synonymsTable.Host.Focused)
@@ -229,8 +228,9 @@ namespace ProducerEditor.Views
 		{
 			if (producerTable.Host.Focused)
 			{
-				var producer = producerTable.Selected<Producer>();
-				controller.ShowProductsAndProducers(producer);
+				var producer = producerTable.Selected<ProducerDto>();
+				var productAndProducers = Request(s => s.ShowProductsAndProducers(producer.Id));
+				new ShowProductsAndProducers(producer, producers, productAndProducers).ShowDialog();
 				producerTable.RebuildViewPort();
 			}
 			else
@@ -239,13 +239,12 @@ namespace ProducerEditor.Views
 				if (synonym == null)
 					return;
 
-				Controller(s => s.ShowOffersBySynonym(synonym.Id))();
+				Controller(s => s.ShowOffers(new OffersQuery("ProducerSynonymId", synonym.Id)))();
 			}
 		}
 
 		private void ReseteFilter()
 		{
-			var producers = controller.SearchProducer(null);
 			producerTable.TemplateManager.Source = producers;
 			producerTable.Host.Focus();
 		}
@@ -253,7 +252,7 @@ namespace ProducerEditor.Views
 		private void SearchProducer()
 		{
 			var text = toolStrip.Items["SearchText"];
-			var producers = controller.SearchProducer(text.Text);
+			var producers = Search(text.Text);
 			text.Text = "";
 			if (producers.Count > 0)
 			{
@@ -270,10 +269,10 @@ namespace ProducerEditor.Views
 
 		private void ShowRenameView()
 		{
-			var producer = producerTable.Selected<Producer>();
+			var producer = producerTable.Selected<ProducerDto>();
 			if (producer == null)
 				return;
-			var rename = new RenameView(controller, producer);
+			var rename = new RenameView(producer, producers, p => Action(s => s.UpdateProducer(p)));
 			if (rename.ShowDialog() != DialogResult.Cancel)
 			{
 				producerTable.RebuildViewPort();
@@ -282,15 +281,18 @@ namespace ProducerEditor.Views
 
 		private void ShowJoinView()
 		{
-			var producer = producerTable.Selected<Producer>();
-			controller.Join(producer,
-				() => {
-					producerTable.RebuildViewPort();
-					SelectedProducerChanged(producerTable.Selected<Producer>());
-				});
+			var producer = producerTable.Selected<ProducerDto>();
+			if (producer == null)
+				return;
+			var view = new JoinView(producer, producers);
+			if (view.ShowDialog() != DialogResult.Cancel)
+			{
+				producerTable.RebuildViewPort();
+				SelectedProducerChanged(producerTable.Selected<ProducerDto>());
+			}
 		}
 
-		private void SelectedProducerChanged(Producer producer)
+		private void SelectedProducerChanged(ProducerDto producer)
 		{
 			if (producer == null)
 				return;
@@ -302,13 +304,15 @@ namespace ProducerEditor.Views
 
 		public void UpdateProducers()
 		{
-			var producers = controller.GetAllProducers();
+			Action(s => {
+				producers = s.GetProducers().ToList();
+			});
 			producerTable.TemplateManager.Source = producers;
 		}
 
 		private void ShowCreateEquivalentForProducer()
 		{
-			var producer = producerTable.Selected<Producer>();
+			var producer = producerTable.Selected<ProducerDto>();
 			if (producer == null)
 				return;
 			IList<String> equivalents = null;
@@ -317,8 +321,14 @@ namespace ProducerEditor.Views
 				(text, producerId) => Action(s => s.CreateEquivalentForProducer(producerId, text)));
 			if (createEquivalent.ShowDialog() != DialogResult.Cancel)
 			{
-				SelectedProducerChanged(producerTable.Selected<Producer>());
+				SelectedProducerChanged(producerTable.Selected<ProducerDto>());
 			}
+		}
+
+		public List<ProducerDto> Search(string text)
+		{
+			text = text ?? "";
+			return producers.Where(p => p.Name.ToLower().Contains(text.ToLower())).ToList();
 		}
 	}
 }

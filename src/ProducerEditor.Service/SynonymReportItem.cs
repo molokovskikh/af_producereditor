@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Common.Models.Helpers;
 using NHibernate;
 using NHibernate.Transform;
 
@@ -47,7 +48,7 @@ group by sfc.SynonymFirmCrCode
 order by sfc.Synonym;")
 					.SetParameter("begin", begin)
 					.SetParameter("end", end)
-					.SetResultTransformer(Transformers.AliasToBean(typeof (SynonymReportItem)))
+					.SetResultTransformer(new AliasToPropertyTransformer(typeof (SynonymReportItem)))
 					.List<SynonymReportItem>().ToList();
 		}
 
@@ -79,7 +80,7 @@ FROM logs.SynonymFirmCrLogs sfcl
 where ((sfcl.Operation = 0 and sfcl.OperatorName != 'ProcessingSvc') or (sfcl.Operation = 1 and sfcl.OperatorName != 'ProducerEditor' and sfcl.OPeratorHost like 'OPT%'))
 group by sfc.SynonymFirmCrCode
 order by sfc.Synonym;")
-					.SetResultTransformer(Transformers.AliasToBean(typeof (SynonymReportItem)))
+					.SetResultTransformer(new AliasToPropertyTransformer(typeof (SynonymReportItem)))
 					.List<SynonymReportItem>().ToList();
 		}
 	}

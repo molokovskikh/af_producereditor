@@ -1,11 +1,6 @@
-﻿using System.Collections.Generic;
-using System.Drawing;
-using System.Reflection;
-using Castle.ActiveRecord;
-using Castle.ActiveRecord.Framework.Config;
+﻿using System.Drawing;
 using Subway.Dom;
 using Subway.Dom.Styles;
-using Environment=NHibernate.Cfg.Environment;
 
 namespace ProducerEditor
 {
@@ -51,23 +46,6 @@ namespace ProducerEditor
 				.Set(StyleElementType.Width, 15)
 				.Set(StyleElementType.Height, 15)
 				.Set(StyleElementType.CustomBackgroundDraw, DrawBookmarkGlyph);
-
-			InitializeAR();
-		}
-
-		public static void InitializeAR()
-		{
-			var config = new InPlaceConfigurationSource();
-			config.Add(typeof (ActiveRecordBase),
-				new Dictionary<string, string> {
-					{Environment.Dialect, "NHibernate.Dialect.MySQLDialect"},
-					{Environment.ConnectionDriver, "NHibernate.Driver.MySqlDataDriver"},
-					{Environment.ConnectionProvider, "NHibernate.Connection.DriverConnectionProvider"},
-					{Environment.ConnectionStringName, "Master"},
-					{Environment.ProxyFactoryFactoryClass, "NHibernate.ByteCode.Castle.ProxyFactoryFactory, NHibernate.ByteCode.Castle" },
-					{Environment.Hbm2ddlKeyWords, "none"}
-				});
-			ActiveRecordStarter.Initialize(new[] {Assembly.Load("ProducerEditor")}, config);
 		}
 
 		public static void DrawBookmarkGlyph(Graphics graphics, RectangleF area, IReadonlyStyle style)

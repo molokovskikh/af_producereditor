@@ -11,9 +11,9 @@ using Subway.VirtualTable.Behaviors.Specialized;
 
 namespace ProducerEditor.Views
 {
-	public class OffersView : Form
+	public class ShowOffers : Form
 	{
-		public OffersView(List<OfferView> offers)
+		public ShowOffers(List<OfferView> offers)
 		{
 			MinimumSize = new Size(640, 480);
 			KeyPreview = true;
@@ -45,7 +45,8 @@ namespace ProducerEditor.Views
 					offer.ProducerSynonym)));
 
 			offersTable.CellSpacing = 1;
-			offersTable.RegisterBehavior(new ToolTipBehavior(),
+			offersTable.RegisterBehavior(
+				new ToolTipBehavior(),
 				new ColumnResizeBehavior(),
 				new SortInList());
 			offersTable.TemplateManager.Source = offers;

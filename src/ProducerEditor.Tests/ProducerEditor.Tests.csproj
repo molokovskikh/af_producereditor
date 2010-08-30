@@ -100,7 +100,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ActiveRecordFixture.cs" />
     <Compile Include="AssortmentFixture.cs" />
     <Compile Include="ExcludeFixture.cs" />
     <Compile Include="InitializationFixture.cs" />

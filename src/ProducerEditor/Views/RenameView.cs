@@ -1,13 +1,15 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Forms;
+using ProducerEditor.Infrastructure;
 using ProducerEditor.Models;
 
 namespace ProducerEditor.Views
 {
 	public class RenameView : Dialog
 	{
-		public RenameView(MainController controller, Producer producer)
+		public RenameView(ProducerDto producer, List<ProducerDto> producers, Action<ProducerDto> rename)
 		{
 			var errorProvider = new ErrorProvider();
 			var newName = new TextBox {
@@ -26,7 +28,7 @@ namespace ProducerEditor.Views
 					args.Cancel = true;
 					return;
 				}
-				var existsProducer = controller.Producers.Where(p => p.Name.ToLower() == newName.Text.Trim() && p.Id != producer.Id).FirstOrDefault();
+				var existsProducer = producers.FirstOrDefault(p => p.Name.Equals(newName.Text, StringComparison.CurrentCultureIgnoreCase) && p.Id != producer.Id);
 				if (existsProducer != null)
 				{
 					errorProvider.SetError(newName, "Такой производитель уже существует");
@@ -35,7 +37,7 @@ namespace ProducerEditor.Views
 					return;
 				}
 				producer.Name = newName.Text;
-				controller.Update(producer);
+				rename(producer);
 			};
 		}
 	}

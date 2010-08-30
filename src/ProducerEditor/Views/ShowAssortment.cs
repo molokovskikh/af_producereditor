@@ -3,11 +3,13 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
+using ProducerEditor.Infrastructure;
 using ProducerEditor.Models;
 using Subway.Dom;
 using Subway.Dom.Base;
 using Subway.Dom.Input;
 using Subway.Helpers;
+using Subway.Table;
 using Subway.VirtualTable;
 using Subway.VirtualTable.Behaviors;
 using Subway.VirtualTable.Behaviors.Selection;
@@ -49,21 +51,18 @@ namespace ProducerEditor.Views
 			assortmentTable = new VirtualTable(new TemplateManager<List<Assortment>, Assortment>(
 				() => Row.Headers(new Header("Проверен").AddClass("CheckBoxColumn1"), "Продукт", "Производитель"),
 				a => {
-					var row = Row.Cells(new CheckBoxInput(a.Checked), a.Product, a.Producer);
+					var row = Row.Cells(new CheckBoxInput(a.Checked).Attr("Name", "Checked"), a.Product, a.Producer);
 					if (a.Id == Settings.Default.BookmarkAssortimentId)
 						((IDomElementWithChildren)row.Children.ElementAt(1)).Prepend(new TextBlock {Class = "BookmarkGlyph"});
 					return row;
 				}));
 			assortmentTable.CellSpacing = 1;
-			assortmentTable.RegisterBehavior(new RowSelectionBehavior(),
+			assortmentTable.RegisterBehavior(
+				new RowSelectionBehavior(),
 				new ToolTipBehavior(),
 				new ColumnResizeBehavior(),
-				new InputSupport(input => {
-					var row = (Row)input.Parent.Parent;
-					var assortment = assortmentTable.Translate<Assortment>(row);
-					assortment.Checked = ((CheckBoxInput) input).Checked;
-					Action(s => s.SetAssortmentChecked(assortment.Id, assortment.Checked));
-				}));
+				new InputController()
+			);
 			assortmentTable.Behavior<ColumnResizeBehavior>().ColumnResized += column => WidthHolder.Update(assortmentTable, column, WidthHolder.AssortimentWidths);
 			assortmentTable.TemplateManager.ResetColumns();
 			assortmentTable.Host
@@ -136,13 +135,11 @@ namespace ProducerEditor.Views
 			equivalentTable = new VirtualTable(new TemplateManager<List<string>, string>(
 				() => Row.Headers("Эквивалент"), e => Row.Cells(e)));
 
-			var producersToSynonymsSplit = new SplitContainer
-			{
+			var producersToSynonymsSplit = new SplitContainer {
 				Dock = DockStyle.Fill,
 				Orientation = Orientation.Horizontal
 			};
-			var producersToEquivalentsSplit = new SplitContainer
-			{
+			var producersToEquivalentsSplit = new SplitContainer {
 				Dock = DockStyle.Fill,
 			};
 
@@ -152,14 +149,14 @@ namespace ProducerEditor.Views
 			producersToSynonymsSplit.Panel1.Controls.Add(producersToEquivalentsSplit);
 			producersToSynonymsSplit.Panel2.Controls.Add(synonymsTable.Host);
 
-			Controls.Add(producersToSynonymsSplit);			
+			Controls.Add(producersToSynonymsSplit);
 			Controls.Add(navigationToolStrip);
 			Controls.Add(tools);
 
 			producersToSynonymsSplit.SplitterDistance = (int)(0.5 * Height);
 			producersToEquivalentsSplit.SplitterDistance = (int)(0.7 * producersToEquivalentsSplit.Width);
 
-			((Control)assortmentTable.Host).Tag = PaginatorExtention.TableName;
+			assortmentTable.Host.Tag = PaginatorExtention.TableName;
 
 			navigationToolStrip.ActAsPaginator(
 				assortments,
@@ -186,16 +183,9 @@ namespace ProducerEditor.Views
 
 		private void SelectedAssortmentChanged(Assortment assortment)
 		{
-			var queryGetProducerId = String.Format(@"
-select ProducerId
-from catalogs.Assortment
-where Id = {0}" , assortment.Id);
-			uint producerId = 0;
-			With.Session(session => producerId = session.CreateSQLQuery(queryGetProducerId).List<uint>().Last<uint>());
-			Action(s =>
-			{
-				synonymsTable.TemplateManager.Source = s.GetSynonyms(producerId).ToList();
-				equivalentTable.TemplateManager.Source = s.GetEquivalents(producerId).ToList();
+			Action(s => {
+				synonymsTable.TemplateManager.Source = s.GetSynonyms(assortment.ProducerId).ToList();
+				equivalentTable.TemplateManager.Source = s.GetEquivalents(assortment.ProducerId).ToList();
 			});
 		}
 
