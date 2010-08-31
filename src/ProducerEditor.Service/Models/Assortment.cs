@@ -115,7 +115,7 @@ from catalogs.Assortment a
 join Catalogs.Catalog as c on c.Id = a.CatalogId
 order by c.name
 ) as c
-where a.Id = ?id", connection);
+where c.Id = ?id", connection);
 			command.Parameters.AddWithValue("?id", assortimentId);
 			var value = command.ExecuteScalar();
 
