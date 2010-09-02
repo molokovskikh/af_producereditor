@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.ServiceModel;
 using System.Text;
 using NUnit.Framework;
 using NHibernate;
 using NHibernate.Linq;
 using ProducerEditor.Service;
+using ProducerEditor.Service.Models;
 
 namespace ProducerEditor.Tests
 {
@@ -23,12 +25,34 @@ namespace ProducerEditor.Tests
 		}
 
 		[Test]
+		public void Check_service()
+		{
+			foreach (var method in typeof(ProducerService).GetMethods())
+			{
+				if (!method.GetCustomAttributes(false).Any(a => a.GetType() == typeof(OperationContractAttribute)))
+					continue;
+
+				if (!method.IsVirtual)
+					throw new Exception(String.Format("Метод {0} не виртуальный не будет работать перехватчик который собирает ошибки", method.Name));
+			}
+		}
+
+		[Test]
 		public void Get_data_for_exclude()
 		{
 			var excludes = service.ShowExcludes(0, false);
 			var data = service.GetExcludeData(excludes.Content[0].Id);
 			Assert.That(data.Producers, Is.Not.Null);
 			Assert.That(data.Synonyms, Is.Not.Null);
+		}
+
+		[Test]
+		public void Check_assortment()
+		{
+			var assortments = service.GetAssortmentPage(0);
+			var assortment = assortments.Content[0];
+			assortment.Checked = true;
+			service.UpdateAssortment(assortment);
 		}
 
 		[Test]

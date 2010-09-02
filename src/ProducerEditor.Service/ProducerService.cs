@@ -72,7 +72,7 @@ namespace ProducerEditor.Service
 		}
 
 		[OperationContract]
-		public void UpdateProducer(ProducerDto item)
+		public virtual void UpdateProducer(ProducerDto item)
 		{
 			if (!String.IsNullOrEmpty(item.Name))
 				item.Name = item.Name.ToUpper();
@@ -81,19 +81,19 @@ namespace ProducerEditor.Service
 		}
 
 		[OperationContract]
-		public void UpdateAssortment(AssortmentDto item)
+		public virtual void UpdateAssortment(AssortmentDto item)
 		{
 			Update(item);
 		}
 
 		[OperationContract]
-		public void Update(object item)
+		public virtual void Update(object item)
 		{
 			if (item is ProducerDto || item is AssortmentDto)
 			{
 				Transaction(s => {
 					var id = item.GetType().GetProperty("Id").GetValue(item, null);
-					var entity = s.Load("ProducerEditor.Service." + item.GetType().Name.Replace("Dto", ""), id);
+					var entity = s.Load("ProducerEditor.Service.Models." + item.GetType().Name.Replace("Dto", ""), id);
 
 					var value = item.GetType().GetProperty("Checked").GetValue(item, null);
 					entity.GetType().GetProperty("Checked").SetValue(entity, value, null);
@@ -420,7 +420,7 @@ where CodeFirmCr = :ProducerId and ProductId in (
 		}
 
 		[OperationContract]
-		public void AddToAssotrment(uint excludeId, uint producerId, string equivalent)
+		public virtual void AddToAssotrment(uint excludeId, uint producerId, string equivalent)
 		{
 			Transaction(s => {
 				var exclude = s.Load<Exclude>(excludeId);
@@ -445,7 +445,7 @@ where CodeFirmCr = :ProducerId and ProductId in (
 		}
 
 		[OperationContract]
-		public ExcludeData GetExcludeData(uint excludeId)
+		public virtual ExcludeData GetExcludeData(uint excludeId)
 		{
 			return Slave(s => {
 				var exclude = s.Load<Exclude>(excludeId);
@@ -499,7 +499,7 @@ where a.CatalogId = :catalogId")
 */
 
 		[OperationContract]
-		public string GetSupplierEmails(uint supplierId)
+		public virtual string GetSupplierEmails(uint supplierId)
 		{
 			var sql = @"
 select distinct c.contactText

@@ -5,6 +5,7 @@ using NHibernate;
 using NHibernate.Linq;
 using NUnit.Framework;
 using ProducerEditor.Service;
+using ProducerEditor.Service.Models;
 
 namespace ProducerEditor.Tests
 {

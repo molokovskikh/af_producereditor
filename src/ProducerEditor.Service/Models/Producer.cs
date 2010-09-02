@@ -3,11 +3,9 @@ using System.Linq;
 using System.Runtime.Serialization;
 using Common.Tools;
 using NHibernate;
-using NHibernate.Linq;
 using NHibernate.Mapping.Attributes;
-using ProducerEditor.Service.Models;
 
-namespace ProducerEditor.Service
+namespace ProducerEditor.Service.Models
 {
 	[DataContract(Namespace = "http://schemas.datacontract.org/2004/07/ProducerEditor.Service"/*, Name = "Producer"*/)]
 	public class ProducerDto
