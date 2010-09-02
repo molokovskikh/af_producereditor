@@ -58,21 +58,22 @@ namespace ProducerEditor.Views
 				() => {
 					var row = Row.Headers();
 					var header = new Header("Синоним").Sortable("Name");
-					header.InlineStyle.Set(StyleElementType.Width, WidthHolder.ProducerWidths[0]);
+					row.Append(header);
+
+					header = new Header("Производитель").Sortable("Producer");
 					row.Append(header);
 
 					header = new Header("Поставщик").Sortable("Supplier");
-					header.InlineStyle.Set(StyleElementType.Width, WidthHolder.ProducerWidths[1]);
 					row.Append(header);
 
 					header = new Header("Регион").Sortable("Region");
-					header.InlineStyle.Set(StyleElementType.Width, WidthHolder.ProducerWidths[2]);
 					row.Append(header);
 
 					return row;
 				},
 				synonym => {
 					var row = Row.Cells(synonym.Name,
+						synonym.Producer,
 						synonym.Supplier,
 						synonym.Region);
 					if (synonym.HaveOffers)
@@ -86,7 +87,6 @@ namespace ProducerEditor.Views
 				new SortInList(),
 				new ColumnResizeBehavior(),
 				new RowSelectionBehavior());
-			synonymsTable.Behavior<ColumnResizeBehavior>().ColumnResized += column => WidthHolder.Update(synonymsTable, column, WidthHolder.ProducerWidths);
 			synonymsTable.TemplateManager.ResetColumns();
 
 			var assortment = new VirtualTable(new TemplateManager<List<AssortmentDto>, AssortmentDto>(
