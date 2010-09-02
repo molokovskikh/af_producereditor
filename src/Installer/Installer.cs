@@ -34,10 +34,6 @@ namespace Installer
 		public Installer()
 		{
 			_registryRoot = Registry.CurrentUser;
-			_shortcuts = new[] {
-				Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), _application + ".lnk"),
-				Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Programs), _application + ".lnk")
-			};
 
 			var appSettings = ConfigurationManager.AppSettings;
 
@@ -68,6 +64,11 @@ namespace Installer
 			_applicationPath = Path.Combine(Path.Combine(publisherPath, _application), "Application");
 			_applicationFiles = Path.Combine(_applicationPath, _version);
 			_mainExecutable = Path.Combine(_applicationPath, _application + ".exe");
+
+			_shortcuts = new[] {
+				Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), _application + ".lnk"),
+				Path.Combine(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Programs), _publisher), _application + ".lnk")
+			};
 		}
 
 		public void Install()
