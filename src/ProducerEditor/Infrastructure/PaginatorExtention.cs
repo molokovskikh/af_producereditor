@@ -35,7 +35,7 @@ namespace ProducerEditor.Infrastructure
 			var tables = controls.Where(control => control is TableHost);
 			Control table;
 			if (tables.Count() > 1)
-				table = tables.Where(control => String.Compare(control.Tag.ToString(), TableName) == 0).First();
+				table = tables.Where(t => t.Tag != null).Where(control => String.Compare(control.Tag.ToString(), TableName) == 0).First();
 			else
 				table = tables.First();
 			table.InputMap()

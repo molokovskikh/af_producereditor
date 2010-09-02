@@ -3,10 +3,12 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
+using ProducerEditor.Contract;
 using ProducerEditor.Infrastructure;
 using ProducerEditor.Models;
 using ProducerEditor.Presenters;
 using Subway.Dom;
+using Subway.Dom.Styles;
 using Subway.VirtualTable;
 using Subway.VirtualTable.Behaviors;
 using Subway.VirtualTable.Behaviors.Selection;
@@ -42,6 +44,7 @@ namespace ProducerEditor.Views
 			));
 
 			excludes.Host.Name = "Excludes";
+			excludes.Host.Tag = PaginatorExtention.TableName;
 			excludes.CellSpacing = 1;
 			excludes.RegisterBehavior(
 				new RowSelectionBehavior(),
@@ -51,7 +54,62 @@ namespace ProducerEditor.Views
 			excludes.Behavior<ColumnResizeBehavior>().ColumnResized += column => WidthHolder.Update(excludes, column, WidthHolder.ExcludeWidths);
 			excludes.TemplateManager.ResetColumns();
 
+			var synonymsTable = new VirtualTable(new TemplateManager<List<ProducerSynonymDto>, ProducerSynonymDto>(
+				() => {
+					var row = Row.Headers();
+					var header = new Header("Синоним").Sortable("Name");
+					header.InlineStyle.Set(StyleElementType.Width, WidthHolder.ProducerWidths[0]);
+					row.Append(header);
+
+					header = new Header("Поставщик").Sortable("Supplier");
+					header.InlineStyle.Set(StyleElementType.Width, WidthHolder.ProducerWidths[1]);
+					row.Append(header);
+
+					header = new Header("Регион").Sortable("Region");
+					header.InlineStyle.Set(StyleElementType.Width, WidthHolder.ProducerWidths[2]);
+					row.Append(header);
+
+					return row;
+				},
+				synonym => {
+					var row = Row.Cells(synonym.Name,
+						synonym.Supplier,
+						synonym.Region);
+					if (synonym.HaveOffers)
+						row.AddClass("WithoutOffers");
+					return row;
+				}));
+			synonymsTable.Host.Name = "Synonyms";
+			synonymsTable.CellSpacing = 1;
+			synonymsTable.RegisterBehavior(
+				new ToolTipBehavior(),
+				new SortInList(),
+				new ColumnResizeBehavior(),
+				new RowSelectionBehavior());
+			synonymsTable.Behavior<ColumnResizeBehavior>().ColumnResized += column => WidthHolder.Update(synonymsTable, column, WidthHolder.ProducerWidths);
+			synonymsTable.TemplateManager.ResetColumns();
+
+			var assortment = new VirtualTable(new TemplateManager<List<AssortmentDto>, AssortmentDto>(
+				() => Row.Headers(new Header("Производитель").Sortable("Producer")),
+				synonym => Row.Cells(synonym.Producer)));
+			assortment.Host.Name = "Assortment";
+			assortment.CellSpacing = 1;
+			assortment.RegisterBehavior(
+				new ToolTipBehavior(),
+				new SortInList(),
+				new RowSelectionBehavior());
+			assortment.TemplateManager.ResetColumns();
+
+			var split = new SplitContainer {
+				Height = 200,
+				Orientation = Orientation.Vertical,
+				Dock = DockStyle.Bottom
+			};
+			split.Panel1.Controls.Add(assortment.Host);
+			split.Panel2.Controls.Add(synonymsTable.Host);
+
 			Controls.Add(excludes.Host);
+			Controls.Add(split);
 			Controls.Add(new ToolStrip()
 				.Button("AddToAssortment", "Добавить в ассортимент")
 				.Button("DoNotShow", "Больше не показывать")

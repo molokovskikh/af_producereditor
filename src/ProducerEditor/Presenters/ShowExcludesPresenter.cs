@@ -1,7 +1,9 @@
 using System;
+using System.Collections.Generic;
 using System.ServiceModel;
 using System.Windows.Forms;
 using log4net;
+using ProducerEditor.Contract;
 using ProducerEditor.Infrastructure;
 using ProducerEditor.Models;
 using ProducerEditor.Views;
@@ -13,6 +15,8 @@ namespace ProducerEditor.Presenters
 		private ILog _log = LogManager.GetLogger(typeof (ShowExcludesPresenter));
 		private Pager<Exclude> _excludes;
 		private string _searchText;
+		private List<ProducerSynonymDto> _synonyms;
+		private List<AssortmentDto> _assortment;
 
 		public event Action<string, object> Update;
 
@@ -27,10 +31,41 @@ namespace ProducerEditor.Presenters
 			}
 		}
 
+		public List<ProducerSynonymDto> Synonyms
+		{
+			get { return _synonyms; }
+			set
+			{
+				_synonyms = value;
+				if (Update != null)
+					Update("Synonyms", value);
+			}
+		}
+
+		public List<AssortmentDto> Assortment
+		{
+			get { return _assortment; }
+			set
+			{
+				_assortment = value;
+				if (Update != null)
+					Update("Assortment", value);
+			}
+		}
+
 		public Pager<Exclude> page
 		{
 			get { return Excludes; }
 			set { Excludes = value; }
+		}
+
+		public void CurrentChanged(Exclude exclude)
+		{
+			Action(s => {
+				var data = s.GetExcludeData(exclude.Id);
+				Synonyms = data.Synonyms;
+				Assortment = data.Assortments;
+			});
 		}
 
 		public void Search(string text)
@@ -94,7 +129,7 @@ namespace ProducerEditor.Presenters
 		public void DoNotShow(Exclude current)
 		{
 			Action(s => s.DoNotShow(current.Id));
-			page.Content.Remove(current);
+			Refresh();
 		}
 
 		protected T Request<T>(Func<ProducerService, T> func)

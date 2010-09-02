@@ -89,5 +89,8 @@ namespace ProducerEditor.Models
 
 		[OperationContract]
 		void UpdateAssortment(AssortmentDto item);
+
+		[OperationContract]
+		ExcludeData GetExcludeData(uint excludeId);
 	}
 }

@@ -23,11 +23,93 @@ namespace ProducerEditor.Infrastructure
 		}
 	}
 
+	public interface IBinder
+	{
+		void Bind(object presenter, View view);
+	}
+
+	public class CurrentBinder : IBinder
+	{
+		public void Bind(object presenter, View view)
+		{
+			var presenterType = presenter.GetType();
+			var method = presenterType.GetMethod("CurrentChanged");
+			if (method == null)
+				return;
+			var parameters = method.GetParameters();
+			if (parameters.Length != 1)
+				return;
+			var host = view.GetTableForParameter(parameters[0]);
+			if (host == null)
+				return;
+			host.Table.Behavior<IRowSelectionBehavior>().SelectedRowChanged += (oldIndex, newIndex) => {
+				var current = host.Table.Selected();
+				if (current == null)
+					return;
+				method.Invoke(presenter, new[] {current});
+			};
+		}
+	}
+
+	public class UpdateBinder : IBinder
+	{
+		private View view;
+
+		public void Bind(object presenter, View view)
+		{
+			this.view = view;
+			var presenterType = presenter.GetType();
+			var update = presenterType.GetEvent("Update");
+			if (update == null)
+				return;
+			update.AddEventHandler(presenter, new Action<string, object>(Bind));
+		}
+
+		public void Bind(string name, object value)
+		{
+			var control = view.Children().FirstOrDefault(c => c.Name == name);
+			if (control == null)
+				return;
+			if (control is TableHost)
+			{
+				((TableHost) control).Table.TemplateManager.Source = ConvertValue(value);
+			}
+		}
+
+		private object ToList(object content, Type genericArgument)
+		{
+			var constructor =
+				typeof (List<>).MakeGenericType(genericArgument).GetConstructor(new Type[]
+				{typeof (IEnumerable<>).MakeGenericType(genericArgument)});
+			return constructor.Invoke(new [] {content});
+		}
+
+		private object ConvertValue(object value)
+		{
+			if (value is IList)
+				return value;
+			if (value is IPager)
+			{
+				var content = value.GetType().GetProperty("Content").GetValue(value, null);
+				var genericArgument = value.GetType().GetGenericArguments()[0];
+				if (content.GetType() != typeof(List<>).MakeGenericType(genericArgument))
+					content = ToList(content, genericArgument);
+				return content;
+			}
+			return null;
+		}
+	}
+
 	public abstract class View : Form
 	{
 		private ILog _log = LogManager.GetLogger(typeof (Form));
 
 		protected object Presenter;
+
+		public IBinder[] binders = new IBinder[] {
+			new UpdateBinder(),
+			new CurrentBinder()
+		};
 
 		public View()
 		{
@@ -47,46 +129,8 @@ namespace ProducerEditor.Infrastructure
 
 		private void WireBinding()
 		{
-			var update = Presenter.GetType().GetEvent("Update");
-			if (update == null)
-				return;
-			update.AddEventHandler(Presenter, new Action<string, object>((n, v) => {
-				Bind(n, v);
-			}));
-		}
-
-		public void Bind(string name, object value)
-		{
-			var control = this.Children().FirstOrDefault(c => c.Name == name);
-			if (control == null)
-				return;
-			if (control is TableHost)
-			{
-				((TableHost) control).Table.TemplateManager.Source = ConvertValue(value);
-			}
-		}
-
-		private object ConvertValue(object value)
-		{
-			if (value is IList)
-				return value;
-			if (value is IPager)
-			{
-				var content = value.GetType().GetProperty("Content").GetValue(value, null);
-				var genericArgument = value.GetType().GetGenericArguments()[0];
-				if (content.GetType() != typeof(List<>).MakeGenericType(genericArgument))
-					content = ToList(content, genericArgument);
-				return content;
-			}
-			return null;
-		}
-
-		private object ToList(object content, Type genericArgument)
-		{
-			var constructor =
-				typeof (List<>).MakeGenericType(genericArgument).GetConstructor(new Type[]
-				{typeof (IEnumerable<>).MakeGenericType(genericArgument)});
-			return constructor.Invoke(new [] {content});
+			foreach (var binder in binders)
+				binder.Bind(Presenter, this);
 		}
 
 		private void WireButtonTo(ToolStripButton button, object presenter)
@@ -98,7 +142,7 @@ namespace ProducerEditor.Infrastructure
 			button.Click += (s, a) => {
 				TableHost table = null;
 				if (method.GetParameters().Any(p => p.Name == "current"))
-					table = GetCurrentTable(method.GetParameters().First(p => p.Name == "current"));
+					table = GetTableForParameter(method.GetParameters().First(p => p.Name == "current"));
 				int selectedIndex = 0;
 				if (table != null)
 					selectedIndex = table.Table.Behavior<IRowSelectionBehavior>().SelectedRowIndex;
@@ -139,13 +183,13 @@ namespace ProducerEditor.Infrastructure
 
 		private object GetCurrent(ParameterInfo parameter)
 		{
-			var table = GetCurrentTable(parameter);
+			var table = GetTableForParameter(parameter);
 			if (table == null)
 				return null;
 			return table.Table.Selected();
 		}
 
-		private TableHost GetCurrentTable(ParameterInfo parameter)
+		public TableHost GetTableForParameter(ParameterInfo parameter)
 		{
 			return this.Children().OfType<TableHost>().Where(h => h.Name == parameter.ParameterType.Name + "s").FirstOrDefault();
 		}
