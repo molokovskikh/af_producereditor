@@ -28,11 +28,16 @@ namespace Installer
 		private readonly RegistryKey _registryRoot;
 
 		private readonly EventWaitHandle _done = new EventWaitHandle(false, EventResetMode.ManualReset);
-		
+
+		public string[] _shortcuts;
 
 		public Installer()
 		{
 			_registryRoot = Registry.CurrentUser;
+			_shortcuts = new[] {
+				Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), _application + ".lnk"),
+				Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Programs), _application + ".lnk")
+			};
 
 			var appSettings = ConfigurationManager.AppSettings;
 
@@ -56,7 +61,7 @@ namespace Installer
 			}
 
 			if (String.IsNullOrEmpty(_updateUri))
-				throw new Exception("Установка обновления не возможна");
+				throw new Exception("Установка обновления невозможна");
 
 			var instaletionRoot = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
 			var publisherPath = Path.Combine(instaletionRoot, _publisher);
@@ -96,6 +101,7 @@ namespace Installer
 		{
 			CopyFiles();
 			UpdateRegistry();
+			CheckShortcuts();
 
 			Console.Out.WriteLine("Done");
 
@@ -105,23 +111,38 @@ namespace Installer
 			UninstallPrevVersion();
 		}
 
-		private void CreateShortcuts()
-		{		
-			CreateShortcut(Environment.GetFolderPath(Environment.SpecialFolder.Desktop));
+		private void CheckShortcuts()
+		{
 			var programs = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Programs), _publisher);
-			Directory.CreateDirectory(programs);
-			CreateShortcut(programs);
+			if (!Directory.Exists(programs))
+				Directory.CreateDirectory(programs);
+
+			foreach (var shortcut in _shortcuts)
+			{
+				if (!File.Exists(shortcut))
+					CreateShortcut(shortcut);
+			}
 		}
 
-		private void CreateShortcut(string path)
+		private void CreateShortcuts()
 		{
-			var shortcutFile = Path.Combine(path, _application + ".lnk");
-			using (var shortcut = new ShellLink())
+			var programs = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Programs), _publisher);
+			Directory.CreateDirectory(programs);
+
+			foreach (var shortcut in _shortcuts)
+				CreateShortcut(shortcut);
+		}
+
+		private void CreateShortcut(string shortcut)
+		{
+			if (shortcut.Contains(".lnk"))
+				shortcut = Path.Combine(shortcut, _application + ".lnk");
+			using (var link = new ShellLink())
 			{
-				shortcut.Target = _mainExecutable;
-				shortcut.Description = _application;
-				shortcut.WorkingDirectory = Path.GetDirectoryName(Path.GetDirectoryName(_mainExecutable));
-				shortcut.Save(shortcutFile);
+				link.Target = _mainExecutable;
+				link.Description = _application;
+				link.WorkingDirectory = Path.GetDirectoryName(Path.GetDirectoryName(_mainExecutable));
+				link.Save(shortcut);
 			}
 		}
 
@@ -226,9 +247,11 @@ namespace Installer
 
 		private void DeleteShortcuts()
 		{
-			var desktopShortcut = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), _application + ".lnk");
-			if (File.Exists(desktopShortcut))
-				File.Delete(desktopShortcut);
+			foreach (var shortcut in _shortcuts)
+			{
+				if (File.Exists(shortcut))
+					File.Delete(shortcut);
+			}
 			var programs = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Programs), _publisher);
 			DeleteDirectory(programs);
 		}
