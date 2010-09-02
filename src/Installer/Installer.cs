@@ -292,21 +292,21 @@ namespace Installer
 			}
 
 			var executable = files.First(f => Path.GetExtension(f).ToLower() == ".exe");
-			var startInfo = new ProcessStartInfo(Path.Combine(Path.GetTempPath(), Path.GetFileName(executable)), 
-			                                     String.Format("/upgrade {0}", Process.GetCurrentProcess().Id))
-			                	{
-			                		CreateNoWindow = true,
-			                		UseShellExecute = false,
-			                		RedirectStandardOutput = true,
-			                		RedirectStandardError = true,
-			                	};
+			var startInfo = new ProcessStartInfo(
+				Path.Combine(Path.GetTempPath(), 
+				Path.GetFileName(executable)),
+				String.Format("/upgrade {0}", Process.GetCurrentProcess().Id)) {
+					CreateNoWindow = true,
+					UseShellExecute = false,
+					RedirectStandardOutput = true,
+					RedirectStandardError = true,
+				};
 			var process = Process.Start(startInfo);
 			string data = null;
-			process.OutputDataReceived += (sender, args) =>
-			                              {
-			                              	data = args.Data;
-			                              	_done.Set();
-			                              };
+			process.OutputDataReceived += (sender, args) => {
+				data = args.Data;
+				_done.Set();
+			};
 			process.BeginOutputReadLine();
 			process.Exited += (sender, args) => _done.Set();
 			_done.WaitOne();
