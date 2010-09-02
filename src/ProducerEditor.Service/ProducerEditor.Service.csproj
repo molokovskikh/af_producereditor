@@ -138,6 +138,10 @@
       <Project>{72AFCFE8-C9E9-45FA-9698-BEE896A517A3}</Project>
       <Name>Common.Tools</Name>
     </ProjectReference>
+    <ProjectReference Include="..\ProducerEditor.Contract\ProducerEditor.Contract.csproj">
+      <Project>{A2098DE7-3CE2-4EEB-9233-3ECFFA88DDB9}</Project>
+      <Name>ProducerEditor.Contract</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

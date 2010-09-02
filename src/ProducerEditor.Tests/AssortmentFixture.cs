@@ -9,6 +9,7 @@ using ProducerEditor.Service;
 using System;
 using Castle.Windsor.Installer;
 using ProducerEditor.Service.Helpers;
+using ProducerEditor.Service.Models;
 using Rhino.Mocks;
 
 namespace ProducerEditor.Tests

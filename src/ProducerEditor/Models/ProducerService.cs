@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Runtime.Serialization;
 using System.ServiceModel;
+using ProducerEditor.Contract;
 
 namespace ProducerEditor.Models
 {
@@ -27,19 +28,19 @@ namespace ProducerEditor.Models
 		IList<string> GetEquivalents(uint producerId);
 
 		[OperationContract]
-		IList<ProducerSynonym> GetSynonyms(uint producerId);
+		IList<ProducerSynonymDto> GetSynonyms(uint producerId);
 
 		[OperationContract]
 		IList<SynonymReportItem> ShowSuspiciousSynonyms();
 
 		[OperationContract]
-		Pager<Assortment> ShowAssortment(uint assortimentId);
+		Pager<AssortmentDto> ShowAssortment(uint assortimentId);
 
 		[OperationContract]
-		Pager<Assortment> GetAssortmentPage(uint page);
+		Pager<AssortmentDto> GetAssortmentPage(uint page);
 
 		[OperationContract]
-		Pager<Assortment> SearchAssortment(string text, uint page);
+		Pager<AssortmentDto> SearchAssortment(string text, uint page);
 
 		[OperationContract]
 		void DeleteAssortment(uint assortmentId);
@@ -72,7 +73,7 @@ namespace ProducerEditor.Models
 		void AddToAssotrment(uint excludeId, uint producerId, string equivalent);
 
 		[OperationContract]
-		Pager<Assortment> ShowAssortmentForProducer(uint producerId, uint page);
+		Pager<AssortmentDto> ShowAssortmentForProducer(uint producerId, uint page);
 
 		[OperationContract]
 		void CreateEquivalentForProducer(uint producerId, string equivalentName);
@@ -87,6 +88,6 @@ namespace ProducerEditor.Models
 		void UpdateProducer(ProducerDto item);
 
 		[OperationContract]
-		void UpdateAssortment(Assortment item);
+		void UpdateAssortment(AssortmentDto item);
 	}
 }

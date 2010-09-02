@@ -1,6 +1,10 @@
 ﻿using System;
-using System.Runtime.Serialization;
+using System.Collections.Generic;
+using System.Linq;
+using Common.Models.Helpers;
+using NHibernate;
 using NHibernate.Mapping.Attributes;
+using ProducerEditor.Contract;
 
 namespace ProducerEditor.Service
 {
@@ -86,6 +90,35 @@ namespace ProducerEditor.Service
 
 		[ManyToOne(ClassType = typeof (Price), Column = "PriceCode")]
 		public virtual Price Price { get; set; }
+
+		public static List<ProducerSynonymDto> Load(ISession session, Query query)
+		{
+			var filter = "";
+			if (query.Field == "ProducerId")
+				filter = "sfc.CodeFirmCr = :value";
+			if (query.Field == "Name")
+				filter = "sfc.Synonym = :value";
+			if (filter == "")
+				throw new Exception(String.Format("Не знаю как фильтровать по {0}", query.Field));
+			return session.CreateSQLQuery(String.Format(@"
+select sfc.Synonym as Name,
+p.Name as Producer,
+sfc.SynonymFirmCrCode as Id,
+cd.ShortName as Supplier,
+r.Region,
+c.Id is not null as HaveOffers
+from farm.SynonymFirmCr sfc
+  join Catalogs.Producers p on p.Id = sfc.CodeFirmCr
+  join usersettings.PricesData pd on sfc.PriceCode = pd.PriceCode
+	join usersettings.clientsdata cd on cd.FirmCode = pd.FirmCode
+	  join farm.Regions r on cd.RegionCode = r.RegionCode
+  left join farm.Core0 c on c.SynonymFirmCrCode = sfc.SynonymFirmCrCode
+where {0} and cd.BillingCode <> 921 and cd.FirmSegment = 0
+group by sfc.SynonymFirmCrCode", filter))
+				.SetParameter("value", query.Value)
+				.SetResultTransformer(new AliasToPropertyTransformer(typeof (ProducerSynonymDto)))
+				.List<ProducerSynonymDto>().ToList();
+		}
 	}
 
 	[Class(Table = "farm.Synonym")]
@@ -107,22 +140,6 @@ namespace ProducerEditor.Service
 		[ManyToOne(ClassType = typeof(Price), Column = "PriceCode")]
 		public virtual Price Price { get; set; }
 	}
-
-	[DataContract(Name = "ProducerSynonym", Namespace = "http://schemas.datacontract.org/2004/07/ProducerEditor.Service")]
-	public class ProducerSynonymDto
-	{
-		[DataMember]
-		public virtual uint Id { get; set; }
-		[DataMember]
-		public virtual string Name { get; set; }
-		[DataMember]
-		public string Supplier { get; set; }
-		[DataMember]
-		public string Region { get; set; }
-		[DataMember]
-		public Int64 HaveOffers { get; set; }
-	}
-
 
 	[Class(Table = "Catalogs.Assortment")]
 	public class ProductAssortment

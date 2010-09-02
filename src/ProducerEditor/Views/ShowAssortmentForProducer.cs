@@ -4,6 +4,7 @@ using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
+using ProducerEditor.Contract;
 using ProducerEditor.Infrastructure;
 using ProducerEditor.Models;
 using Subway.Dom;
@@ -22,7 +23,7 @@ namespace ProducerEditor.Views
 	{
 		private VirtualTable assortmentTable;
 
-		public ShowAssortmentForProducer(uint producerId, Pager<Assortment> assortments)
+		public ShowAssortmentForProducer(uint producerId, Pager<AssortmentDto> assortments)
 		{
 			Text = "Ассортимент";
 			MinimumSize = new Size(640, 480);
@@ -35,7 +36,7 @@ namespace ProducerEditor.Views
 				.Label("PageLabel", "")
 				.Button("Next", "Следующая страница");
 
-			assortmentTable = new VirtualTable(new TemplateManager<List<Assortment>, Assortment>(
+			assortmentTable = new VirtualTable(new TemplateManager<List<AssortmentDto>, AssortmentDto>(
 				() => Row.Headers(new Header("Проверен").AddClass("CheckBoxColumn1"), "Продукт", "Производитель"),
 				a => {
 					var row = Row.Cells(new CheckBoxInput(a.Checked).Attr("Name", "Checked"), a.Product, a.Producer);
@@ -66,7 +67,7 @@ namespace ProducerEditor.Views
 			navigationToolStrip.ActAsPaginator(
 				assortments,
 				page => {
-					Pager<Assortment> pager = null;
+					Pager<AssortmentDto> pager = null;
 					Action(s => {
 						pager = s.ShowAssortmentForProducer(producerId, page);
 					});
@@ -81,12 +82,12 @@ namespace ProducerEditor.Views
 
 		private void Delete()
 		{
-			var assortment = assortmentTable.Selected<Assortment>();
+			var assortment = assortmentTable.Selected<AssortmentDto>();
 			if (assortment == null)
 				return;
 
 			Action(s => s.DeleteAssortment(assortment.Id));
-			((List<Assortment>)assortmentTable.TemplateManager.Source).Remove(assortment);
+			((List<AssortmentDto>)assortmentTable.TemplateManager.Source).Remove(assortment);
 			assortmentTable.RebuildViewPort();
 		}
 

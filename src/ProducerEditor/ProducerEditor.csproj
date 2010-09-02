@@ -145,6 +145,10 @@
       <Project>{723F5C11-CFB0-4B43-80D7-CDC096BD4EC2}</Project>
       <Name>Installer</Name>
     </ProjectReference>
+    <ProjectReference Include="..\ProducerEditor.Contract\ProducerEditor.Contract.csproj">
+      <Project>{A2098DE7-3CE2-4EEB-9233-3ECFFA88DDB9}</Project>
+      <Name>ProducerEditor.Contract</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Subway\src\Subway\Subway.csproj">
       <Project>{C6AA1C77-7848-4555-AEFE-6025DF0AA6F1}</Project>
       <Name>Subway</Name>

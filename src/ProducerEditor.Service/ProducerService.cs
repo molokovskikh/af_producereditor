@@ -5,9 +5,10 @@ using System.Runtime.Serialization;
 using System.ServiceModel;
 using Common.Models.Helpers;
 using Common.MySql;
-using Common.Tools;
 using NHibernate;
 using NHibernate.Linq;
+using ProducerEditor.Contract;
+using ProducerEditor.Service.Models;
 using ConnectionManager = Common.MySql.ConnectionManager;
 using ISession=NHibernate.ISession;
 using ProducerEditor.Service.Helpers;
@@ -232,22 +233,7 @@ drop temporary table if exists catalogs.TempForUpdateAssortment;
 		[OperationContract]
 		public virtual IList<ProducerSynonymDto> GetSynonyms(uint producerId)
 		{
-			return Slave(session => session.CreateSQLQuery(@"
-select sfc.Synonym as Name,
-sfc.SynonymFirmCrCode as Id,
-cd.ShortName as Supplier,
-r.Region,
-c.Id is not null as HaveOffers
-from farm.SynonymFirmCr sfc
-  join usersettings.PricesData pd on sfc.PriceCode = pd.PriceCode
-	join usersettings.clientsdata cd on cd.FirmCode = pd.FirmCode
-	  join farm.Regions r on cd.RegionCode = r.RegionCode
-  left join farm.Core0 c on c.SynonymFirmCrCode = sfc.SynonymFirmCrCode
-where sfc.CodeFirmCr = :ProducerId and cd.BillingCode <> 921 and cd.FirmSegment = 0
-group by sfc.SynonymFirmCrCode")
-				.SetParameter("ProducerId", producerId)
-				.SetResultTransformer(new AliasToPropertyTransformer(typeof (ProducerSynonymDto)))
-				.List<ProducerSynonymDto>().ToList());
+			return Slave(session => ProducerSynonym.Load(session, new Query("ProducerId", producerId)));
 		}
 
 		[OperationContract]
@@ -360,18 +346,6 @@ where CodeFirmCr = :ProducerId and ProductId in (
 			}));
 		}
 
-/*
-		[OperationContract]
-		public virtual void SetAssortmentChecked(uint assortmentId, bool @checked)
-		{
-			Transaction(session => {
-				var assortment = session.Load<Assortment>(assortmentId);
-				assortment.Checked = @checked;
-				session.Update(assortment);
-			});
-		}
-*/
-
 		[OperationContract]
 		public virtual Pager<AssortmentDto> ShowAssortment(uint assortimentId)
 		{
@@ -465,6 +439,18 @@ where CodeFirmCr = :ProducerId and ProductId in (
 
 				s.Delete(exclude);
 				s.Save(assortment);
+			});
+		}
+
+		[OperationContract]
+		public ExcludeData GetExcludeData(uint excludeId)
+		{
+			return Slave(s => {
+				var exclude = s.Load<Exclude>(excludeId);
+				return new ExcludeData {
+					Assortments = Assortment.Search(s, 0, new Query("CatalogId", exclude.CatalogProduct.Id)).Content.ToList(),
+					Synonyms = ProducerSynonym.Load(s, new Query("Name", exclude.ProducerSynonym)),
+				};
 			});
 		}
 

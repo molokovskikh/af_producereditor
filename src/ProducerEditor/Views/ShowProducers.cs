@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Forms;
 using Common.Tools;
+using ProducerEditor.Contract;
 using ProducerEditor.Infrastructure;
 using ProducerEditor.Models;
 using Subway.Dom;
@@ -97,7 +98,7 @@ namespace ProducerEditor.Views
 			var behavior = producerTable.Behavior<IRowSelectionBehavior>();
 			behavior.SelectedRowChanged += (oldRow, newRow) => SelectedProducerChanged(behavior.Selected<ProducerDto>());
 
-			synonymsTable = new VirtualTable(new TemplateManager<List<ProducerSynonym>, ProducerSynonym>(
+			synonymsTable = new VirtualTable(new TemplateManager<List<ProducerSynonymDto>, ProducerSynonymDto>(
 				() =>{
 					var row = Row.Headers();
 					var header = new Header("Синоним").Sortable("Name");
@@ -118,7 +119,7 @@ namespace ProducerEditor.Views
 					var row = Row.Cells(synonym.Name,
 						synonym.Supplier,
 						synonym.Region);
-					if (synonym.HaveOffers == 0)
+					if (synonym.HaveOffers)
 						row.AddClass("WithoutOffers");
 					return row;
 				}));
@@ -214,13 +215,13 @@ namespace ProducerEditor.Views
 			}
 			else if (synonymsTable.Host.Focused)
 			{
-				var synonym = synonymsTable.Selected<ProducerSynonym>();
+				var synonym = synonymsTable.Selected<ProducerSynonymDto>();
 				if (synonym == null)
 					return;
 
 				Action(s => s.DeleteProducerSynonym(synonym.Id));
 
-				((IList<ProducerSynonym>)synonymsTable.TemplateManager.Source).Remove(synonym);
+				((IList<ProducerSynonymDto>)synonymsTable.TemplateManager.Source).Remove(synonym);
 				synonymsTable.RebuildViewPort();
 			}
 		}
@@ -236,7 +237,7 @@ namespace ProducerEditor.Views
 			}
 			else
 			{
-				var synonym = synonymsTable.Selected<ProducerSynonym>();
+				var synonym = synonymsTable.Selected<ProducerSynonymDto>();
 				if (synonym == null)
 					return;
 

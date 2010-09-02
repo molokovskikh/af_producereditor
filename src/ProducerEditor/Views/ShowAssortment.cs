@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
+using ProducerEditor.Contract;
 using ProducerEditor.Infrastructure;
 using ProducerEditor.Models;
 using Subway.Dom;
@@ -30,7 +31,7 @@ namespace ProducerEditor.Views
 
 		private string _searchText;
 		
-		public ShowAssortment(Pager<Assortment> assortments)
+		public ShowAssortment(Pager<AssortmentDto> assortments)
 		{
 			Text = "Ассортимент";
 			MinimumSize = new Size(640, 480);
@@ -49,7 +50,7 @@ namespace ProducerEditor.Views
 				.Label("PageLabel", "")
 				.Button("Next", "Следующая страница");
 
-			assortmentTable = new VirtualTable(new TemplateManager<List<Assortment>, Assortment>(
+			assortmentTable = new VirtualTable(new TemplateManager<List<AssortmentDto>, AssortmentDto>(
 				() => Row.Headers(new Header("Проверен").AddClass("CheckBoxColumn1"), "Продукт", "Производитель"),
 				a => {
 					var row = Row.Cells(new CheckBoxInput(a.Checked).Attr("Name", "Checked"), a.Product, a.Producer);
@@ -97,9 +98,9 @@ namespace ProducerEditor.Views
 				});
 			
 			var behavior = assortmentTable.Behavior<IRowSelectionBehavior>();
-			behavior.SelectedRowChanged += (oldRow, newRow) => SelectedAssortmentChanged(behavior.Selected<Assortment>());
+			behavior.SelectedRowChanged += (oldRow, newRow) => SelectedAssortmentChanged(behavior.Selected<AssortmentDto>());
 
-			synonymsTable = new VirtualTable(new TemplateManager<List<ProducerSynonym>, ProducerSynonym>(
+			synonymsTable = new VirtualTable(new TemplateManager<List<ProducerSynonymDto>, ProducerSynonymDto>(
 				() => {
 					var row = Row.Headers();
 					var header = new Header("Синоним").Sortable("Name");
@@ -120,7 +121,7 @@ namespace ProducerEditor.Views
 					var row = Row.Cells(synonym.Name,
 						synonym.Supplier,
 						synonym.Region);
-					if (synonym.HaveOffers == 0)
+					if (synonym.HaveOffers)
 						row.AddClass("WithoutOffers");
 					return row;
 				}));
@@ -162,7 +163,7 @@ namespace ProducerEditor.Views
 			navigationToolStrip.ActAsPaginator(
 				assortments,
 				page => {
-					Pager<Assortment> pager = null;
+					Pager<AssortmentDto> pager = null;
 					if (String.IsNullOrEmpty(_searchText))
 						Action(s => {
 							pager = s.GetAssortmentPage(page);
@@ -178,11 +179,11 @@ namespace ProducerEditor.Views
 			MoveToBookmark();
 			Shown += (s, a) => assortmentTable.Host.Focus();
 
-			var selected = assortmentTable.Selected<Assortment>();
+			var selected = assortmentTable.Selected<AssortmentDto>();
 			SelectedAssortmentChanged(selected);
 		}
 
-		private void SelectedAssortmentChanged(Assortment assortment)
+		private void SelectedAssortmentChanged(AssortmentDto assortment)
 		{
 			Action(s => {
 				synonymsTable.TemplateManager.Source = s.GetSynonyms(assortment.ProducerId).ToList();
@@ -192,12 +193,12 @@ namespace ProducerEditor.Views
 
 		private void Delete()
 		{
-			var assortment = assortmentTable.Selected<Assortment>();
+			var assortment = assortmentTable.Selected<AssortmentDto>();
 			if (assortment == null)
 				return;
 
 			Action(s => s.DeleteAssortment(assortment.Id));
-			((List<Assortment>)assortmentTable.TemplateManager.Source).Remove(assortment);
+			((List<AssortmentDto>)assortmentTable.TemplateManager.Source).Remove(assortment);
 			assortmentTable.RebuildViewPort();
 		}
 
@@ -223,7 +224,7 @@ namespace ProducerEditor.Views
 
 		private void SetBookmark()
 		{
-			var selectedItem = assortmentTable.Selected<Assortment>();
+			var selectedItem = assortmentTable.Selected<AssortmentDto>();
 			if (selectedItem == null)
 			{
 				MessageBox.Show("Выделите позицию в ассортименте");
@@ -246,7 +247,7 @@ namespace ProducerEditor.Views
 			});
 		}
 
-		private void UpdateAssortment(Pager<Assortment> pager)
+		private void UpdateAssortment(Pager<AssortmentDto> pager)
 		{
 			assortmentTable.TemplateManager.Source = pager.Content.ToList();
 		}

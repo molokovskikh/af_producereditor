@@ -5,6 +5,7 @@ using Common.Tools;
 using NHibernate;
 using NHibernate.Linq;
 using NHibernate.Mapping.Attributes;
+using ProducerEditor.Service.Models;
 
 namespace ProducerEditor.Service
 {

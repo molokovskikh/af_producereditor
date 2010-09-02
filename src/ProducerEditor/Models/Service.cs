@@ -76,22 +76,6 @@ namespace ProducerEditor.Models
 	}
 
 	[DataContract(Namespace = "http://schemas.datacontract.org/2004/07/ProducerEditor.Service")]
-	public class ProducerSynonym
-	{
-		[DataMember]
-		public virtual uint Id { get; set; }
-		[DataMember]
-		public virtual string Name { get; set; }
-		[DataMember]
-		public string Supplier { get; set; }
-		[DataMember]
-		public string Region { get; set; }
-		[DataMember]
-		public Int64 HaveOffers { get; set; }
-	}
-
-
-	[DataContract(Namespace = "http://schemas.datacontract.org/2004/07/ProducerEditor.Service")]
 	public class SynonymReportItem
 	{
 		[DataMember]
@@ -112,21 +96,6 @@ namespace ProducerEditor.Models
 		public int IsSuspicious { get; set; }
 		[DataMember]
 		public uint SupplierId { get; set; }
-	}
-
-	[DataContract(Namespace = "http://schemas.datacontract.org/2004/07/ProducerEditor.Service")]
-	public class Assortment
-	{
-		[DataMember]
-		public uint Id { get; set; }
-		[DataMember]
-		public string Product { get; set; }
-		[DataMember]
-		public string Producer { get; set; }
-		[DataMember]
-		public uint ProducerId { get; set; }
-		[DataMember]
-		public bool Checked { get; set; }
 	}
 
 	public interface IPager

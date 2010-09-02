@@ -1,6 +1,7 @@
 using System;
 using System.ServiceModel;
 using log4net;
+using ProducerEditor.Contract;
 using ProducerEditor.Models;
 using Subway.Dom;
 using Subway.Dom.Input;
@@ -51,7 +52,7 @@ namespace ProducerEditor.Infrastructure
 			if (item is ProducerDto)
 				Action(s => s.UpdateProducer((ProducerDto)item));
 			else
-				Action(s => s.UpdateAssortment((Assortment)item));
+				Action(s => s.UpdateAssortment((AssortmentDto)item));
 		}
 
 		protected void Action(Action<ProducerService> action)

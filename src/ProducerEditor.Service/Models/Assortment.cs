@@ -1,29 +1,14 @@
 ﻿using System;
 using System.Linq;
-using System.Runtime.Serialization;
 using Common.Models.Helpers;
 using MySql.Data.MySqlClient;
 using NHibernate;
 using NHibernate.Linq;
 using NHibernate.Mapping.Attributes;
+using ProducerEditor.Contract;
 
-namespace ProducerEditor.Service
+namespace ProducerEditor.Service.Models
 {
-	[DataContract(Namespace = "http://schemas.datacontract.org/2004/07/ProducerEditor.Service", Name = "Assortment")]
-	public class AssortmentDto
-	{
-		[DataMember]
-		public uint Id { get; set; }
-		[DataMember]
-		public string Product { get; set; }
-		[DataMember]
-		public string Producer { get; set; }
-		[DataMember]
-		public string ProducerId { get; set; }
-		[DataMember]
-		public bool Checked { get; set; }
-	}
-
 	[Class(Table = "Catalogs.Assortment")]
 	public class Assortment
 	{
@@ -86,6 +71,8 @@ from catalogs.Assortment a
 					tableField = "c.Name";
 				else if (query.Field == "ProducerId")
 					tableField = "a.ProducerId";
+				else if (query.Field == "CatalogId")
+					tableField = "a.CatalogId";
 				var compare = "=";
 				if (query.Value is string)
 					compare = " like ";
