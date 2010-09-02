@@ -47,7 +47,6 @@ namespace ProducerEditor
 							"Ошибка приложения",
 							MessageBoxButtons.OK,
 							MessageBoxIcon.Error);
-			Application.Exit();
 		}
 	}
 }
