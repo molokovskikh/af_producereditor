@@ -129,8 +129,14 @@ namespace ProducerEditor.Models
 		public bool Checked { get; set; }
 	}
 
+	public interface IPager
+	{
+		uint Page { get; set; }
+		uint TotalPages { get; set; }
+	}
+
 	[DataContract(Namespace = "http://schemas.datacontract.org/2004/07/ProducerEditor.Service")]
-	public class Pager<T>
+	public class Pager<T> : IPager
 	{
 		[DataMember]
 		public uint Page { get; set; }

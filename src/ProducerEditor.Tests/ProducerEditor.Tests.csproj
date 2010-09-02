@@ -107,6 +107,7 @@
     <Compile Include="MvcHelperFixture.cs" />
     <Compile Include="ProducerServiceFixture.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="View\ShowExcludesFixture.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Common.Tools\Common.Tools\Common.Tools.csproj">

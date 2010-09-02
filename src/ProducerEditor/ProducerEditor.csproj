@@ -68,9 +68,12 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Infrastructure\FactoryHolder.cs" />
+    <Compile Include="Infrastructure\UIPatterns\IUIPattern.cs" />
     <Compile Include="Infrastructure\MvcHelper.cs" />
     <Compile Include="Infrastructure\NavigatorExtention.cs" />
+    <Compile Include="Infrastructure\UIPatterns\PagerPattern.cs" />
     <Compile Include="Infrastructure\PaginatorExtention.cs" />
+    <Compile Include="Infrastructure\UIPatterns\SearchPattern.cs" />
     <Compile Include="Infrastructure\ToolstripExtensions.cs" />
     <Compile Include="Infrastructure\UpdateController.cs" />
     <Compile Include="Infrastructure\UserDataSettingProvider.cs" />
@@ -79,6 +82,7 @@
     <Compile Include="Infrastructure\MessageInspectorRegistrator.cs" />
     <Compile Include="Models\ProducerService.cs" />
     <Compile Include="Models\Service.cs" />
+    <Compile Include="Presenters\ShowExcludesPresenter.cs" />
     <Compile Include="Settings.cs" />
     <Compile Include="Infrastructure\Dialog.cs">
       <SubType>Form</SubType>
@@ -125,6 +129,10 @@
     <Compile Include="Views\ShowSynonymReport.cs">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="Infrastructure\View.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Infrastructure\WidthHolder.cs" />
     <None Include="App.config" />
     <None Include="App.release.config" />
   </ItemGroup>

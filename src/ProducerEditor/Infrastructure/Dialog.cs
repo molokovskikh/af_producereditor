@@ -1,5 +1,5 @@
 ﻿using System.Windows.Forms;
-using View = ProducerEditor.Views.View;
+using View = ProducerEditor.Infrastructure.View;
 
 namespace ProducerEditor.Infrastructure
 {

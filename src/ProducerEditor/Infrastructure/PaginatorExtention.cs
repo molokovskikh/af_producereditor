@@ -1,11 +1,10 @@
 ﻿using System;
 using System.Linq;
 using System.Windows.Forms;
+using Common.Tools;
 using ProducerEditor.Models;
 using Subway.Helpers;
 using Subway.VirtualTable;
-using CollectionExtention = Common.Tools.CollectionExtention;
-using Enumerable = System.Linq.Enumerable;
 
 namespace ProducerEditor.Infrastructure
 {
@@ -13,7 +12,7 @@ namespace ProducerEditor.Infrastructure
 	{
 		public static string TableName = "TableHost";
 
-		public static ToolStrip ActAsPaginator<T>(this ToolStrip toolStrip, Pager<T> pager, Func<uint, Pager<T>> page)
+		public static ToolStrip ActAsPaginator(this ToolStrip toolStrip, IPager pager, Func<uint, IPager> page)
 		{
 			Action<ToolStripButton> move = b => {
 				var pageIndex = Convert.ToInt32(b.Tag);
@@ -26,16 +25,13 @@ namespace ProducerEditor.Infrastructure
 			toolStrip.Items["Prev"].Click += (s, a) => move((ToolStripButton)s);
 			toolStrip.Items["Next"].Click += (s, a) => move((ToolStripButton)s);
 
-
 			toolStrip.UpdatePaginator(pager);
 
 			var form = toolStrip.Parent;
 			if (form == null)
 				throw new Exception("У paginatora нет родителя, всего скорее ты нужно добавлять поведение позже");
 
-			var controls = CollectionExtention.Flat<Control>((form.Controls.Cast<Control>()), control => {
-				return Enumerable.Cast<Control>(control.Controls);
-			} );
+			var controls = form.Controls.Cast<Control>().Flat(control => control.Controls.Cast<Control>());
 			var tables = controls.Where(control => control is TableHost);
 			Control table;
 			if (tables.Count() > 1)
@@ -48,7 +44,7 @@ namespace ProducerEditor.Infrastructure
 			return toolStrip;
 		}
 
-		public static void UpdatePaginator<T>(this ToolStrip toolStrip, Pager<T> pager)
+		public static void UpdatePaginator(this ToolStrip toolStrip, IPager pager)
 		{
 			toolStrip.Items["PageLabel"].Text = String.Format("Страница {0} из {1}", pager.Page + 1, pager.TotalPages);
 

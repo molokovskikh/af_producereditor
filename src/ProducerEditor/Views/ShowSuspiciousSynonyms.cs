@@ -13,6 +13,7 @@ using Subway.VirtualTable;
 using Subway.VirtualTable.Behaviors;
 using Subway.VirtualTable.Behaviors.Selection;
 using Subway.VirtualTable.Behaviors.Specialized;
+using View = ProducerEditor.Infrastructure.View;
 
 namespace ProducerEditor.Views
 {
