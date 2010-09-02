@@ -53,7 +53,7 @@ namespace ProducerEditor.Views
 			assortmentTable = new VirtualTable(new TemplateManager<List<AssortmentDto>, AssortmentDto>(
 				() => Row.Headers(new Header("Проверен").AddClass("CheckBoxColumn1"), "Продукт", "Производитель"),
 				a => {
-					var row = Row.Cells(new CheckBoxInput(a.Checked).Attr("Name", "Checked"), a.Product, a.Producer);
+					var row = Row.Cells(new CheckBoxInput(a.Checked).Attr("Name", "Checked"), new Cell(new TextBlock(a.Product)), new Cell(new TextBlock(a.Producer)));
 					if (a.Id == Settings.Default.BookmarkAssortimentId)
 						((IDomElementWithChildren)row.Children.ElementAt(1)).Prepend(new TextBlock {Class = "BookmarkGlyph"});
 					return row;
