@@ -27,7 +27,7 @@ namespace ProducerEditor.Tests
 		{
 			var excludes = service.ShowExcludes(0, false);
 			var data = service.GetExcludeData(excludes.Content[0].Id);
-			Assert.That(data.Assortments, Is.Not.Null);
+			Assert.That(data.Producers, Is.Not.Null);
 			Assert.That(data.Synonyms, Is.Not.Null);
 		}
 

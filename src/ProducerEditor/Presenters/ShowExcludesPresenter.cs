@@ -16,7 +16,7 @@ namespace ProducerEditor.Presenters
 		private Pager<Exclude> _excludes;
 		private string _searchText;
 		private List<ProducerSynonymDto> _synonyms;
-		private List<AssortmentDto> _assortment;
+		private List<ProducerOrEquivalentDto> _producers;
 
 		public event Action<string, object> Update;
 
@@ -42,14 +42,14 @@ namespace ProducerEditor.Presenters
 			}
 		}
 
-		public List<AssortmentDto> Assortment
+		public List<ProducerOrEquivalentDto> Producers
 		{
-			get { return _assortment; }
+			get { return _producers; }
 			set
 			{
-				_assortment = value;
+				_producers = value;
 				if (Update != null)
-					Update("Assortment", value);
+					Update("Producers", value);
 			}
 		}
 
@@ -64,7 +64,7 @@ namespace ProducerEditor.Presenters
 			Action(s => {
 				var data = s.GetExcludeData(exclude.Id);
 				Synonyms = data.Synonyms;
-				Assortment = data.Assortments;
+				Producers = data.Producers;
 			});
 		}
 

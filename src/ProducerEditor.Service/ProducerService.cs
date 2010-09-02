@@ -449,8 +449,20 @@ where CodeFirmCr = :ProducerId and ProductId in (
 		{
 			return Slave(s => {
 				var exclude = s.Load<Exclude>(excludeId);
+				var equivalients = s.CreateSQLQuery(@"
+select e.ProducerId as Id, Name
+from Catalogs.ProducerEquivalents e
+join Catalogs.Assortment a on a.ProducerId = e.ProducerId
+where a.CatalogId = :catalogId")
+					.SetParameter("catalogId", exclude.Id)
+					.SetResultTransformer(new AliasToPropertyTransformer(typeof (ProducerOrEquivalentDto)))
+					.List<ProducerOrEquivalentDto>();
+				var assortment = Assortment.Search(s, 0, new Query("CatalogId", exclude.CatalogProduct.Id)).Content.ToList();
+				var producers = equivalients
+					.Concat(assortment.Select(a => new ProducerOrEquivalentDto {Id = a.ProducerId, Name = a.Producer}))
+					.OrderBy(p => p.Name).ToList();
 				return new ExcludeData {
-					Assortments = Assortment.Search(s, 0, new Query("CatalogId", exclude.CatalogProduct.Id)).Content.ToList(),
+					Producers = producers,
 					Synonyms = ProducerSynonym.Load(s, new Query("Name", exclude.ProducerSynonym)),
 				};
 			});

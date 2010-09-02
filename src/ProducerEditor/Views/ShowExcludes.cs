@@ -89,10 +89,10 @@ namespace ProducerEditor.Views
 				new RowSelectionBehavior());
 			synonymsTable.TemplateManager.ResetColumns();
 
-			var assortment = new VirtualTable(new TemplateManager<List<AssortmentDto>, AssortmentDto>(
+			var assortment = new VirtualTable(new TemplateManager<List<ProducerOrEquivalentDto>, ProducerOrEquivalentDto>(
 				() => Row.Headers(new Header("Производитель").Sortable("Producer")),
-				synonym => Row.Cells(synonym.Producer)));
-			assortment.Host.Name = "Assortment";
+				synonym => Row.Cells(synonym.Name)));
+			assortment.Host.Name = "Producers";
 			assortment.CellSpacing = 1;
 			assortment.RegisterBehavior(
 				new ToolTipBehavior(),
