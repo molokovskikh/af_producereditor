@@ -425,7 +425,9 @@ where CodeFirmCr = :ProducerId and ProductId in (
 			Transaction(s => {
 				var exclude = s.Load<Exclude>(excludeId);
 				var producer = s.Load<Producer>(producerId);
-				var assortment = new Assortment(exclude.CatalogProduct, producer);
+				var assortment = new Assortment(exclude.CatalogProduct, producer) {
+					Checked = true
+				};
 
 				if (assortment.Exist(s))
 					throw new Exception("Запись в ассортименте уже существует");
