@@ -51,7 +51,6 @@ namespace ProducerEditor.Views
 				new ToolTipBehavior(),
 				new SortInList(),
 				new ColumnResizeBehavior());
-			excludes.Behavior<ColumnResizeBehavior>().ColumnResized += column => WidthHolder.Update(excludes, column, WidthHolder.ExcludeWidths);
 			excludes.TemplateManager.ResetColumns();
 
 			var synonymsTable = new VirtualTable(new TemplateManager<List<ProducerSynonymDto>, ProducerSynonymDto>(

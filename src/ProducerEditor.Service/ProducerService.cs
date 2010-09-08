@@ -401,8 +401,7 @@ where CodeFirmCr = :ProducerId and ProductId in (
 			{
 				Pager<ExcludeDto> pager = null;
 				Transaction(session => {
-					var total = Exclude.TotalPages(session);
-					pager = new Pager<ExcludeDto>(page, total, Exclude.Load(page, session));
+					pager = Exclude.Find(session, text, page);
 				});
 				return pager;
 			}

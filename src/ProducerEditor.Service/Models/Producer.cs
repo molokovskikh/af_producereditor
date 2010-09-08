@@ -41,7 +41,7 @@ namespace ProducerEditor.Service.Models
 		[OneToMany(2, ClassType = typeof (Assortment))]
 		public virtual IList<Assortment> Assortments { get; set; }
 
-		[Bag(0, Lazy = true, Inverse = true)]
+		[Bag(0, Lazy = true, Inverse = true, Cascade = "all")]
 		[Key(1, Column = "CodeFirmCr")]
 		[OneToMany(2, ClassType = typeof (ProducerSynonym))]
 		public virtual IList<ProducerSynonym> Synonyms { get; set; }
