@@ -64,7 +64,7 @@ namespace ProducerEditor.Views
 			var assortment = new VirtualTable(new TemplateManager<List<ProducerOrEquivalentDto>, ProducerOrEquivalentDto>(
 				() => Row.Headers(new Header("Производитель").Sortable("Producer")),
 				synonym => Row.Cells(synonym.Name)));
-			assortment.Host.Name = "Producers";
+			assortment.Host.Name = "ProducerOrEquivalents";
 
 			var split = new SplitContainer {
 				Height = 200,
@@ -80,7 +80,8 @@ namespace ProducerEditor.Views
 				.Button("AddToAssortment", "Добавить в ассортимент")
 				.Button("DoNotShow", "Больше не показывать")
 				.Button("DeleteSynonym", "Ошибочное сопоставление по наименованию")
-				.Button("MistakenProducerSynonym", "Ошибочное сопоставление по производителю"));
+				.Button("MistakenProducerSynonym", "Ошибочное сопоставление по производителю")
+				.Button("AddEquivalent", "Создать эквивалент"));
 
 			Shown += (s, a) => excludes.Host.Focus();
 		}

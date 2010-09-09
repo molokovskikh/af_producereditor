@@ -1,4 +1,4 @@
-using System;
+п»їusing System;
 using System.Collections.Generic;
 using System.ServiceModel;
 using System.Windows.Forms;
@@ -49,7 +49,7 @@ namespace ProducerEditor.Presenters
 			{
 				_producers = value;
 				if (Update != null)
-					Update("Producers", value);
+					Update("ProducerOrEquivalents", value);
 			}
 		}
 
@@ -82,16 +82,16 @@ namespace ProducerEditor.Presenters
 				var pager = s.SearchExcludes(text, 0, false);
 				if (pager == null)
 				{
-					MessageBox.Show("По вашему запросу ничего не найдено");
+					MessageBox.Show("РџРѕ РІР°С€РµРјСѓ Р·Р°РїСЂРѕСЃСѓ РЅРёС‡РµРіРѕ РЅРµ РЅР°Р№РґРµРЅРѕ");
 					return;
 				}
 				page = pager;
 			});
 		}
 
-		// Если флажок isRefresh равен true, тогда данные выбираются из мастера.
-		// Это нужно, потому что возникали ситуации, когда из мастера запись удалили, а она снова выбралась из слейва
-		// (репликация не успела)
+		// Р•СЃР»Рё С„Р»Р°Р¶РѕРє isRefresh СЂР°РІРµРЅ true, С‚РѕРіРґР° РґР°РЅРЅС‹Рµ РІС‹Р±РёСЂР°СЋС‚СЃСЏ РёР· РјР°СЃС‚РµСЂР°.
+		// Р­С‚Рѕ РЅСѓР¶РЅРѕ, РїРѕС‚РѕРјСѓ С‡С‚Рѕ РІРѕР·РЅРёРєР°Р»Рё СЃРёС‚СѓР°С†РёРё, РєРѕРіРґР° РёР· РјР°СЃС‚РµСЂР° Р·Р°РїРёСЃСЊ СѓРґР°Р»РёР»Рё, Р° РѕРЅР° СЃРЅРѕРІР° РІС‹Р±СЂР°Р»Р°СЃСЊ РёР· СЃР»РµР№РІР°
+		// (СЂРµРїР»РёРєР°С†РёСЏ РЅРµ СѓСЃРїРµР»Р°)
 		private Pager<ExcludeDto> RequestExcludes(uint page, bool isRefresh)
 		{
 			if (String.IsNullOrEmpty(_searchText))
@@ -114,7 +114,7 @@ namespace ProducerEditor.Presenters
 		{
 			if (String.IsNullOrEmpty(current.OriginalSynonym) && current.OriginalSynonymId == 0)
 			{
-				MessageBox.Show("Для выбранного исключения не задано оригинальное наименование", "Предупреждение",
+				MessageBox.Show("Р”Р»СЏ РІС‹Р±СЂР°РЅРЅРѕРіРѕ РёСЃРєР»СЋС‡РµРЅРёСЏ РЅРµ Р·Р°РґР°РЅРѕ РѕСЂРёРіРёРЅР°Р»СЊРЅРѕРµ РЅР°РёРјРµРЅРѕРІР°РЅРёРµ", "РџСЂРµРґСѓРїСЂРµР¶РґРµРЅРёРµ",
 					MessageBoxButtons.OK, MessageBoxIcon.Warning);
 				return;
 			}
@@ -140,6 +140,25 @@ namespace ProducerEditor.Presenters
 			Action(s => {
 				s.DeleteProducerSynonym(current.Id);
 				ProducerSynonyms = s.GetExcludeData(_currentExclude.Id).Synonyms;
+			});
+		}
+
+		public void AddEquivalent(ProducerOrEquivalentDto current)
+		{
+			var result = MessageBox.Show(
+				String.Format("РЎРѕР·РґР°С‚СЊ СЌРєРІРёРІР°Р»РµРЅС‚ '{0}' РґР»СЏ РїСЂРѕРёР·РІРѕРґРёС‚РµР»СЏ '{1}'", 
+					_currentExclude.ProducerSynonym,
+					current.Name),
+				"Р—Р°РїСЂРѕСЃ",
+				MessageBoxButtons.OKCancel,
+				MessageBoxIcon.Question);
+
+			if (result != DialogResult.OK)
+				return;
+
+			Action(s => { 
+				s.CreateEquivalentForProducer(current.Id, _currentExclude.ProducerSynonym);
+				Producers = s.GetExcludeData(_currentExclude.Id).Producers;
 			});
 		}
 
@@ -173,7 +192,7 @@ namespace ProducerEditor.Presenters
 					&& communicationObject.State != CommunicationState.Closed)
 					communicationObject.Abort();
 
-				_log.Error("Ошибка при обращении к серверу", e);
+				_log.Error("РћС€РёР±РєР° РїСЂРё РѕР±СЂР°С‰РµРЅРёРё Рє СЃРµСЂРІРµСЂСѓ", e);
 				throw;
 			}
 		}
