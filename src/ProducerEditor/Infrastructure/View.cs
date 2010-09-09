@@ -191,7 +191,8 @@ namespace ProducerEditor.Infrastructure
 
 		public TableHost GetTableForParameter(ParameterInfo parameter)
 		{
-			return this.Children().OfType<TableHost>().Where(h => h.Name == parameter.ParameterType.Name + "s").FirstOrDefault();
+			var name = parameter.ParameterType.Name.Replace("Dto", "") + "s";
+			return this.Children().OfType<TableHost>().FirstOrDefault(h => h.Name == name);
 		}
 
 		private object GetPresenter()

@@ -80,7 +80,7 @@ namespace ProducerEditor.Views
 						row.AddClass("WithoutOffers");
 					return row;
 				}));
-			synonymsTable.Host.Name = "Synonyms";
+			synonymsTable.Host.Name = "ProducerSynonyms";
 			synonymsTable.CellSpacing = 1;
 			synonymsTable.RegisterBehavior(
 				new ToolTipBehavior(),
@@ -113,7 +113,8 @@ namespace ProducerEditor.Views
 			Controls.Add(new ToolStrip()
 				.Button("AddToAssortment", "Добавить в ассортимент")
 				.Button("DoNotShow", "Больше не показывать")
-				.Button("DeleteSynonym", "Ошибочное сопоставление по наименованию"));
+				.Button("DeleteSynonym", "Ошибочное сопоставление по наименованию")
+				.Button("MistakenProducerSynonym", "Ошибочное сопоставление по производителю"));
 
 			Shown += (s, a) => excludes.Host.Focus();
 		}

@@ -31,14 +31,14 @@ namespace ProducerEditor.Presenters
 			}
 		}
 
-		public List<ProducerSynonymDto> Synonyms
+		public List<ProducerSynonymDto> ProducerSynonyms
 		{
 			get { return _synonyms; }
 			set
 			{
 				_synonyms = value;
 				if (Update != null)
-					Update("Synonyms", value);
+					Update("ProducerSynonyms", value);
 			}
 		}
 
@@ -59,11 +59,14 @@ namespace ProducerEditor.Presenters
 			set { Excludes = value; }
 		}
 
+		private ExcludeDto _currentExclude;
+
 		public void CurrentChanged(ExcludeDto exclude)
 		{
+			_currentExclude = exclude;
 			Action(s => {
 				var data = s.GetExcludeData(exclude.Id);
-				Synonyms = data.Synonyms;
+				ProducerSynonyms = data.Synonyms;
 				Producers = data.Producers;
 			});
 		}
@@ -130,6 +133,14 @@ namespace ProducerEditor.Presenters
 		{
 			Action(s => s.DoNotShow(current.Id));
 			Refresh();
+		}
+
+		public void MistakenProducerSynonym(ProducerSynonymDto current)
+		{
+			Action(s => {
+				s.DeleteProducerSynonym(current.Id);
+				ProducerSynonyms = s.GetExcludeData(_currentExclude.Id).Synonyms;
+			});
 		}
 
 		protected T Request<T>(Func<ProducerService, T> func)
