@@ -19,7 +19,7 @@ namespace ProducerEditor.Views
 {
 	public class ShowExcludes : View
 	{
-		public ShowExcludes(Pager<Exclude> pager)
+		public ShowExcludes(Pager<ExcludeDto> pager)
 		{
 			Text = "Исключения";
 			MinimumSize = new Size(640, 480);
@@ -29,18 +29,19 @@ namespace ProducerEditor.Views
 
 		protected override void Init()
 		{
-			var excludes = new VirtualTable(new TemplateManager<List<Exclude>, Exclude>(
+			var excludes = new VirtualTable(new TemplateManager<List<ExcludeDto>, ExcludeDto>(
 				() => {
 					var row = Row.Headers(
 						new Header("Продукт").Sortable("Catalog"),
 						new Header("Оригинальное наименование").Sortable("Catalog"),
 						new Header("Синоним").Sortable("ProducerSynonym"),
 						new Header("Поставщик").Sortable("Supplier"),
-						new Header("Регион").Sortable("Region")
+						new Header("Регион").Sortable("Region"),
+						new Header("Оператор").Sortable("Operator")
 						);
 					return row;
 				},
-				e => Row.Cells(e.Catalog, e.OriginalSynonym, e.ProducerSynonym, e.Supplier, e.Region)
+				e => Row.Cells(e.Catalog, e.OriginalSynonym, e.ProducerSynonym, e.Supplier, e.Region, e.Operator)
 			));
 
 			excludes.Host.Name = "Excludes";

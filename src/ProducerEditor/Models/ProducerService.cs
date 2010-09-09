@@ -61,10 +61,10 @@ namespace ProducerEditor.Models
 		void DeleteProducer(uint producerId);
 
 		[OperationContract]
-		Pager<Exclude> ShowExcludes(uint page, bool isRefresh);
+		Pager<ExcludeDto> ShowExcludes(uint page, bool isRefresh);
 
 		[OperationContract]
-		Pager<Exclude> SearchExcludes(string text, uint page, bool isRefresh);
+		Pager<ExcludeDto> SearchExcludes(string text, uint page, bool isRefresh);
 
 		[OperationContract]
 		void DoNotShow(uint excludeId);

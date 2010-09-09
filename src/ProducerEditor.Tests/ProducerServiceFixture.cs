@@ -56,6 +56,14 @@ namespace ProducerEditor.Tests
 		}
 
 		[Test]
+		public void Seach_exclude()
+		{
+			var excludes = service.ShowExcludes(0, false);
+			var result = service.SearchExcludes(excludes.Content[0].ProducerSynonym, 0, false);
+			Assert.That(result.Content.Count, Is.GreaterThan(0));
+		}
+
+		[Test]
 		public void TestGetSynonyms()
 		{
 			uint producerId;

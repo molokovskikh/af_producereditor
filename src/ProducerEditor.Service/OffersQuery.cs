@@ -21,6 +21,33 @@ namespace ProducerEditor.Service
 		public string Field { get; set; }
 		[DataMember]
 		public object Value { get; set; }
+
+		public static ISQLQuery GetQuery(ISession session, Query query, string sql)
+		{
+			var where = "";
+			if (query != null)
+			{
+				var tableField = "";
+				if (query.Field == "CatalogName")
+					tableField = "c.Name";
+				else if (query.Field == "ProducerId")
+					tableField = "a.ProducerId";
+				else if (query.Field == "CatalogId")
+					tableField = "a.CatalogId";
+				var compare = "=";
+				if (query.Value is string)
+					compare = " like ";
+				if (String.IsNullOrEmpty(tableField))
+					throw new Exception(String.Format("Не знаю как фильтровать по полю {0}", query.Field));
+
+				where = String.Format("where {0} {1} :{2}", tableField, compare, query.Field);
+			}
+
+			var sqlQuery = session.CreateSQLQuery(String.Format(sql, where));
+			if (query != null)
+				sqlQuery.SetParameter(query.Field, query.Value);
+			return sqlQuery;
+		}
 	}
 
 	[DataContract(Namespace = "http://schemas.datacontract.org/2004/07/ProducerEditor.Service")]

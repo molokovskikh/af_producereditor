@@ -1,31 +1,12 @@
 using System;
-using System.Collections.Generic;
-using System.Runtime.Serialization;
+using System.Linq;
+using System.Runtime.CompilerServices;
 using Common.Models.Helpers;
 using NHibernate;
 using NHibernate.Mapping.Attributes;
 
 namespace ProducerEditor.Service
 {
-	[DataContract(Namespace = "http://schemas.datacontract.org/2004/07/ProducerEditor.Service", Name = "Exclude")]
-	public class ExcludeDto
-	{
-		[DataMember]
-		public uint Id { get; set; }
-		[DataMember]
-		public string Supplier { get; set; }
-		[DataMember]
-		public string Region { get; set; }
-		[DataMember]
-		public string Catalog { get; set; }
-		[DataMember]
-		public string ProducerSynonym { get; set; }
-		[DataMember]
-		public string OriginalSynonym { get; set; }
-		[DataMember]
-		public uint OriginalSynonymId { get; set; }
-	}
-
 	public class UniuqAttribute : Attribute
 	{}
 
@@ -44,85 +25,76 @@ namespace ProducerEditor.Service
 
 		[Property]
 		public virtual bool DoNotShow { get; set; }
+	}
 
-		public static uint TotalPages(ISession session)
+	public class TypedQuery<T>
+	{
+		public Common.MySql.Query Query { get; set; }
+		public ISession Session { get; set; }
+
+		public TypedQuery(ISession session, Common.MySql.Query query)
 		{
-			return (uint)(session.CreateSQLQuery(@"
-select count(distinct e.id)
-from farm.Excludes e
-	join usersettings.PricesData pd on pd.PriceCode = e.PriceCode
-		join usersettings.ClientsData cd on cd.FirmCode = pd.FirmCode
-where e.DoNotShow = 0 and cd.FirmSegment = 0
-").UniqueResult<long>());
+			Session = session;
+			Query = query;
 		}
 
-		public static IList<ExcludeDto> Load(uint page, ISession session)
+		public TypedQuery<T> Filter(string filter, object parameters)
 		{
-			return session.CreateSQLQuery(@"
-select e.Id,
-	c.Name as Catalog,
-	e.ProducerSynonym,
-	r.Region,
-	cd.ShortName as Supplier,
-	ifnull(syn.Synonym, synarch.Synonym) as OriginalSynonym,
-	e.OriginalSynonymId
-from farm.Excludes e
+			Query.Where(filter, parameters);
+			return this;
+		}
+	}
+
+	public static class QueryExtension
+	{
+		public static TypedQuery<T> Query<T>(this ISession session)
+		{
+			return new TypedQuery<T>(session, new Common.MySql.Query()
+				.Select(@"
+e.Id,
+c.Name as Catalog,
+e.ProducerSynonym,
+r.Region,
+cd.ShortName as Supplier,
+ifnull(syn.Synonym, synarch.Synonym) as OriginalSynonym,
+e.OriginalSynonymId,
+e.Operator")
+				.From(@"
+farm.Excludes e
 	join Catalogs.Catalog c on c.Id = e.CatalogId
 	left join farm.Synonym syn on syn.SynonymCode = e.OriginalSynonymId
 	left join farm.SynonymArchive synarch on synarch.SynonymCode = e.OriginalSynonymId
 	join usersettings.PricesData pd on pd.PriceCode = e.PriceCode
 		join usersettings.ClientsData cd on cd.FirmCode = pd.FirmCode
-		join farm.Regions r on r.RegionCode = cd.RegionCode
-where e.DoNotShow = 0 and cd.FirmSegment = 0
-group by e.Id
-order by e.CreatedOn
-limit :begin, 100
-")
-				.SetResultTransformer(new AliasToPropertyTransformer(typeof(ExcludeDto)))
-				.SetParameter("begin", page * 100)
-				.List<ExcludeDto>();
+		join farm.Regions r on r.RegionCode = cd.RegionCode")
+				.Where("e.DoNotShow = 0 and cd.FirmSegment = 0")
+				.OrderBy("e.CreatedOn"));
 		}
 
-		public static Pager<ExcludeDto> Find(ISession session, string text, uint page)
+		public static Pager<T> Page<T>(this TypedQuery<T> query, uint page)
 		{
-			var excludes = session.CreateSQLQuery(@"
-select	e.Id,
-	e.OriginalSynonymId,
-	c.Name as Catalog,
-	r.Region,
-	e.ProducerSynonym,
-	cd.ShortName as Supplier,
-	ifnull(syn.Synonym, synarch.Synonym) as OriginalSynonym,
-	e.OriginalSynonymId
-from Farm.Excludes e
-	join Catalogs.Catalog c on c.Id = e.CatalogId
-	left join farm.Synonym syn on syn.SynonymCode = e.OriginalSynonymId
-	left join farm.SynonymArchive synarch on synarch.SynonymCode = e.OriginalSynonymId
-	join usersettings.PricesData pd on pd.PriceCode = e.PriceCode
-		join usersettings.ClientsData cd on cd.FirmCode = pd.FirmCode
-		join farm.Regions r on r.RegionCode = cd.RegionCode
-where e.DoNotShow = 0 and cd.FirmSegment = 0 and (e.ProducerSynonym like :text or c.Name like :text)
-group by e.Id
-order by e.CreatedOn
-limit :begin, 100")
-				.SetParameter("text", "%" + text + "%")
-				.SetResultTransformer(new AliasToPropertyTransformer(typeof(ExcludeDto)))
-				.SetParameter("begin", page * 100)
-				.List<ExcludeDto>();
+			query.Query.Params(new {begin = page*1000});
+			query.Query.Limit(":begin, 100");
 
-			var excludesCount = session.CreateSQLQuery(@"
-select	e.Id
-from Farm.Excludes e
-	join Catalogs.Catalog c on c.Id = e.CatalogId
-	join usersettings.PricesData pd on pd.PriceCode = e.PriceCode
-		join usersettings.ClientsData cd on cd.FirmCode = pd.FirmCode
-		join farm.Regions r on r.RegionCode = cd.RegionCode
-where e.DoNotShow = 0 and cd.FirmSegment = 0 and (e.ProducerSynonym like :text or c.Name like :text)
-group by e.Id")
-				.SetParameter("text", "%" + text + "%")
-				.List<uint>().Count;
+			var sqlQuery = query.Session.CreateSQLQuery(query.Query.ToSql());
+			foreach (var parameters in query.Query.GetParameters())
+				sqlQuery.SetParameter(parameters.Key, parameters.Value);
 
-			return new Pager<ExcludeDto>(page, (uint)excludesCount, excludes);
+			var items = sqlQuery
+				.SetResultTransformer(new AliasToPropertyTransformer(typeof (T)))
+				.List<T>();
+
+			query.Query.SelectParts.Clear();
+			query.Query.SelectParts.Add("count(*)");
+			query.Query.Limit(null);
+
+			sqlQuery = query.Session.CreateSQLQuery(query.Query.ToSql());
+			foreach (var parameters in query.Query.GetParameters().Where(p => p.Key != "begin"))
+				sqlQuery.SetParameter(parameters.Key, parameters.Value);
+
+			var total = sqlQuery
+				.UniqueResult<long>();
+			return new Pager<T>(page, (uint) total, items);
 		}
 	}
 }

@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Windows.Forms;
+using ProducerEditor.Contract;
 using ProducerEditor.Infrastructure;
 using ProducerEditor.Models;
 using Subway.Helpers;
@@ -9,7 +10,7 @@ namespace ProducerEditor.Views
 {
 	public class AddToAssortmentView : Dialog
 	{
-		public AddToAssortmentView(Exclude exclude, List<ProducerDto> producers)
+		public AddToAssortmentView(ExcludeDto exclude, List<ProducerDto> producers)
 		{
 			Text = "Добавление в ассортимент";
 			Width = 400;
@@ -44,7 +45,7 @@ namespace ProducerEditor.Views
 
 		}
 
-		public void Add(ProducerDto producer, string equivalent, bool createEquivalent, Exclude exclude)
+		public void Add(ProducerDto producer, string equivalent, bool createEquivalent, ExcludeDto exclude)
 		{
 			Action(s => {
 				if (!createEquivalent)

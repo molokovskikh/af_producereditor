@@ -13,14 +13,14 @@ namespace ProducerEditor.Presenters
 	public class ShowExcludesPresenter
 	{
 		private ILog _log = LogManager.GetLogger(typeof (ShowExcludesPresenter));
-		private Pager<Exclude> _excludes;
+		private Pager<ExcludeDto> _excludes;
 		private string _searchText;
 		private List<ProducerSynonymDto> _synonyms;
 		private List<ProducerOrEquivalentDto> _producers;
 
 		public event Action<string, object> Update;
 
-		public Pager<Exclude> Excludes
+		public Pager<ExcludeDto> Excludes
 		{
 			get { return _excludes; }
 			set
@@ -53,13 +53,13 @@ namespace ProducerEditor.Presenters
 			}
 		}
 
-		public Pager<Exclude> page
+		public Pager<ExcludeDto> page
 		{
 			get { return Excludes; }
 			set { Excludes = value; }
 		}
 
-		public void CurrentChanged(Exclude exclude)
+		public void CurrentChanged(ExcludeDto exclude)
 		{
 			Action(s => {
 				var data = s.GetExcludeData(exclude.Id);
@@ -89,7 +89,7 @@ namespace ProducerEditor.Presenters
 		// Если флажок isRefresh равен true, тогда данные выбираются из мастера.
 		// Это нужно, потому что возникали ситуации, когда из мастера запись удалили, а она снова выбралась из слейва
 		// (репликация не успела)
-		private Pager<Exclude> RequestExcludes(uint page, bool isRefresh)
+		private Pager<ExcludeDto> RequestExcludes(uint page, bool isRefresh)
 		{
 			if (String.IsNullOrEmpty(_searchText))
 				this.page = Request(s => s.ShowExcludes(page, isRefresh));
@@ -102,12 +102,12 @@ namespace ProducerEditor.Presenters
 			page = RequestExcludes(page.Page, true);
 		}
 
-		public Pager<Exclude> Page(uint page)
+		public Pager<ExcludeDto> Page(uint page)
 		{
 			return RequestExcludes(page, false);
 		}
 
-		public void DeleteSynonym(Exclude current)
+		public void DeleteSynonym(ExcludeDto current)
 		{
 			if (String.IsNullOrEmpty(current.OriginalSynonym) && current.OriginalSynonymId == 0)
 			{
@@ -119,14 +119,14 @@ namespace ProducerEditor.Presenters
 			Action(s => s.DeleteSynonym(current.OriginalSynonymId));
 		}
 
-		public void AddToAssortment(Exclude current)
+		public void AddToAssortment(ExcludeDto current)
 		{
 			var view = new AddToAssortmentView(current, ShowProducers.producers);
 			if (view.ShowDialog() == DialogResult.OK)
 				Refresh();
 		}
 
-		public void DoNotShow(Exclude current)
+		public void DoNotShow(ExcludeDto current)
 		{
 			Action(s => s.DoNotShow(current.Id));
 			Refresh();

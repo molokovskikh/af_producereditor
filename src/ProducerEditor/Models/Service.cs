@@ -57,25 +57,6 @@ namespace ProducerEditor.Models
 	}
 
 	[DataContract(Namespace = "http://schemas.datacontract.org/2004/07/ProducerEditor.Service")]
-	public class Exclude
-	{
-		[DataMember]
-		public uint Id { get; set; }
-		[DataMember]
-		public string Supplier { get; set; }
-		[DataMember]
-		public string Region { get; set; }
-		[DataMember]
-		public string Catalog { get; set; }
-		[DataMember]
-		public string ProducerSynonym { get; set; }
-		[DataMember]
-		public string OriginalSynonym { get; set; }
-		[DataMember]
-		public uint OriginalSynonymId { get; set; }
-	}
-
-	[DataContract(Namespace = "http://schemas.datacontract.org/2004/07/ProducerEditor.Service")]
 	public class SynonymReportItem
 	{
 		[DataMember]

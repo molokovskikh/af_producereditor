@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using NUnit.Framework;
+using ProducerEditor.Contract;
 using ProducerEditor.Models;
 using ProducerEditor.Views;
 
@@ -11,13 +12,13 @@ namespace ProducerEditor.Tests.View
 		[Test]
 		public void Load_view()
 		{
-			var view = new ShowExcludes(new Pager<Exclude>{Content = new List<Exclude>()});
+			var view = new ShowExcludes(new Pager<ExcludeDto>{Content = new List<ExcludeDto>()});
 		}
 
 		[Test]
 		public void Convert_content_to_list()
 		{
-			var view = new ShowExcludes(new Pager<Exclude>{Content = new Exclude[0]});
+			var view = new ShowExcludes(new Pager<ExcludeDto>{Content = new ExcludeDto[0]});
 		}
 	}
 }

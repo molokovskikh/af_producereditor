@@ -56,6 +56,7 @@ namespace ProducerEditor.Service
 		private readonly Mailer _mailer;
 		private readonly ConnectionManager _connectionManager = new ConnectionManager();
 		private readonly Executor _execute;
+		private bool StrictMaster;
 
 		public ProducerService(ISessionFactory sessionFactory, Mailer mailer)
 		{
@@ -378,34 +379,18 @@ where CodeFirmCr = :ProducerId and ProductId in (
 		[OperationContract]
 		public virtual Pager<ExcludeDto> ShowExcludes(uint page, bool isRefresh)
 		{
-			Pager<ExcludeDto> pager = null;
-
-			if (isRefresh)
-			{
-				Transaction(session => {
-					var total = Exclude.TotalPages(session);
-					pager = new Pager<ExcludeDto>(page, total, Exclude.Load(page, session));
-				});
-				return pager;
-			}
-			return Slave(session => {
-				var total = Exclude.TotalPages(session);
-				return new Pager<ExcludeDto>(page, total, Exclude.Load(page, session));
-			});
+			StrictMaster = isRefresh;
+			return Slave(session => session.Query<ExcludeDto>().Page(page));
 		}
 
 		[OperationContract]
 		public virtual Pager<ExcludeDto> SearchExcludes(string text, uint page, bool isRefresh)
 		{
-			if (isRefresh)
-			{
-				Pager<ExcludeDto> pager = null;
-				Transaction(session => {
-					pager = Exclude.Find(session, text, page);
-				});
-				return pager;
-			}
-			return Slave(session => Exclude.Find(session, text, page));
+			StrictMaster = isRefresh;
+			return Slave(
+				session => session.Query<ExcludeDto>()
+					.Filter("e.ProducerSynonym like :text or c.Name like :text", new {text})
+					.Page(page));
 		}
 
 		[OperationContract]

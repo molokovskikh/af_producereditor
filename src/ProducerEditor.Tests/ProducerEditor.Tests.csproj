@@ -102,7 +102,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AssortmentFixture.cs" />
-    <Compile Include="ExcludeFixture.cs" />
     <Compile Include="InitializationFixture.cs" />
     <Compile Include="ModelsFixture.cs" />
     <Compile Include="MvcHelperFixture.cs" />
