@@ -434,11 +434,12 @@ where CodeFirmCr = :ProducerId and ProductId in (
 			return Slave(s => {
 				var exclude = s.Load<Exclude>(excludeId);
 				var equivalients = s.CreateSQLQuery(@"
-select e.ProducerId as Id, Name
+select e.ProducerId as Id, concat(e.Name, ' [', p.Name, ' ]') as Name
 from Catalogs.ProducerEquivalents e
 join Catalogs.Assortment a on a.ProducerId = e.ProducerId
+join Catalogs.Producers p on p.Id = a.ProducerId
 where a.CatalogId = :catalogId")
-					.SetParameter("catalogId", exclude.Id)
+					.SetParameter("catalogId", exclude.CatalogProduct.Id)
 					.SetResultTransformer(new AliasToPropertyTransformer(typeof (ProducerOrEquivalentDto)))
 					.List<ProducerOrEquivalentDto>();
 				var assortment = Assortment.Search(s, 0, new Query("CatalogId", exclude.CatalogProduct.Id)).Content.ToList();
