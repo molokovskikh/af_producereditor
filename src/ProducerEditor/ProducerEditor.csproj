@@ -68,6 +68,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Infrastructure\FactoryHolder.cs" />
+    <Compile Include="Infrastructure\UIContributor.cs" />
     <Compile Include="Infrastructure\UIPatterns\IUIPattern.cs" />
     <Compile Include="Infrastructure\MvcHelper.cs" />
     <Compile Include="Infrastructure\NavigatorExtention.cs" />

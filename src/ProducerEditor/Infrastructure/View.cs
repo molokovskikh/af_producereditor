@@ -116,6 +116,7 @@ namespace ProducerEditor.Infrastructure
 			Presenter = GetPresenter();
 
 			Init();
+			new UIContributor().Contribute(this);
 
 			if (Presenter == null)
 				return;
