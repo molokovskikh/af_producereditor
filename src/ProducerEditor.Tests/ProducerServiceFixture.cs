@@ -56,11 +56,53 @@ namespace ProducerEditor.Tests
 		}
 
 		[Test]
-		public void Seach_exclude()
+		public void Search_exclude()
 		{
 			var excludes = service.ShowExcludes(0, false);
 			var result = service.SearchExcludes(excludes.Content[0].ProducerSynonym, 0, false);
 			Assert.That(result.Content.Count, Is.GreaterThan(0));
+		}
+
+		[Test]
+		public void Create_assortment()
+		{
+			var excludes = service.ShowExcludes(0, false).Content;
+			var producers = service.GetProducers();
+			var exclude = excludes.First();
+			var producer = producers.First();
+			service.AddToAssotrment(exclude.Id, producer.Id, exclude.ProducerSynonym);
+
+			excludes = service.ShowExcludes(0, false).Content;
+			Assert.That(excludes.FirstOrDefault(e => e.Id == exclude.Id), Is.Null, "не удалили исключение");
+
+			var equivalents = service.GetEquivalents(producer.Id);
+			Assert.That(equivalents.First(e => e == exclude.ProducerSynonym.ToUpper()), Is.Not.Null, "не создали эквивалент");
+
+			var synonym = service
+				.GetSynonyms(producer.Id)
+				.FirstOrDefault(s => s.Name == exclude.ProducerSynonym && s.Supplier == exclude.Supplier);
+			Assert.That(synonym, Is.Not.Null, "не создали синоним");
+		}
+
+		[Test]
+		public void Create_equivalent()
+		{
+			var excludes = service.ShowExcludes(0, false).Content;
+			var producers = service.GetProducers();
+			var exclude = excludes.First();
+			var producer = producers.First();
+			service.CreateEquivalent(exclude.Id, producer.Id);
+
+			excludes = service.ShowExcludes(0, false).Content;
+			Assert.That(excludes.FirstOrDefault(e => e.Id == exclude.Id), Is.Null, "не удалили исключение");
+
+			var equivalents = service.GetEquivalents(producer.Id);
+			Assert.That(equivalents.First(e => e == exclude.ProducerSynonym.ToUpper()), Is.Not.Null, "не создали эквивалент");
+
+			var synonym = service
+				.GetSynonyms(producer.Id)
+				.FirstOrDefault(s => s.Name == exclude.ProducerSynonym && s.Supplier == exclude.Supplier);
+			Assert.That(synonym, Is.Not.Null, "не создали синоним");
 		}
 
 		[Test]

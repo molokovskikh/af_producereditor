@@ -93,8 +93,15 @@ namespace ProducerEditor.Service
 			if (item is ProducerDto || item is AssortmentDto)
 			{
 				Transaction(s => {
+					var doCleanup = false;
+
 					var id = item.GetType().GetProperty("Id").GetValue(item, null);
 					var entity = s.Load("ProducerEditor.Service.Models." + item.GetType().Name.Replace("Dto", ""), id);
+
+					if (entity is Assortment 
+						&& !((Assortment)entity).Checked
+						&& ((AssortmentDto)item).Checked)
+						doCleanup = true;
 
 					var value = item.GetType().GetProperty("Checked").GetValue(item, null);
 					entity.GetType().GetProperty("Checked").SetValue(entity, value, null);
@@ -103,6 +110,9 @@ namespace ProducerEditor.Service
 						((Producer) entity).Name = ((ProducerDto) item).Name;
 
 					s.Update(entity);
+
+					if (doCleanup)
+						((Assortment)item).CleanupExcludes(s);
 				});
 			}
 			else
@@ -333,7 +343,7 @@ WHERE OriginalSynonymId = :SynonymId")
 		{
 			With.DeadlockWraper(() =>
 				Transaction(session => {
-				var productAssortment = session.Load<ProductAssortment>(assortmentId);
+				var productAssortment = session.Load<Assortment>(assortmentId);
 				session.Delete(productAssortment);
 
 				var assortment = session.Load<Assortment>(assortmentId);
@@ -387,6 +397,7 @@ where CodeFirmCr = :ProducerId and ProductId in (
 		public virtual Pager<ExcludeDto> SearchExcludes(string text, uint page, bool isRefresh)
 		{
 			StrictMaster = isRefresh;
+			text = "%" + text + "%";
 			return Slave(
 				session => session.Query<ExcludeDto>()
 					.Filter("e.ProducerSynonym like :text or c.Name like :text", new {text})
@@ -423,8 +434,46 @@ where CodeFirmCr = :ProducerId and ProductId in (
 						s.Save(new ProducerEquivalent(producer, equivalent));
 				}
 
+				var synonym = new ProducerSynonym {
+					Price = exclude.Price,
+					Name = exclude.ProducerSynonym,
+					Producer = producer
+				};
+
+				if (!synonym.Exist(s))
+					s.Save(synonym);
+
 				s.Delete(exclude);
 				s.Save(assortment);
+				s.Flush();
+
+				assortment.CleanupExcludes(s);
+			});
+		}
+
+		[OperationContract]
+		public virtual void CreateEquivalent(uint excludeId, uint producerId)
+		{
+			Transaction(s => {
+
+				var exclude = s.Load<Exclude>(excludeId);
+				var producer = s.Load<Producer>(producerId);
+
+				var equivalent = exclude.ProducerSynonym.Trim();
+
+				if (!producer.Equivalents.Any(e => e.Name.Equals(equivalent, StringComparison.CurrentCultureIgnoreCase)))
+					s.Save(new ProducerEquivalent(producer, equivalent));
+
+				var synonym = new ProducerSynonym {
+					Price = exclude.Price,
+					Name = exclude.ProducerSynonym,
+					Producer = producer
+				};
+
+				if (!synonym.Exist(s))
+					s.Save(synonym);
+
+				s.Delete(exclude);
 			});
 		}
 
@@ -452,36 +501,6 @@ where a.CatalogId = :catalogId")
 				};
 			});
 		}
-
-/*
-		[OperationContract]
-		public virtual IList<uint> AddToAssotrment(uint excludeId)
-		{
-			var deletedExcludesIds = new List<uint>();
-
-			Transaction(session => {
-				var exclude = session.Load<Exclude>(excludeId);
-				var assortment = new Assortment(exclude.CatalogProduct, exclude.ProducerSynonym.Producer);
-
-				if (assortment.Exist(session))
-					throw new Exception("Запись в ассортименте уже существует");
-
-				var excludes = (
-					from ex in session.Linq<Exclude>()
-					where ex.CatalogProduct == assortment.CatalogProduct
-						&& ex.ProducerSynonym.Producer == assortment.Producer
-					select ex).ToList();
-
-				excludes.Each(e => deletedExcludesIds.Add(e.Id));
-				excludes.Each(session.Delete);
-
-				session.Delete(exclude);
-				assortment.Checked = true;
-				session.Save(assortment);
-			});
-			return deletedExcludesIds;
-		}
-*/
 
 		[OperationContract]
 		public virtual string GetSupplierEmails(uint supplierId)

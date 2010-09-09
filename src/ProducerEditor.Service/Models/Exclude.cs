@@ -23,6 +23,9 @@ namespace ProducerEditor.Service
 		[ManyToOne(ClassType = typeof (CatalogProduct), Column = "CatalogId")]
 		public virtual CatalogProduct CatalogProduct { get; set; }
 
+		[ManyToOne(ClassType = typeof (Price), Column = "PriceCode")]
+		public virtual Price Price { get; set; }
+
 		[Property]
 		public virtual bool DoNotShow { get; set; }
 	}

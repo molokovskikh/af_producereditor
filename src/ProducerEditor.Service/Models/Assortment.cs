@@ -91,5 +91,19 @@ where c.Id = ?id", connection);
 					&& assortment.CatalogProduct == CatalogProduct
 				select assortment).FirstOrDefault() != null;
 		}
+
+		public virtual void CleanupExcludes(ISession session)
+		{
+			session.CreateSQLQuery(@"
+delete farm.e 
+from farm.Excludes e
+join farm.SynonymFirmCr s on e.ProducerSynonym = s.Synonym and s.pricecode = e.pricecode
+join catalogs.Assortment a on a.ProducerId = s.CodeFirmCr and e.CatalogId = a.CatalogId
+where a.CatalogId = :catalogId and a.ProducerId = :producerId
+;")
+				.SetParameter("catalogId", CatalogProduct.Id)
+				.SetParameter("producerId", Producer.Id)
+				.ExecuteUpdate();
+		}
 	}
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.ServiceModel;
 using System.Windows.Forms;
 using log4net;
@@ -118,8 +119,8 @@ namespace ProducerEditor.Presenters
 					MessageBoxButtons.OK, MessageBoxIcon.Warning);
 				return;
 			}
-			Refresh();
 			Action(s => s.DeleteSynonym(current.OriginalSynonymId));
+			Refresh();
 		}
 
 		public void AddToAssortment(ExcludeDto current)
@@ -147,7 +148,7 @@ namespace ProducerEditor.Presenters
 		{
 			var result = MessageBox.Show(
 				String.Format("Создать эквивалент '{0}' для производителя '{1}'", 
-					_currentExclude.ProducerSynonym,
+					_currentExclude.ProducerSynonym.ToUpper(),
 					current.Name),
 				"Запрос",
 				MessageBoxButtons.OKCancel,
@@ -156,10 +157,10 @@ namespace ProducerEditor.Presenters
 			if (result != DialogResult.OK)
 				return;
 
-			Action(s => { 
-				s.CreateEquivalentForProducer(current.Id, _currentExclude.ProducerSynonym);
-				Producers = s.GetExcludeData(_currentExclude.Id).Producers;
+			Action(s => {
+				s.CreateEquivalent(_currentExclude.Id, current.Id);
 			});
+			Refresh();
 		}
 
 		protected T Request<T>(Func<ProducerService, T> func)

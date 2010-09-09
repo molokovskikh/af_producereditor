@@ -42,14 +42,9 @@ namespace ProducerEditor.Models
 		[OperationContract]
 		Pager<AssortmentDto> SearchAssortment(string text, uint page);
 
+
 		[OperationContract]
 		void DeleteAssortment(uint assortmentId);
-
-		[OperationContract]
-		void SetAssortmentChecked(uint assortmentId, bool @checked);
-
-		[OperationContract]
-		void Suspicious(uint producerSynonymId);
 
 		[OperationContract]
 		void DeleteSuspicious(uint producerSynonymId);
@@ -59,6 +54,10 @@ namespace ProducerEditor.Models
 
 		[OperationContract]
 		void DeleteProducer(uint producerId);
+
+
+		[OperationContract]
+		void Suspicious(uint producerSynonymId);
 
 		[OperationContract]
 		Pager<ExcludeDto> ShowExcludes(uint page, bool isRefresh);
@@ -71,6 +70,9 @@ namespace ProducerEditor.Models
 
 		[OperationContract]
 		void AddToAssotrment(uint excludeId, uint producerId, string equivalent);
+
+		[OperationContract]
+		void CreateEquivalent(uint excludeId, uint producerId);
 
 		[OperationContract]
 		Pager<AssortmentDto> ShowAssortmentForProducer(uint producerId, uint page);

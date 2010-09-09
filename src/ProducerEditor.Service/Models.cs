@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Common.Models.Helpers;
 using NHibernate;
+using NHibernate.Linq;
 using NHibernate.Mapping.Attributes;
 using ProducerEditor.Contract;
 using ProducerEditor.Service.Models;
@@ -120,6 +121,13 @@ group by sfc.SynonymFirmCrCode", filter))
 				.SetResultTransformer(new AliasToPropertyTransformer(typeof (ProducerSynonymDto)))
 				.List<ProducerSynonymDto>().ToList();
 		}
+
+		public virtual bool Exist(ISession session)
+		{
+			return session
+				.Linq<ProducerSynonym>()
+				.FirstOrDefault(s => s.Price == Price && s.Producer == Producer && s.Name == Name) != null;
+		}
 	}
 
 	[Class(Table = "farm.Synonym")]
@@ -140,14 +148,6 @@ group by sfc.SynonymFirmCrCode", filter))
 
 		[ManyToOne(ClassType = typeof(Price), Column = "PriceCode")]
 		public virtual Price Price { get; set; }
-	}
-
-	[Class(Table = "Catalogs.Assortment")]
-	public class ProductAssortment
-	{
-		[Id(0, Name = "Id")]
-		[Generator(1, Class = "native")]
-		public virtual uint Id { get; set; }
 	}
 
 	[Class(Table = "Catalogs.ProducerEquivalents")]
