@@ -425,7 +425,11 @@ where CodeFirmCr = :ProducerId and ProductId in (
 				};
 
 				if (assortment.Exist(s))
-					throw new Exception("Запись в ассортименте уже существует");
+				{
+					assortment = s.Linq<Assortment>()
+						.First(a => a.Producer == assortment.Producer && a.CatalogProduct == assortment.CatalogProduct);
+					assortment.Checked = true;
+				}
 
 				if (!String.IsNullOrEmpty(equivalent))
 				{
@@ -443,8 +447,8 @@ where CodeFirmCr = :ProducerId and ProductId in (
 				if (!synonym.Exist(s))
 					s.Save(synonym);
 
+				s.SaveOrUpdate(assortment);
 				s.Delete(exclude);
-				s.Save(assortment);
 				s.Flush();
 
 				assortment.CleanupExcludes(s);
