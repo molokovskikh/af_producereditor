@@ -55,6 +55,9 @@ namespace ProducerEditor.Models
 		[OperationContract]
 		void DeleteProducer(uint producerId);
 
+		[OperationContract]
+		void DeleteExclude(uint excludeId);
+
 
 		[OperationContract]
 		void Suspicious(uint producerSynonymId);

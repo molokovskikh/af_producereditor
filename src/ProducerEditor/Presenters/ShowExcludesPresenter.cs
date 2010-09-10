@@ -162,6 +162,14 @@ namespace ProducerEditor.Presenters
 			});
 		}
 
+		public void MistakenExclude(ExcludeDto current)
+		{
+			Action(s => {
+				s.DeleteExclude(current.Id);
+			});
+			Refresh();
+		}
+
 		public void AddEquivalent(ProducerOrEquivalentDto current)
 		{
 			var result = MessageBox.Show(

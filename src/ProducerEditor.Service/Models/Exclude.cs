@@ -3,6 +3,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using Common.Models.Helpers;
 using NHibernate;
+using NHibernate.Linq;
 using NHibernate.Mapping.Attributes;
 
 namespace ProducerEditor.Service
@@ -28,6 +29,20 @@ namespace ProducerEditor.Service
 
 		[Property]
 		public virtual bool DoNotShow { get; set; }
+
+		public virtual void Remove(ISession session)
+		{
+			var sameExcludeCount = session.Linq<Exclude>().Count(e => e.Price == Price && e.ProducerSynonym == ProducerSynonym);
+			session.Delete(this);
+			if (sameExcludeCount == 1)
+			{
+				var synonym = session.Linq<ProducerSynonym>()
+					.FirstOrDefault(s => s.Price == Price && s.Name == ProducerSynonym && s.Producer == null);
+				if (synonym == null)
+					return;
+				session.Delete(synonym);
+			}
+		}
 	}
 
 	public class TypedQuery<T>

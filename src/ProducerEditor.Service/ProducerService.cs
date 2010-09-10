@@ -339,6 +339,15 @@ WHERE OriginalSynonymId = :SynonymId")
 		}
 
 		[OperationContract]
+		public virtual void DeleteExclude(uint excludeId)
+		{
+			Transaction(s => {
+				var exclude = s.Load<Exclude>(excludeId);
+				exclude.Remove(s);
+			});
+		}
+
+		[OperationContract]
 		public virtual void DeleteAssortment(uint assortmentId)
 		{
 			With.DeadlockWraper(() =>
@@ -448,7 +457,7 @@ where CodeFirmCr = :ProducerId and ProductId in (
 					s.Save(synonym);
 
 				s.SaveOrUpdate(assortment);
-				s.Delete(exclude);
+				exclude.Remove(s);
 				s.Flush();
 
 				assortment.CleanupExcludes(s);
@@ -477,7 +486,7 @@ where CodeFirmCr = :ProducerId and ProductId in (
 				if (!synonym.Exist(s))
 					s.Save(synonym);
 
-				s.Delete(exclude);
+				exclude.Remove(s);
 			});
 		}
 

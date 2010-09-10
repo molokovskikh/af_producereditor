@@ -85,6 +85,7 @@ namespace ProducerEditor.Views
 			Controls.Add(new ToolStrip()
 				.Button("AddToAssortment", "Добавить в ассортимент")
 				.Button("DoNotShow", "Больше не показывать")
+				.Button("MistakenExclude", "Ошибочное исключение")
 				.Button("DeleteSynonym", "Ошибочное сопоставление по наименованию")
 				.Button("MistakenProducerSynonym", "Ошибочное сопоставление по производителю")
 				.Button("AddEquivalent", "Создать эквивалент"));
