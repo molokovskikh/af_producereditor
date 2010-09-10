@@ -155,6 +155,7 @@ namespace ProducerEditor.Views
 			producersToSynonymsSplit.Panel1.Controls.Add(producersToEquivalentsSplit);
 			producersToSynonymsSplit.Panel2.Controls.Add(synonymsTable.Host);
 			Controls.Add(producersToSynonymsSplit);
+			Controls.Add(new Legend("WithoutOffers"));
 			Controls.Add(bookmarksToolStrip);
 			Controls.Add(toolStrip);
 			producersToSynonymsSplit.SplitterDistance = (int) (0.5 * Height);
