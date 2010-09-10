@@ -36,7 +36,7 @@ namespace ProducerEditor.Infrastructure
 
 		public IBinder[] binders = new IBinder[] {
 			new UpdateBinder(),
-			new CurrentBinder()
+			new CurrentBinder(),
 		};
 
 		public View()
@@ -76,7 +76,7 @@ namespace ProducerEditor.Infrastructure
 				if (table != null)
 					selectedIndex = table.Table.Behavior<IRowSelectionBehavior>().SelectedRowIndex;
 
-				var parameters = BindParameters(method);
+				var parameters = BindParameters(((ToolStripButton)s), method);
 				if (parameters == null)
 					return;
 				method.Invoke(presenter, parameters);
@@ -89,7 +89,7 @@ namespace ProducerEditor.Infrastructure
 		protected virtual void Init()
 		{}
 
-		private object[] BindParameters(MethodInfo method)
+		private object[] BindParameters(ToolStripButton button, MethodInfo method)
 		{
 			var parameters = method.GetParameters();
 			if (parameters.Length == 0)
@@ -104,7 +104,11 @@ namespace ProducerEditor.Infrastructure
 						return null;
 					list.Add(current);
 				}
-				else 
+				else if (parameter.Name == "flag")
+				{
+					list.Add(button.Checked);
+				}
+				else
 					throw new Exception(String.Format("Не знаю как биндить параметер {0} метода {1}", parameter.Name, method.Name));
 			}
 			return list.ToArray();

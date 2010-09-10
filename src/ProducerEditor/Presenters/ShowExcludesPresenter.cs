@@ -16,6 +16,7 @@ namespace ProducerEditor.Presenters
 		private ILog _log = LogManager.GetLogger(typeof (ShowExcludesPresenter));
 		private Pager<ExcludeDto> _excludes;
 		private string _searchText;
+		private bool _showHidden;
 		private List<ProducerSynonymDto> _synonyms;
 		private List<ProducerOrEquivalentDto> _producers;
 
@@ -63,6 +64,12 @@ namespace ProducerEditor.Presenters
 
 		private ExcludeDto _currentExclude;
 
+		public void ShowHidden(bool flag)
+		{
+			_showHidden = flag;
+			Refresh();
+		}
+
 		private List<ProducerSynonymDto> SortAndMark(List<ProducerSynonymDto> synonyms)
 		{
 			foreach (var synonym in synonyms)
@@ -98,7 +105,7 @@ namespace ProducerEditor.Presenters
 			_searchText = text;
 
 			Action(s => {
-				var pager = s.SearchExcludes(text, 0, false);
+				var pager = s.SearchExcludes(text, _showHidden, 0, false);
 				if (pager == null)
 				{
 					MessageBox.Show("По вашему запросу ничего не найдено");
@@ -114,8 +121,9 @@ namespace ProducerEditor.Presenters
 		private Pager<ExcludeDto> RequestExcludes(uint page, bool isRefresh)
 		{
 			if (String.IsNullOrEmpty(_searchText))
-				this.page = Request(s => s.ShowExcludes(page, isRefresh));
-			this.page = Request(s => s.SearchExcludes(_searchText, page, isRefresh));
+				this.page = Request(s => s.ShowExcludes(_showHidden, page, isRefresh));
+			else
+				this.page = Request(s => s.SearchExcludes(_searchText, _showHidden, page, isRefresh));
 			return this.page;
 		}
 

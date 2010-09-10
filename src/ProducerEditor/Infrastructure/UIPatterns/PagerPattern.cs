@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using System;
+using System.Reflection;
 using System.Windows.Forms;
 using ProducerEditor.Models;
 
@@ -29,6 +30,16 @@ namespace ProducerEditor.Infrastructure.UIPatterns
 				var paginator = Invoke(page);
 				return paginator;
 			});
+
+			var update = _presenter.GetType().GetEvent("Update");
+			if (update != null)
+				update.AddEventHandler(_presenter, new Action<string, object>((n, v) => {
+					if (v is IPager)
+					{
+						navigation.UpdatePaginator((IPager) v);
+					}
+				}));
+				
 		}
 
 		public IPager Invoke(uint page)

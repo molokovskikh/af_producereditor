@@ -38,6 +38,12 @@ namespace ProducerEditor.Infrastructure
 			return toolStrip;
 		}
 
+		public static ToolStrip Item(this ToolStrip toolStrip, ToolStripItem item)
+		{
+			toolStrip.Items.Add(item);
+			return toolStrip;
+		}
+
 		public static ToolStrip Button(this ToolStrip toolStrip, string name, string label)
 		{
 			var button = new ToolStripButton
