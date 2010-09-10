@@ -17,5 +17,7 @@ namespace ProducerEditor.Contract
 		public string Region { get; set; }
 		[DataMember]
 		public bool HaveOffers { get; set; }
+
+		public bool SameAsCurrent { get; set; }
 	}
 }

@@ -37,6 +37,7 @@ namespace ProducerEditor.Presenters
 			get { return _synonyms; }
 			set
 			{
+				value = SortAndMark(value);
 				_synonyms = value;
 				if (Update != null)
 					Update("ProducerSynonyms", value);
@@ -61,6 +62,23 @@ namespace ProducerEditor.Presenters
 		}
 
 		private ExcludeDto _currentExclude;
+
+		private List<ProducerSynonymDto> SortAndMark(List<ProducerSynonymDto> synonyms)
+		{
+			foreach (var synonym in synonyms)
+			{
+				if (synonym.Name.Equals(_currentExclude.ProducerSynonym, StringComparison.CurrentCultureIgnoreCase)
+					&& synonym.Supplier == _currentExclude.Supplier
+					&& synonym.Region == _currentExclude.Region)
+				{
+					synonym.SameAsCurrent = true;
+				}
+			}
+
+			return synonyms.Where(s => s.SameAsCurrent).Concat(
+				synonyms.Where(s => !s.SameAsCurrent).OrderBy(s => s.Supplier).ThenBy(s => s.Region)
+			).ToList();
+		}
 
 		public void CurrentChanged(ExcludeDto exclude)
 		{

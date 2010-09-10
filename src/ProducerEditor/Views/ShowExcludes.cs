@@ -57,6 +57,8 @@ namespace ProducerEditor.Views
 						synonym.Region);
 					if (synonym.HaveOffers)
 						row.AddClass("WithoutOffers");
+					if (synonym.SameAsCurrent)
+						row.AddClass("SameAsCurrent");
 					return row;
 				}));
 			synonymsTable.Host.Name = "ProducerSynonyms";

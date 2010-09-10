@@ -32,6 +32,11 @@ namespace ProducerEditor
 
 			StylesHolder
 				.Instance
+				.RegisterClass("SameAsCurrent")
+				.Set(StyleElementType.CustomBackgroundDraw, Predefine.MixWith(Color.FromArgb(153, 222, 201, 231)));
+
+			StylesHolder
+				.Instance
 				.RegisterClass("NotExistsInRls")
 				.Set(StyleElementType.CustomBackgroundDraw, Predefine.MixWith(Color.FromArgb(153, 231, 216, 201)));
 
