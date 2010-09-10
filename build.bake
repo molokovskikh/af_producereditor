@@ -28,7 +28,7 @@ def GeneratePublishPage(file as string, version as string, projectName as string
 project = "ProducerEditor"
 projectFile = Path.GetFullPath("src/${project}/${project}.csproj")
 output = Path.GetFullPath("./build/${project}");
-version = "0.7.10"
+version = "0.7.11"
 deploymentUrl = "http://publish.analit.net/ProducerEditor/"
 deployDir = "\\\\acdcserv\\WebPublish\\ProducerEditor"
 
