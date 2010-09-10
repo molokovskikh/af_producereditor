@@ -67,6 +67,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Infrastructure\Binders\CurrentBinder.cs" />
     <Compile Include="Infrastructure\FactoryHolder.cs" />
     <Compile Include="Infrastructure\UIContributor.cs" />
     <Compile Include="Infrastructure\UIPatterns\IUIPattern.cs" />
@@ -76,6 +77,7 @@
     <Compile Include="Infrastructure\PaginatorExtention.cs" />
     <Compile Include="Infrastructure\UIPatterns\SearchPattern.cs" />
     <Compile Include="Infrastructure\ToolstripExtensions.cs" />
+    <Compile Include="Infrastructure\Binders\UpdateBinder.cs" />
     <Compile Include="Infrastructure\UpdateController.cs" />
     <Compile Include="Infrastructure\UserDataSettingProvider.cs" />
     <Compile Include="Infrastructure\UserNameInspector.cs" />
