@@ -91,7 +91,7 @@ farm.Excludes e
 
 		public static Pager<T> Page<T>(this TypedQuery<T> query, uint page)
 		{
-			query.Query.Params(new {begin = page*1000});
+			query.Query.Params(new {begin = page*100});
 			query.Query.Limit(":begin, 100");
 
 			var sqlQuery = query.Session.CreateSQLQuery(query.Query.ToSql());
