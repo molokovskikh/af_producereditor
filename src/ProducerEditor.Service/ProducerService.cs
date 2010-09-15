@@ -506,11 +506,11 @@ select e.ProducerId as Id, concat(e.Name, ' [', p.Name, ' ]') as Name
 from Catalogs.ProducerEquivalents e
 join Catalogs.Assortment a on a.ProducerId = e.ProducerId
 join Catalogs.Producers p on p.Id = a.ProducerId
-where a.CatalogId = :catalogId")
+where a.Checked = 1 and a.CatalogId = :catalogId")
 					.SetParameter("catalogId", exclude.CatalogProduct.Id)
 					.SetResultTransformer(new AliasToPropertyTransformer(typeof (ProducerOrEquivalentDto)))
 					.List<ProducerOrEquivalentDto>();
-				var assortment = Assortment.Search(s, 0, new Query("CatalogId", exclude.CatalogProduct.Id)).Content.ToList();
+				var assortment = Assortment.Search(s, 0, new Query("CatalogId", exclude.CatalogProduct.Id)).Content.Where(a => a.Checked).ToList();
 				var producers = equivalients
 					.Concat(assortment.Select(a => new ProducerOrEquivalentDto {Id = a.ProducerId, Name = a.Producer}))
 					.OrderBy(p => p.Name).ToList();
