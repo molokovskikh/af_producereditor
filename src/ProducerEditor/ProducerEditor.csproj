@@ -99,7 +99,7 @@
     <Compile Include="Views\JoinView.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Views\Main.cs">
+    <Compile Include="Views\Shell.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Views\ShowAssortmentForProducer.cs">

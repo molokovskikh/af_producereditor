@@ -65,7 +65,7 @@ namespace ProducerEditor.Service.Models
 				.Each(e => AddEquivalent(e.Name));
 		}
 
-		public void AddEquivalent(string name)
+		public virtual void AddEquivalent(string name)
 		{
 			if (Equivalents.Any(e => e.Name.Equals(name, StringComparison.CurrentCultureIgnoreCase)))
 				return;

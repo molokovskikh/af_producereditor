@@ -1,4 +1,4 @@
-using System;
+п»їusing System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Forms;
@@ -33,22 +33,23 @@ namespace ProducerEditor.Views
 
 		public ShowProducers()
 		{
+			Text = "РџСЂРѕРёР·РІРѕРґРёС‚РµР»Рё";
 			toolStrip = new ToolStrip()
 				.Edit("SearchText")
-				.Button("Поиск", SearchProducer)
+				.Button("РџРѕРёСЃРє", SearchProducer)
 				.Separator()
-				.Button("Переименовать (F2)", ShowRenameView)
-				.Button("Объединить (F3)", ShowJoinView)
-				.Button("Удалить (Delete)", Delete)
+				.Button("РџРµСЂРµРёРјРµРЅРѕРІР°С‚СЊ (F2)", ShowRenameView)
+				.Button("РћР±СЉРµРґРёРЅРёС‚СЊ (F3)", ShowJoinView)
+				.Button("РЈРґР°Р»РёС‚СЊ (Delete)", Delete)
 				.Separator()
-				.Button("Продукты (Enter)", ShowProductsAndProducersOrOffers)
-				.Button("Показать в ассортименте", ShowAssortmentForProducer)
+				.Button("РџСЂРѕРґСѓРєС‚С‹ (Enter)", ShowProductsAndProducersOrOffers)
+				.Button("РџРѕРєР°Р·Р°С‚СЊ РІ Р°СЃСЃРѕСЂС‚РёРјРµРЅС‚Рµ", ShowAssortmentForProducer)
 				.Separator()
-				.Button("Создать эквивалент", ShowCreateEquivalentForProducer);
+				.Button("РЎРѕР·РґР°С‚СЊ СЌРєРІРёРІР°Р»РµРЅС‚", ShowCreateEquivalentForProducer);
 
 			var bookmarksToolStrip = new ToolStrip()
-				.Button("К закаладке", MoveToBookmark)
-				.Button("Установить закладку", SetBookmark);
+				.Button("Рљ Р·Р°РєР°Р»Р°РґРєРµ", MoveToBookmark)
+				.Button("РЈСЃС‚Р°РЅРѕРІРёС‚СЊ Р·Р°РєР»Р°РґРєСѓ", SetBookmark);
 
 			var searchText = ((ToolStripTextBox) toolStrip.Items["SearchText"]);
 			searchText.KeyDown += (sender, args) => {
@@ -57,7 +58,7 @@ namespace ProducerEditor.Views
 			};
 
 			producerTable = new VirtualTable(new TemplateManager<List<ProducerDto>, ProducerDto>(
-				() => Row.Headers(new Header("Проверен").AddClass("CheckBoxColumn1"), "Производитель"), 
+				() => Row.Headers(new Header("РџСЂРѕРІРµСЂРµРЅ").AddClass("CheckBoxColumn1"), "РџСЂРѕРёР·РІРѕРґРёС‚РµР»СЊ"), 
 				producer => {
 					var row = Row.Cells(new CheckBoxInput(producer.Checked).Attr("Name", "Checked"), producer.Name);
 					if (producer.HasOffers)
@@ -101,15 +102,15 @@ namespace ProducerEditor.Views
 			synonymsTable = new VirtualTable(new TemplateManager<List<ProducerSynonymDto>, ProducerSynonymDto>(
 				() =>{
 					var row = Row.Headers();
-					var header = new Header("Синоним").Sortable("Name");
+					var header = new Header("РЎРёРЅРѕРЅРёРј").Sortable("Name");
 					header.InlineStyle.Set(StyleElementType.Width, WidthHolder.ProducerWidths[0]);
 					row.Append(header);
 
-					header = new Header("Поставщик").Sortable("Supplier");
+					header = new Header("РџРѕСЃС‚Р°РІС‰РёРє").Sortable("Supplier");
 					header.InlineStyle.Set(StyleElementType.Width, WidthHolder.ProducerWidths[1]);
 					row.Append(header);
 
-					header = new Header("Регион").Sortable("Region");
+					header = new Header("Р РµРіРёРѕРЅ").Sortable("Region");
 					header.InlineStyle.Set(StyleElementType.Width, WidthHolder.ProducerWidths[2]);
 					row.Append(header);
 
@@ -137,7 +138,7 @@ namespace ProducerEditor.Views
 			synonymsTable.Behavior<ColumnResizeBehavior>().ColumnResized += column => WidthHolder.Update(synonymsTable, column, WidthHolder.ProducerWidths);
 
 			equivalentTable = new VirtualTable(new TemplateManager<List<string>, string>(
-				() => Row.Headers("Эквивалент"),
+				() => Row.Headers("Р­РєРІРёРІР°Р»РµРЅС‚"),
 				e => Row.Cells(e)));
 
 			var producersToSynonymsSplit = new SplitContainer
@@ -203,7 +204,7 @@ namespace ProducerEditor.Views
 				var producer = producerTable.Selected<ProducerDto>();
 				if (producer == null)
 					return;
-				if (MessageBox.Show(String.Format("Удалить производителя \"{0}\"", producer.Name), "Удаление производителя", MessageBoxButtons.OKCancel, MessageBoxIcon.Question) == DialogResult.Cancel)
+				if (MessageBox.Show(String.Format("РЈРґР°Р»РёС‚СЊ РїСЂРѕРёР·РІРѕРґРёС‚РµР»СЏ \"{0}\"", producer.Name), "РЈРґР°Р»РµРЅРёРµ РїСЂРѕРёР·РІРѕРґРёС‚РµР»СЏ", MessageBoxButtons.OKCancel, MessageBoxIcon.Question) == DialogResult.Cancel)
 					return;
 
 				Action(s => {
@@ -264,7 +265,7 @@ namespace ProducerEditor.Views
 			}
 			else
 			{
-				MessageBox.Show("По вашему запросу ничеого не найдено", "Результаты поиска",
+				MessageBox.Show("РџРѕ РІР°С€РµРјСѓ Р·Р°РїСЂРѕСЃСѓ РЅРёС‡РµРѕРіРѕ РЅРµ РЅР°Р№РґРµРЅРѕ", "Р РµР·СѓР»СЊС‚Р°С‚С‹ РїРѕРёСЃРєР°",
 					MessageBoxButtons.OK,
 					MessageBoxIcon.Warning);
 			}

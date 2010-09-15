@@ -29,7 +29,7 @@ namespace ProducerEditor
 				Application.ThreadException += (sender, e) => HandleException(e.Exception);
 #endif
 
-				Application.Run(new Main());
+				Application.Run(new Shell());
 #if !DEBUG
 			}
 			catch (Exception e)
