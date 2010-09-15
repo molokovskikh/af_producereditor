@@ -396,26 +396,25 @@ where CodeFirmCr = :ProducerId and ProductId in (
 		}
 
 		[OperationContract]
-		public virtual Pager<ExcludeDto> ShowExcludes(bool showHidden, uint page, bool isRefresh)
+		public virtual Pager<ExcludeDto> ShowExcludes()
 		{
-			StrictMaster = isRefresh;
 			return Slave(
 				session => session
 					.Query<ExcludeDto>()
-					.Filter("e.DoNotShow = :showHidden", new {showHidden})
-					.Page(page)
+					.Page(0)
 			);
 		}
 
 		[OperationContract]
-		public virtual Pager<ExcludeDto> SearchExcludes(string text, bool showHidden, uint page, bool isRefresh)
+		public virtual Pager<ExcludeDto> SearchExcludes(string text, bool showPharmacie, bool showHidden, uint page, bool isRefresh)
 		{
 			StrictMaster = isRefresh;
 			text = "%" + text + "%";
 			return Slave(
 				session => session.Query<ExcludeDto>()
-					.Filter("e.ProducerSynonym like :text or c.Name like :text", new {text})
+					.Filter("(e.ProducerSynonym like :text or c.Name like :text)", new {text})
 					.Filter("e.DoNotShow = :showHidden", new {showHidden})
+					.Filter("(:showPharmacie = 0 or c.Pharmacie = :showPharmacie)", new {showPharmacie})
 					.Page(page)
 			);
 		}

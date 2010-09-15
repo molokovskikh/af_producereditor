@@ -84,6 +84,8 @@ namespace ProducerEditor.Views
 			Controls.Add(new Legend("WithoutOffers", "SameAsCurrent"));
 			Controls.Add(new ToolStrip()
 				.Item(new ToolStripButton{CheckOnClick = true, Name = "ShowHidden", Text = "Показать скрытых"})
+				.Item(new ToolStripButton{CheckOnClick = true, Name = "ShowPharmacie", Text = "Показать только фармацевтику"})
+				.Separator()
 				.Button("AddToAssortment", "Добавить в ассортимент")
 				.Button("DoNotShow", "Больше не показывать")
 				.Button("MistakenExclude", "Ошибочное исключение")

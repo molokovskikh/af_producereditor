@@ -63,10 +63,10 @@ namespace ProducerEditor.Models
 		void Suspicious(uint producerSynonymId);
 
 		[OperationContract]
-		Pager<ExcludeDto> ShowExcludes(bool showHidden, uint page, bool isRefresh);
+		Pager<ExcludeDto> ShowExcludes();
 
 		[OperationContract]
-		Pager<ExcludeDto> SearchExcludes(string text, bool showHidden, uint page, bool isRefresh);
+		Pager<ExcludeDto> SearchExcludes(string text, bool showPharmacie, bool showHidden, uint page, bool isRefresh);
 
 		[OperationContract]
 		void DoNotShow(uint excludeId);

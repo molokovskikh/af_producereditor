@@ -20,14 +20,14 @@ namespace ProducerEditor.Views
 			this.InputMap()
 				.KeyDown(Keys.F5, () => OpenView(typeof(ShowProducers)))
 				.KeyDown(Keys.F6, Controller(s => s.ShowAssortment(Settings.Default.BookmarkAssortimentId)))
-				.KeyDown(Keys.F7, Controller(s => s.ShowExcludes(false, 0, false)))
+				.KeyDown(Keys.F7, Controller(s => s.ShowExcludes()))
 				.KeyDown(Keys.F8, Controller(s => s.ShowSynonymReport(DateTime.Now.AddDays(-1).Date, DateTime.Now.Date)))
 				.KeyDown(Keys.F9, Controller(s => s.ShowSuspiciousSynonyms()));
 
 			var navigation = new ToolStrip()
 				.Button("Producers", "Производители  (F5)", () => OpenView(typeof(ShowProducers)))
 				.Button("Ассортимент (F6)", Controller(s => s.ShowAssortment(Settings.Default.BookmarkAssortimentId)))
-				.Button("Исключения (F7)", Controller(s => s.ShowExcludes(false, 0, false)))
+				.Button("Исключения (F7)", Controller(s => s.ShowExcludes()))
 				.Button("Отчет о сопоставлениях (F8)", Controller(s => s.ShowSynonymReport(DateTime.Now.AddDays(-1).Date, DateTime.Now.Date)))
 				.Button("Подозрительные сопоставления (F9)", Controller(c => c.ShowSuspiciousSynonyms()))
 				.ActAsNavigator();

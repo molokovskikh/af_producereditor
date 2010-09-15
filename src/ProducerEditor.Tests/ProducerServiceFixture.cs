@@ -40,7 +40,7 @@ namespace ProducerEditor.Tests
 		[Test]
 		public void Get_data_for_exclude()
 		{
-			var excludes = service.ShowExcludes(false, 0, false);
+			var excludes = service.ShowExcludes();
 			var data = service.GetExcludeData(excludes.Content[0].Id);
 			Assert.That(data.Producers, Is.Not.Null);
 			Assert.That(data.Synonyms, Is.Not.Null);
@@ -58,21 +58,21 @@ namespace ProducerEditor.Tests
 		[Test]
 		public void Search_exclude()
 		{
-			var excludes = service.ShowExcludes(false, 0, false);
-			var result = service.SearchExcludes(excludes.Content[0].ProducerSynonym, false, 0, false);
+			var excludes = service.ShowExcludes();
+			var result = service.SearchExcludes(excludes.Content[0].ProducerSynonym, false, false, 0, false);
 			Assert.That(result.Content.Count, Is.GreaterThan(0));
 		}
 
 		[Test]
 		public void Create_assortment()
 		{
-			var excludes = service.ShowExcludes(false, 0, false).Content;
+			var excludes = service.ShowExcludes().Content;
 			var producers = service.GetProducers();
 			var exclude = excludes.First();
 			var producer = producers.First();
 			service.AddToAssotrment(exclude.Id, producer.Id, exclude.ProducerSynonym);
 
-			excludes = service.ShowExcludes(false, 0, false).Content;
+			excludes = service.ShowExcludes().Content;
 			Assert.That(excludes.FirstOrDefault(e => e.Id == exclude.Id), Is.Null, "не удалили исключение");
 
 			var equivalents = service.GetEquivalents(producer.Id);
@@ -87,13 +87,13 @@ namespace ProducerEditor.Tests
 		[Test]
 		public void Create_equivalent()
 		{
-			var excludes = service.ShowExcludes(false, 0, false).Content;
+			var excludes = service.ShowExcludes().Content;
 			var producers = service.GetProducers();
 			var exclude = excludes.First();
 			var producer = producers.First();
 			service.CreateEquivalent(exclude.Id, producer.Id);
 
-			excludes = service.ShowExcludes(false, 0, false).Content;
+			excludes = service.ShowExcludes().Content;
 			Assert.That(excludes.FirstOrDefault(e => e.Id == exclude.Id), Is.Null, "не удалили исключение");
 
 			var equivalents = service.GetEquivalents(producer.Id);
