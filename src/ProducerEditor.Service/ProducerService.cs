@@ -219,18 +219,7 @@ where CodeFirmCr = :SourceId
 update orders.orderslist
 set CodeFirmCr = :TargetId
 where CodeFirmCr = :SourceId
-;
-
-drop temporary table if exists catalogs.TempForUpdateAssortment;
-create temporary table catalogs.TempForUpdateAssortment engine 'memory'
-  select * from catalogs.Assortment A where A.ProducerId = :SourceId and A.Checked = 1;
-update catalogs.Assortment as ADest set Checked = 1 where ADest.ProducerId = :TargetId and
- exists (
-		select * from catalogs.TempForUpdateAssortment as ASrc
-		where ADest.CatalogId = ASrc.CatalogId and ASrc.ProducerId = :SourceId and ASrc.Checked = 1
-);
-drop temporary table if exists catalogs.TempForUpdateAssortment;
-")
+;")
 						.SetParameter("SourceId", sourceId)
 						.SetParameter("TargetId", targetProducerId)
 						.ExecuteUpdate();
@@ -276,7 +265,7 @@ drop temporary table if exists catalogs.TempForUpdateAssortment;
 		{
 			Transaction(session => {
 				var producer = session.Get<Producer>(producerId);
-				producer.Equivalents.Add(new ProducerEquivalent(producer, equivalentName));
+				producer.AddEquivalent(equivalentName);
 			});
 		}
 

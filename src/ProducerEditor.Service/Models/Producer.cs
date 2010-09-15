@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
 using Common.Tools;
@@ -53,16 +54,23 @@ namespace ProducerEditor.Service.Models
 
 		public virtual void MergeToEquivalent(Producer producer, ISession session)
 		{
-			Equivalents.Add(new ProducerEquivalent(this, producer.Name));
+			AddEquivalent(producer.Name);
 
 			producer.Assortments
 				.Where(a => Assortments.All(x => x.CatalogProduct.Id != a.CatalogProduct.Id))
-				.Select(a => new Assortment(a.CatalogProduct, this))
+				.Select(a => new Assortment(a.CatalogProduct, this){Checked =  a.Checked})
 				.Each(a => Assortments.Add(a));
 
 			producer.Equivalents
-				.Select(e => new ProducerEquivalent(this, e.Name))
-				.Each(e => Equivalents.Add(e));
+				.Each(e => AddEquivalent(e.Name));
+		}
+
+		public void AddEquivalent(string name)
+		{
+			if (Equivalents.Any(e => e.Name.Equals(name, StringComparison.CurrentCultureIgnoreCase)))
+				return;
+
+			Equivalents.Add(new ProducerEquivalent(this, name));
 		}
 	}
 }
