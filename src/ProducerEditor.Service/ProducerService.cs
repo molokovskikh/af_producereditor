@@ -387,11 +387,7 @@ where CodeFirmCr = :ProducerId and ProductId in (
 		[OperationContract]
 		public virtual Pager<ExcludeDto> ShowExcludes()
 		{
-			return Slave(
-				session => session
-					.Query<ExcludeDto>()
-					.Page(0)
-			);
+			return SearchExcludes("", false, false, 0, false);
 		}
 
 		[OperationContract]
