@@ -126,10 +126,8 @@ namespace ProducerEditor.Service
 select p.Id,
 p.Name,
 p.Checked,
-c.Id != 0 as HasOffers
+exists(select * from farm.core0 c where c.CodeFirmCr = p.Id) as HasOffers
 from Catalogs.Producers p
-	left join farm.core0 c on c.CodeFirmCr = p.Id
-group by p.Id
 order by p.Name")
 				.SetResultTransformer(new AliasToPropertyTransformer(typeof (ProducerDto)))
 				.List<ProducerDto>());
