@@ -294,7 +294,14 @@ WHERE OriginalSynonymId = :SynonymId")
 				if (synonym == null)
 					return;
 				session.Delete(synonym);
-				_mailer.SynonymWasDeleted(synonym);
+				var productName = session.CreateSQLQuery(@"
+select c.Name 
+from Catalogs.Products p
+join Catalogs.Catalog c on c.Id = p.CatalogId
+where p.Id = :productId")
+					.SetParameter("productId", synonym.ProductId)
+					.UniqueResult<string>();
+				_mailer.SynonymWasDeleted(synonym, productName);
 			});
 		}
 

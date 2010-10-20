@@ -14,14 +14,16 @@ namespace ProducerEditor.Tests
 	[TestFixture]
 	public class ProducerServiceFixture
 	{
-		private ISessionFactory _sessionFactory;
-		private ProducerService service;
+		ISessionFactory sessionFactory;
+		ProducerService service;
+		Mailer mailer;
 
 		[SetUp]
 		public void Setup()
 		{
-			_sessionFactory = Global.InitializeNHibernate();
-			service = new ProducerService(_sessionFactory, new Mailer());
+			mailer = new Mailer();
+			sessionFactory = Global.InitializeNHibernate();
+			service = new ProducerService(sessionFactory, mailer);
 		}
 
 		[Test]
@@ -35,6 +37,15 @@ namespace ProducerEditor.Tests
 				if (!method.IsVirtual)
 					throw new Exception(String.Format("Метод {0} не виртуальный не будет работать перехватчик который собирает ошибки", method.Name));
 			}
+		}
+
+		[Test]
+		public void Delete_synonym()
+		{
+			var excludes = service.ShowExcludes();
+			var exclude = excludes.Content[0];
+			service.DeleteSynonym(exclude.OriginalSynonymId);
+			Assert.That(mailer.Messages[0].Body, Is.StringContaining(String.Format("Продукт: {0}", exclude.Catalog)));
 		}
 
 		[Test]
@@ -113,7 +124,7 @@ namespace ProducerEditor.Tests
 			uint priceCode = 3000;
 			uint firmCode = 3000;
 			uint billingCode = 3000;
-			using(var session = _sessionFactory.OpenSession())
+			using(var session = sessionFactory.OpenSession())
 			{
 				const string ProducerName = "test-producer";
 
@@ -229,7 +240,7 @@ NULL, 0, 0, NULL, 0, 0, 0, 0, 0, NULL, NULL, 0)
 			var equivalents = new string[CountEquivalents] { "test", "новый", "Эквивалент", "1test23", "тест" };
 			uint producerId = 0;
 
-			using (var session = _sessionFactory.OpenSession())
+			using (var session = sessionFactory.OpenSession())
 			{
 				const string ProducerName = "Test producer for creating equivalent";
 				var testProducer = session.Linq<Producer>().FirstOrDefault(p => p.Name == ProducerName);
@@ -267,7 +278,7 @@ values(:CodeFirmCr, :FirmCr, 0)
 				session.Flush();
 			}
 
-			using (var session = _sessionFactory.OpenSession())
+			using (var session = sessionFactory.OpenSession())
 			{
 				var querySelectCountEquivalent = @"
 select 

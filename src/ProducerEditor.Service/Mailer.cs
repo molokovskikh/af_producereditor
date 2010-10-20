@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Configuration;
 using System.Net.Mail;
 
@@ -8,6 +9,10 @@ namespace ProducerEditor.Service
 	{
 		private readonly string _smtpServer;
 		private readonly string _synonymDeleteNotificationMail;
+
+#if DEBUG
+		public List<MailMessage> Messages = new List<MailMessage>();
+#endif
 
 		public Mailer()
 		{
@@ -29,16 +34,24 @@ namespace ProducerEditor.Service
 					synonym.Producer.Name, synonym.Price.Supplier.ShortName, synonym.Price.Supplier.Region.Name));
 		}
 
-		public void SynonymWasDeleted(Synonym synonym)
+		public void SynonymWasDeleted(Synonym synonym, string productName)
 		{
 			var smtp = new SmtpClient(_smtpServer);
-			smtp.Send("tech@analit.net",
+			var message = new MailMessage("tech@analit.net",
 				_synonymDeleteNotificationMail,
 				"Удален синоним наименования",
 				String.Format(@"Синоним: {0}
-Поставщик: {1}
-Регион: {2}
-", synonym.Name, synonym.Price.Supplier.ShortName, synonym.Price.Supplier.Region.Name));			
+Продукт: {1}
+Поставщик: {2}
+Регион: {3}",
+					synonym.Name,
+					productName,
+					synonym.Price.Supplier.ShortName,
+					synonym.Price.Supplier.Region.Name));
+#if DEBUG
+			Messages.Add(message);
+#endif
+			smtp.Send(message);
 		}
 	}
 }
