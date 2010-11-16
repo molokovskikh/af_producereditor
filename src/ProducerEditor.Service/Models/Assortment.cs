@@ -95,7 +95,7 @@ where c.Id = ?id", connection);
 		public virtual void CleanupExcludes(ISession session)
 		{
 			session.CreateSQLQuery(@"
-delete farm.e 
+delete e
 from farm.Excludes e
 join farm.SynonymFirmCr s on e.ProducerSynonym = s.Synonym and s.pricecode = e.pricecode
 join catalogs.Assortment a on a.ProducerId = s.CodeFirmCr and e.CatalogId = a.CatalogId
