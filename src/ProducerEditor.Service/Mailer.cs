@@ -31,7 +31,7 @@ namespace ProducerEditor.Service
 Поставщик: {2}
 Регион: {3}
 ", synonym.Name,
-					synonym.Producer.Name, synonym.Price.Supplier.ShortName, synonym.Price.Supplier.Region.Name));
+					synonym.Producer.Name, synonym.Price.Supplier.Name, synonym.Price.Supplier.Region.Name));
 		}
 
 		public void SynonymWasDeleted(Synonym synonym, string productName)
@@ -46,7 +46,7 @@ namespace ProducerEditor.Service
 Регион: {3}",
 					synonym.Name,
 					productName,
-					synonym.Price.Supplier.ShortName,
+					synonym.Price.Supplier.Name,
 					synonym.Price.Supplier.Region.Name));
 #if DEBUG
 			Messages.Add(message);

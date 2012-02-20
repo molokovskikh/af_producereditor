@@ -73,7 +73,7 @@ e.Id,
 c.Name as Catalog,
 e.ProducerSynonym,
 r.Region,
-cd.ShortName as Supplier,
+s.Name as Supplier,
 ifnull(syn.Synonym, synarch.Synonym) as OriginalSynonym,
 e.OriginalSynonymId,
 e.Operator")
@@ -83,8 +83,8 @@ farm.Excludes e
 	left join farm.Synonym syn on syn.SynonymCode = e.OriginalSynonymId
 	left join farm.SynonymArchive synarch on synarch.SynonymCode = e.OriginalSynonymId
 	join usersettings.PricesData pd on pd.PriceCode = e.PriceCode
-		join usersettings.ClientsData cd on cd.FirmCode = pd.FirmCode
-		join farm.Regions r on r.RegionCode = cd.RegionCode")
+		join Future.Suppliers s on s.Id = pd.FirmCode
+		join farm.Regions r on r.RegionCode = s.HomeRegion")
 				.OrderBy("e.CreatedOn"));
 		}
 

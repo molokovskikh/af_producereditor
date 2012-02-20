@@ -56,7 +56,7 @@ namespace ProducerEditor.Service
 		public IQuery Apply(ISession session)
 		{
 			var filter = "";
-			var sort = "cd.FirmCode";
+			var sort = "s.Id";
 			if (Field == "CatalogId")
 				filter = "p.CatalogId = :CatalogId";
 			else if (Field == "ProducerId")
@@ -68,15 +68,15 @@ namespace ProducerEditor.Service
 			}
 
 			var query = session.CreateSQLQuery(String.Format(@"
-select cd.ShortName as Supplier,
-s.Synonym as ProductSynonym, 
+select s.Name as Supplier,
+sa.Synonym as ProductSynonym, 
 sfc.Synonym as ProducerSynonym
 from farm.core0 c
   join catalogs.Products p on p.Id = c.ProductId
-  join farm.SynonymArchive s on s.SynonymCode = c.SynonymCode
+  join farm.SynonymArchive sa on sa.SynonymCode = c.SynonymCode
   join farm.SynonymFirmCr sfc on sfc.SynonymFirmCrCode = c.SynonymFirmCrCode
   join usersettings.PricesData pd on pd.PriceCode = c.PriceCode
-    join usersettings.ClientsData cd on cd.FirmCode = pd.FirmCode
+    join Future.Suppliers s on s.Id = pd.FirmCode
 where {0}
 group by c.Id
 order by {1}", filter, sort))

@@ -10,7 +10,7 @@ using ProducerEditor.Service.Models;
 
 namespace ProducerEditor.Service
 {
-	[Class(Table = "UserSettings.PricesData")]
+	[Class(Table = "PricesData", Schema = "UserSettings")]
 	public class Price
 	{
 		[Id(0, Column = "PriceCode", Name = "Id")]
@@ -21,21 +21,21 @@ namespace ProducerEditor.Service
 		public virtual Supplier Supplier { get; set; }
 	}
 
-	[Class(Table = "UserSettings.ClientsData")]
+	[Class(Table = "Suppliers", Schema = "Future")]
 	public class Supplier
 	{
-		[Id(0, Name = "Id", Column = "FirmCode")]
+		[Id(0, Name = "Id", Column = "Id")]
 		[Generator(1, Class = "native")]
 		public virtual uint Id { get; set; }
 
 		[Property]
-		public virtual string ShortName { get; set; }
+		public virtual string Name { get; set; }
 
-		[ManyToOne(ClassType = typeof (Region), Column = "RegionCode")]
+		[ManyToOne(ClassType = typeof (Region), Column = "HomeRegion")]
 		public virtual Region Region { get; set; }
 	}
 
-	[Class(Table = "Farm.Regions")]
+	[Class(Table = "Regions", Schema = "Farm")]
 	public class Region
 	{
 		[Id(0, Column = "RegionCode", Name = "Id")]
@@ -106,16 +106,16 @@ namespace ProducerEditor.Service
 select sfc.Synonym as Name,
 p.Name as Producer,
 sfc.SynonymFirmCrCode as Id,
-cd.ShortName as Supplier,
+s.Name as Supplier,
 r.Region,
 c.Id is not null as HaveOffers
 from farm.SynonymFirmCr sfc
   join Catalogs.Producers p on p.Id = sfc.CodeFirmCr
   join usersettings.PricesData pd on sfc.PriceCode = pd.PriceCode
-	join usersettings.clientsdata cd on cd.FirmCode = pd.FirmCode
-	  join farm.Regions r on cd.RegionCode = r.RegionCode
+	join Future.Suppliers s on s.Id = pd.FirmCode
+	  join farm.Regions r on s.HomeRegion = r.RegionCode
   left join farm.Core0 c on c.SynonymFirmCrCode = sfc.SynonymFirmCrCode
-where {0} and cd.BillingCode <> 921
+where {0} and s.Payer <> 921
 group by sfc.SynonymFirmCrCode", filter))
 				.SetParameter("value", query.Value)
 				.SetResultTransformer(new AliasToPropertyTransformer(typeof (ProducerSynonymDto)))
