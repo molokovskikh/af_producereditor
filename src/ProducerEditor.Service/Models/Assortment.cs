@@ -86,7 +86,7 @@ where c.Id = ?id", connection);
 
 		public virtual bool Exist(ISession session)
 		{
-			return (from assortment in session.Linq<Assortment>()
+			return (from assortment in session.Query<Assortment>()
 				where assortment.Producer == Producer
 					&& assortment.CatalogProduct == CatalogProduct
 				select assortment).FirstOrDefault() != null;

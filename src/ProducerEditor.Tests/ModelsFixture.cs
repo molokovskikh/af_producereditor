@@ -26,16 +26,16 @@ namespace ProducerEditor.Tests
 		{
 			using(var session = sessionFactory.OpenSession())
 			{
-				var all = session.Linq<SuspiciousProducerSynonym>().ToList();
+				var all = session.Query<SuspiciousProducerSynonym>().ToList();
 				all.Each(session.Delete);
-				var testSynonym =  session.Linq<ProducerSynonym>().Where(s => s.Name == "test").FirstOrDefault();
+				var testSynonym =  session.Query<ProducerSynonym>().FirstOrDefault(s => s.Name == "test");
 				if (testSynonym != null)
 					session.Delete(testSynonym);
 				session.Flush();
 
 				var synonym = new ProducerSynonym();
-				synonym.Producer = session.Linq<Producer>().First();
-				synonym.Price = session.Linq<Price>().First();
+				synonym.Producer = session.Query<Producer>().First();
+				synonym.Price = session.Query<Price>().First();
 				synonym.Name = "test";
 				session.Save(synonym);
 				session.Flush();

@@ -125,7 +125,7 @@ group by sfc.SynonymFirmCrCode", filter))
 		public virtual bool Exist(ISession session)
 		{
 			return session
-				.Linq<ProducerSynonym>()
+				.Query<ProducerSynonym>()
 				.FirstOrDefault(s => s.Price == Price && s.Producer == Producer && s.Name == Name) != null;
 		}
 	}

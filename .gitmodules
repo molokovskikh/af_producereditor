@@ -1,18 +1,18 @@
 [submodule "src/Common.MySql"]
 	path = src/Common.MySql
-	url = ssh://kvasov@git.analit.net/var/www/git/Common.MySql
+	url = ssh://git.analit.net/var/www/git/Common.MySql
 [submodule "src/Common.Service"]
 	path = src/Common.Service
-	url = ssh://kvasov@git.analit.net/var/www/git/Common.Service
+	url = ssh://git.analit.net/var/www/git/Common.Service
 [submodule "src/Common.Models"]
 	path = src/Common.Models
-	url = ssh://kvasov@git.analit.net/var/www/git/Common.Models
+	url = ssh://git.analit.net/var/www/git/Common.Models
 [submodule "src/Test.Support"]
 	path = src/Test.Support
-	url = ssh://kvasov@git.analit.net/var/www/git/Test.Support
+	url = ssh://git.analit.net/var/www/git/Test.Support
 [submodule "src/Subway"]
 	path = src/Subway
-	url = ssh://kvasov@git.analit.net/var/www/git/Subway
+	url = ssh://git.analit.net/var/www/git/Subway
 [submodule "src/Common.Tools"]
 	path = src/Common.Tools
-	url = ssh://kvasov@git.analit.net/var/www/git/Common.Tools
+	url = ssh://git.analit.net/var/www/git/Common.Tools

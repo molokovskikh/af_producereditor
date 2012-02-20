@@ -9,7 +9,6 @@ using NHibernate;
 using NHibernate.Linq;
 using ProducerEditor.Contract;
 using ProducerEditor.Service.Models;
-using ConnectionManager = Common.MySql.ConnectionManager;
 using ISession=NHibernate.ISession;
 using ProducerEditor.Service.Helpers;
 
@@ -54,9 +53,7 @@ namespace ProducerEditor.Service
 	{
 		private readonly ISessionFactory _factory;
 		private readonly Mailer _mailer;
-		private readonly ConnectionManager _connectionManager = new ConnectionManager();
 		private readonly Executor _execute;
-		private bool StrictMaster;
 
 		public ProducerService(ISessionFactory sessionFactory, Mailer mailer)
 		{
@@ -170,7 +167,7 @@ group by c.ProductId, c.CodeFirmCr;
 
 update ProductsAndProducers pap
 set pap.OffersCount = (select count(*) from farm.core0 c where c.CodeFirmCr = pap.CodeFirmCr and c.ProductId = pap.ProductId),
-    pap.OrdersCount = (select count(*) from orders.orderslist ol where ol.CodeFirmCr = pap.CodeFirmCr and ol.ProductId = pap.ProductId);
+	pap.OrdersCount = (select count(*) from orders.orderslist ol where ol.CodeFirmCr = pap.CodeFirmCr and ol.ProductId = pap.ProductId);
 
 update ProductsAndProducers pap
 set ExistsInRls = exists(select * from farm.core0 c where c.CodeFirmCr = pap.CodeFirmCr and c.ProductId = pap.ProductId and c.PriceCode = 1864);
@@ -178,15 +175,15 @@ set ExistsInRls = exists(select * from farm.core0 c where c.CodeFirmCr = pap.Cod
 select p.CatalogId,
 	   concat(cn.Name, ' ', cf.Form) as Product,
 	   pr.Id as ProducerId,
-       pr.Name as Producer,
+	   pr.Name as Producer,
 	   pap.OrdersCount,
 	   pap.OffersCount,
 	   pap.ExistsInRls
 from ProductsAndProducers pap
   join catalogs.Products as p on p.id = pap.productid
 	  join Catalogs.Catalog as c on p.catalogid = c.id
-    	JOIN Catalogs.CatalogNames cn on cn.id = c.nameid
-    	JOIN Catalogs.CatalogForms cf on cf.id = c.formid
+		JOIN Catalogs.CatalogNames cn on cn.id = c.nameid
+		JOIN Catalogs.CatalogForms cf on cf.id = c.formid
   join Catalogs.Producers pr on pr.Id = pap.CodeFirmCr
 group by pap.ProductId, pap.CodeFirmCr
 order by p.Id;")
@@ -318,7 +315,7 @@ where p.Id = :productId")
 		public virtual void DeleteSuspicious(uint producerSynonymId)
 		{
 			Transaction(session => {
-				var suspicious = session.Linq<SuspiciousProducerSynonym>().Where(s => s.Synonym.Id == producerSynonymId).First();
+				var suspicious = session.Query<SuspiciousProducerSynonym>().First(s => s.Synonym.Id == producerSynonymId);
 				session.Delete(suspicious);
 			});
 		}
@@ -398,10 +395,9 @@ where CodeFirmCr = :ProducerId and ProductId in (
 		[OperationContract]
 		public virtual Pager<ExcludeDto> SearchExcludes(string text, bool showPharmacie, bool showHidden, uint page, bool isRefresh)
 		{
-			StrictMaster = isRefresh;
 			text = "%" + text + "%";
 			return Slave(
-				session => session.Query<ExcludeDto>()
+				session => session.SqlQuery<ExcludeDto>()
 					.Filter("(e.ProducerSynonym like :text or c.Name like :text)", new {text})
 					.Filter("e.DoNotShow = :showHidden", new {showHidden})
 					.Filter("(:showPharmacie = 0 or c.Pharmacie = :showPharmacie)", new {showPharmacie})
@@ -431,7 +427,7 @@ where CodeFirmCr = :ProducerId and ProductId in (
 
 				if (assortment.Exist(s))
 				{
-					assortment = s.Linq<Assortment>()
+					assortment = s.Query<Assortment>()
 						.First(a => a.Producer == assortment.Producer && a.CatalogProduct == assortment.CatalogProduct);
 					assortment.Checked = true;
 				}
@@ -548,12 +544,8 @@ and c.Type = 0";
 
 		public T Slave<T>(Func<ISession, T> func)
 		{
-			using (var connection = _connectionManager.GetConnection())
-			using (var session = _factory.OpenSession(connection))
-			{
-				connection.Open();
+			using (var session = _factory.OpenSession())
 				return func(session);
-			}
 		}
 	}
 }

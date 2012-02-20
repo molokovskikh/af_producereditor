@@ -6,7 +6,7 @@ import System.Net.Mail
 import System.Threading
 import Microsoft.Build.Tasks from "Microsoft.Build.Tasks.v3.5"
 import Microsoft.Build.Utilities.TaskItem from "Microsoft.Build.Utilities.v3.5" as TaskItem
-import ICSharpCode.SharpZipLib.Zip from "lib/ICSharpCode.SharpZipLib.dll"
+import ICSharpCode.SharpZipLib.Zip
 import Bake.Win32.Helper
 import file from lib.bake
 import file from deploy.bake
@@ -153,7 +153,7 @@ Task @buildDeployPackage, [@build, @buildService, @buildInstaller, @cleanDeployP
 	Mv("${output}setup.exe", "${output}${project}.Setup.exe")
 	
 	cert = X509Certificate2(System.IO.File.ReadAllBytes(certPath), password)
-	Sh("\"${Sdk().Path()}/signtool\" sign /sha1 ${cert.Thumbprint} ${output}${project}.Setup.exe")
+	Sh("\"${MicrosoftSdk.Path()}/signtool\" sign /sha1 ${cert.Thumbprint} ${output}${project}.Setup.exe")
 	
 	GeneratePublishPage("${output}/publish.htm", version, project)
 		

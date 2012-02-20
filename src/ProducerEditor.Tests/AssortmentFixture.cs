@@ -66,7 +66,7 @@ namespace ProducerEditor.Tests
 			uint producerId;
 			using(var session = sessionFactory.OpenSession())
 			{
-				var testProducer = session.Linq<Producer>().FirstOrDefault(p => p.Name == "test-producer");
+				var testProducer = session.Query<Producer>().FirstOrDefault(p => p.Name == "test-producer");
 				if (testProducer != null)
 					session.Delete(testProducer);
 				session.Flush();
@@ -75,7 +75,7 @@ namespace ProducerEditor.Tests
 				producer.Name = "test-producer";
 				session.Save(producer);
 
-				var assortment = new Assortment(session.Linq<CatalogProduct>().First(), producer);
+				var assortment = new Assortment(session.Query<CatalogProduct>().First(), producer);
 				session.Save(assortment);
 				session.Flush();
 
@@ -95,7 +95,7 @@ namespace ProducerEditor.Tests
 		{
 			const string ProducerName = "test-producer";
 
-			var testProducer = session.Linq<Producer>().FirstOrDefault(p => p.Name == ProducerName);
+			var testProducer = session.Query<Producer>().FirstOrDefault(p => p.Name == ProducerName);
 			if (testProducer != null)
 				session.Delete(testProducer);
 			session.Flush();
@@ -116,10 +116,10 @@ namespace ProducerEditor.Tests
 			{
 				var producer = CreateTestProducer(session);
 				// Создаем позицию в ассортименте
-				var assortment = new Assortment(session.Linq<CatalogProduct>().First(), producer);
+				var assortment = new Assortment(session.Query<CatalogProduct>().First(), producer);
 				session.Save(assortment);
 				session.Flush();
-				var producerId = assortment.Producer.Id;				
+				var producerId = assortment.Producer.Id;
 				var catalogId = assortment.CatalogProduct.Id;
 				assortmentId = assortment.Id;
 

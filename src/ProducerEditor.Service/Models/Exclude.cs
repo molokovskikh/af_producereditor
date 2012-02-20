@@ -32,11 +32,11 @@ namespace ProducerEditor.Service
 
 		public virtual void Remove(ISession session)
 		{
-			var sameExcludeCount = session.Linq<Exclude>().Count(e => e.Price == Price && e.ProducerSynonym == ProducerSynonym);
+			var sameExcludeCount = session.Query<Exclude>().Count(e => e.Price == Price && e.ProducerSynonym == ProducerSynonym);
 			session.Delete(this);
 			if (sameExcludeCount == 1)
 			{
-				var synonym = session.Linq<ProducerSynonym>()
+				var synonym = session.Query<ProducerSynonym>()
 					.FirstOrDefault(s => s.Price == Price && s.Name == ProducerSynonym && s.Producer == null);
 				if (synonym == null)
 					return;
@@ -65,7 +65,7 @@ namespace ProducerEditor.Service
 
 	public static class QueryExtension
 	{
-		public static TypedQuery<T> Query<T>(this ISession session)
+		public static TypedQuery<T> SqlQuery<T>(this ISession session)
 		{
 			return new TypedQuery<T>(session, new Common.MySql.Query()
 				.Select(@"

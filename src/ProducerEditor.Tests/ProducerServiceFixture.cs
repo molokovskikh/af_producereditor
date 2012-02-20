@@ -128,7 +128,7 @@ namespace ProducerEditor.Tests
 			{
 				const string ProducerName = "test-producer";
 
-				var testProducer = session.Linq<Producer>().FirstOrDefault(p => p.Name == ProducerName);
+				var testProducer = session.Query<Producer>().FirstOrDefault(p => p.Name == ProducerName);
 				if (testProducer != null)
 					session.Delete(testProducer);
 				session.Flush();
@@ -243,7 +243,7 @@ NULL, 0, 0, NULL, 0, 0, 0, 0, 0, NULL, NULL, 0)
 			using (var session = sessionFactory.OpenSession())
 			{
 				const string ProducerName = "Test producer for creating equivalent";
-				var testProducer = session.Linq<Producer>().FirstOrDefault(p => p.Name == ProducerName);
+				var testProducer = session.Query<Producer>().FirstOrDefault(p => p.Name == ProducerName);
 				if (testProducer != null)
 					session.Delete(testProducer);
 				session.Flush();
