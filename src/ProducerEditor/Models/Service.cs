@@ -13,13 +13,6 @@ namespace ProducerEditor.Models
 		public string ProducerSynonym { get; set; }
 		[DataMember]
 		public string Supplier { get; set; }
-		[DataMember]
-		public byte Segment { get; set; }
-
-		public string SegmentAsString()
-		{
-			return Segment == 0 ? "Опт" : "Розница";
-		}
 	}
 
 	[DataContract(Namespace = "http://schemas.datacontract.org/2004/07/ProducerEditor.Service")]

@@ -68,8 +68,7 @@ namespace ProducerEditor.Service
 			}
 
 			var query = session.CreateSQLQuery(String.Format(@"
-select cd.ShortName as Supplier, 
-cd.FirmSegment as Segment,
+select cd.ShortName as Supplier,
 s.Synonym as ProductSynonym, 
 sfc.Synonym as ProducerSynonym
 from farm.core0 c

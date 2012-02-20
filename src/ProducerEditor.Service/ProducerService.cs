@@ -44,8 +44,6 @@ namespace ProducerEditor.Service
 		public string ProducerSynonym { get; set; }
 		[DataMember]
 		public string Supplier { get; set; }
-		[DataMember]
-		public byte Segment { get; set; }
 	}
 
 	[ServiceContract]

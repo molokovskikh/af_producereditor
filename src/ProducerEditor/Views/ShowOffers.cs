@@ -27,10 +27,6 @@ namespace ProducerEditor.Views
 					header.InlineStyle.Set(StyleElementType.Width, WidthHolder.OffersWidths[0]);
 					row.Append(header);
 
-					header = new Header("Сегмент").Sortable("Segment");
-					header.InlineStyle.Set(StyleElementType.Width, WidthHolder.OffersWidths[1]);
-					row.Append(header);
-
 					header = new Header("Наименование").Sortable("ProductSynonym");
 					header.InlineStyle.Set(StyleElementType.Width, WidthHolder.OffersWidths[2]);
 					row.Append(header);
@@ -41,7 +37,6 @@ namespace ProducerEditor.Views
 					return row;
 				},
 				offer => Row.Cells(offer.Supplier,
-					offer.SegmentAsString(),
 					offer.ProductSynonym,
 					offer.ProducerSynonym)));
 
