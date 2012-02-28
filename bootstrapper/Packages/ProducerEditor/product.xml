@@ -9,7 +9,7 @@
   </PackageFiles>
 
   <RelatedProducts>
-    <DependsOnProduct Code="Microsoft.Net.Client.3.5" />
+    <DependsOnProduct Code=".NETFramework,Version=v4.0,Profile=Client" />
   </RelatedProducts>
 
 	<Commands Reboot="Immediate">

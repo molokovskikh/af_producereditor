@@ -93,6 +93,7 @@
   <ItemGroup>
     <Compile Include="AssortmentFixture.cs" />
     <Compile Include="InitializationFixture.cs" />
+    <Compile Include="InstallerFixture.cs" />
     <Compile Include="ModelsFixture.cs" />
     <Compile Include="MvcHelperFixture.cs" />
     <Compile Include="ProducerServiceFixture.cs" />
@@ -103,6 +104,10 @@
     <ProjectReference Include="..\Common.Tools\Common.Tools\Common.Tools.csproj">
       <Project>{72AFCFE8-C9E9-45FA-9698-BEE896A517A3}</Project>
       <Name>Common.Tools</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Installer\Installer.csproj">
+      <Project>{723F5C11-CFB0-4B43-80D7-CDC096BD4EC2}</Project>
+      <Name>Installer</Name>
     </ProjectReference>
     <ProjectReference Include="..\ProducerEditor.Contract\ProducerEditor.Contract.csproj">
       <Project>{A2098DE7-3CE2-4EEB-9233-3ECFFA88DDB9}</Project>

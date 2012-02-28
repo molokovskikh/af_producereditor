@@ -32,14 +32,12 @@ while(i < 10)
 	if (!fileSystem.FolderExists(dir))
 		break;
 	i++;
-}",
-			                  Encoding.GetEncoding(1251));
-			var processInfo = new ProcessStartInfo("cscript.exe")
-			                  	{
-			                  		Arguments = String.Format("\"{0}\" //B //Nologo //T:100", tempFile),
-			                  		CreateNoWindow = true,
-			                  		UseShellExecute = false,
-			                  	};
+}", Encoding.GetEncoding(1251));
+			var processInfo = new ProcessStartInfo("cscript.exe") {
+				Arguments = String.Format("\"{0}\" //B //Nologo //T:100", tempFile),
+				CreateNoWindow = true,
+				UseShellExecute = false,
+			};
 			Process.Start(processInfo);
 		}
 	}

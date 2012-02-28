@@ -67,16 +67,6 @@ FONT.key {font-weight: bold; color: darkgreen}
 </TABLE>
 <!-- End AppInfo -->
 
-
-<!-- Begin Prerequisites -->
-<TABLE ID="BootstrapperSection" BORDER="0"><TR><TD COLSPAN="2">Для работы приложения необходимы следующие компоненты:</TD></TR><TR><TD WIDTH="10">&nbsp;</TD><TD><UL>
-<LI>.NET Framework 3.5 Client Profile</LI>
-</UL></TD></TR><TR><TD COLSPAN="2">
-Нажатие на кнопку "Установить" приведет к установке необходимых компонентов с последующим запуском приложения.
-</TD></TR><TR><TD COLSPAN="2">&nbsp;</TD></TR></TABLE>
-<!-- End Prerequisites -->
-
-
 </TD></TR></TABLE>
 <!-- Begin Buttons -->
 <TR><TD ALIGN="LEFT"><TABLE CELLPADDING="2" CELLSPACING="0" BORDER="0" WIDTH="540" STYLE="cursor:hand" ONCLICK="window.navigate(InstallButton.href)"><TR><TD ALIGN="LEFT"><TABLE CELLPADDING="1" BGCOLOR="#333333" CELLSPACING="0" BORDER="0"><TR><TD><TABLE CELLPADDING="1" BGCOLOR="#cecece" CELLSPACING="0" BORDER="0"><TR><TD><TABLE CELLPADDING="1" BGCOLOR="#efefef" CELLSPACING="0" BORDER="0"><TR><TD WIDTH="20"><SPACER TYPE="block" WIDTH="20" HEIGHT="1" /></TD><TD><A ID="InstallButton" HREF="{name}.Setup.exe">Установить</A></TD><TD width="20"><SPACER TYPE="block" WIDTH="20" HEIGHT="1" /></TD></TR></TABLE></TD></TR></TABLE></TD></TR></TABLE></TD><TD WIDTH="15%" ALIGN="right" /></TR></TABLE></TD></TR>

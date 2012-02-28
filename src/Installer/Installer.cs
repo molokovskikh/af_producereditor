@@ -59,17 +59,37 @@ namespace Installer
 			if (String.IsNullOrEmpty(_updateUri))
 				throw new Exception("Установка обновления невозможна");
 
-			var instaletionRoot = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-			var publisherPath = Path.Combine(instaletionRoot, _publisher);
-			_applicationPath = Path.Combine(Path.Combine(publisherPath, _application), "Application");
+			KnownFolderPrograms = Environment.GetFolderPath(Environment.SpecialFolder.Programs);
+			KnownFolderDesktop = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+
+			_applicationPath = Path.Combine(InstallPath, "Application");
 			_applicationFiles = Path.Combine(_applicationPath, _version);
 			_mainExecutable = Path.Combine(_applicationPath, _application + ".exe");
 
+			BuildShortcuts();
+		}
+
+		private string InstallPath
+		{
+			get
+			{
+				var instaletionRoot = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+				var publisherPath = Path.Combine(instaletionRoot, _publisher);
+				return Path.Combine(publisherPath, _application);
+			}
+		}
+
+		public void BuildShortcuts()
+		{
 			_shortcuts = new[] {
-				Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), _application + ".lnk"),
-				Path.Combine(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Programs), _publisher), _application + ".lnk")
+				Path.Combine(KnownFolderDesktop, _application + ".lnk"),
+				Path.Combine(Path.Combine(KnownFolderPrograms, _publisher), _application + ".lnk")
 			};
 		}
+
+		public string KnownFolderDesktop { get; set; }
+
+		public string KnownFolderPrograms { get; set; }
 
 		public void Install()
 		{
@@ -102,7 +122,7 @@ namespace Installer
 		{
 			CopyFiles();
 			UpdateRegistry();
-			CheckShortcuts();
+			CreateShortcuts();
 
 			Console.Out.WriteLine("Done");
 
@@ -112,23 +132,11 @@ namespace Installer
 			UninstallPrevVersion();
 		}
 
-		private void CheckShortcuts()
+		public void CreateShortcuts()
 		{
-			var programs = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Programs), _publisher);
+			var programs = Path.Combine(KnownFolderPrograms, _publisher);
 			if (!Directory.Exists(programs))
 				Directory.CreateDirectory(programs);
-
-			foreach (var shortcut in _shortcuts)
-			{
-				if (!File.Exists(shortcut))
-					CreateShortcut(shortcut);
-			}
-		}
-
-		private void CreateShortcuts()
-		{
-			var programs = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Programs), _publisher);
-			Directory.CreateDirectory(programs);
 
 			foreach (var shortcut in _shortcuts)
 				CreateShortcut(shortcut);
@@ -136,8 +144,8 @@ namespace Installer
 
 		private void CreateShortcut(string shortcut)
 		{
-			if (shortcut.Contains(".lnk"))
-				shortcut = Path.Combine(shortcut, _application + ".lnk");
+			if (File.Exists(shortcut))
+				return;
 			using (var link = new ShellLink())
 			{
 				link.Target = _mainExecutable;
@@ -164,7 +172,7 @@ namespace Installer
 					app.SetValue("NoModify", 1, RegistryValueKind.DWord);
 					app.SetValue("NoRepair", 1, RegistryValueKind.DWord);
 					app.SetValue("Publisher", _publisher);
-					app.SetValue("UninstallString", Path.Combine(_applicationFiles, String.Format(@"{0}.Installer.exe /uninstall", _application)));
+					app.SetValue("UninstallString", UninstallCommand);
 					app.SetValue("Version", _version);
 				}
 			}
@@ -183,8 +191,8 @@ namespace Installer
 			//Path.Combine(_applicationFiles, "Installer");
 			//Directory.CreateDirectory(installer);
 			File.Copy(Assembly.GetExecutingAssembly().Location,
-			          Path.Combine(installer, Path.GetFileName(Assembly.GetExecutingAssembly().Location)), 
-			          true);
+				Path.Combine(installer, Path.GetFileName(Assembly.GetExecutingAssembly().Location)), 
+				true);
 			var config = Assembly.GetExecutingAssembly().Location + ".config";
 			if (File.Exists(config))
 				File.Copy(config, Path.Combine(installer, Path.GetFileName(config)), true);
@@ -219,9 +227,7 @@ namespace Installer
 		{
 			var tempFile = Path.GetTempFileName();
 			tempFile = Path.ChangeExtension(tempFile, "js");
-			var instaletionRoot = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-			var publisherPath = Path.Combine(instaletionRoot, _publisher);
-			WSHost.DeleteScript(tempFile, publisherPath);
+			WSHost.DeleteScript(tempFile, InstallPath);
 		}
 
 		private void DeleteFiles()
@@ -246,15 +252,16 @@ namespace Installer
 				uninstall.DeleteSubKey(_application);
 		}
 
-		private void DeleteShortcuts()
+		public void DeleteShortcuts()
 		{
 			foreach (var shortcut in _shortcuts)
 			{
 				if (File.Exists(shortcut))
 					File.Delete(shortcut);
 			}
-			var programs = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Programs), _publisher);
-			DeleteDirectory(programs);
+			var programs = Path.Combine(KnownFolderPrograms, _publisher);
+			if (Directory.GetFiles(programs).Length == 0)
+				DeleteDirectory(programs);
 		}
 
 		private void UpdateRegistry()
@@ -265,7 +272,15 @@ namespace Installer
 				app.SetValue("DisplayVersion", _version);
 				app.SetValue("Version", _version);
 				app.SetValue("InstallDate", DateTime.Now.ToString("yyyyMMdd"));
-				app.SetValue("UninstallString", Path.Combine(_applicationFiles, String.Format(@"{0}.Installer.exe /uninstall", _application)));
+				app.SetValue("UninstallString", UninstallCommand);
+			}
+		}
+
+		public string UninstallCommand
+		{
+			get
+			{
+				return Path.Combine(_applicationFiles, @"Installer.exe /uninstall");
 			}
 		}
 

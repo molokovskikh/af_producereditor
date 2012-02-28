@@ -4,14 +4,44 @@ import System.Xml from "C:\\Windows\\Microsoft.NET\\Framework\\v2.0.50727\\Syste
 import System.Security.Cryptography.X509Certificates
 import System.Net.Mail
 import System.Threading
+import Microsoft.Build.Framework
 import Microsoft.Build.Tasks from "Microsoft.Build.Tasks.v3.5"
 import Microsoft.Build.Utilities.TaskItem from "Microsoft.Build.Utilities.v3.5" as TaskItem
 import ICSharpCode.SharpZipLib.Zip
 import Bake.Win32.Helper
+import file from Config.bake
 import file from lib.bake
 import file from deploy.bake
 import file from Migration.bake
 import file from Tools.bake
+
+
+class BakeMsbuildEngine(IBuildEngine):
+
+	ContinueOnError as bool:
+		get:
+			return false
+
+	ProjectFileOfTaskNode as string:
+		get:
+			return ""
+
+	LineNumberOfTaskNode as int:
+		get:
+			return 0
+
+	ColumnNumberOfTaskNode as int:
+		get:
+			return 0
+
+	def LogErrorEvent(a as BuildErrorEventArgs):
+		print a.Message
+
+	def LogWarningEvent(a as BuildWarningEventArgs):
+		print a.Message
+
+	def LogMessageEvent(a as BuildMessageEventArgs):
+		print a.Message
 
 def Clean(path as String):
 	if not Exist(path):
@@ -28,9 +58,9 @@ def GeneratePublishPage(file as string, version as string, projectName as string
 project = "ProducerEditor"
 projectFile = Path.GetFullPath("src/${project}/${project}.csproj")
 output = Path.GetFullPath("./build/${project}");
-version = "0.7.12"
+version = "0.7.13"
 deploymentUrl = "http://publish.analit.net/ProducerEditor/"
-deployDir = "\\\\acdcserv\\WebPublish\\ProducerEditor"
+publisher = "Inforoom"
 
 Global(
 	Project : "ProducerEditor",
@@ -92,8 +122,8 @@ Task @buildDeployPackage, [@build, @buildService, @buildInstaller, @cleanDeployP
 	password = "password"
 	
 	items = (TaskItem("${project}", {"Visible" : "false", "Install" : "true"}),
-			 TaskItem("Microsoft.Net.Client.3.5", {"Visible" : "false", "Install" : "true"}),
-			 TaskItem("Microsoft.Windows.Installer.3.1", {"Visible" : "false", "Install" : "true"}))
+			TaskItem(".NETFramework,Version=v4.0,Profile=Client", {"Visible" : "false", "Install" : "true"}),
+			TaskItem("Microsoft.Windows.Installer.3.1", {"Visible" : "false", "Install" : "true"}))
 	bootstrapper = Path.GetFullPath("build/bootstrapper/")
 		
 	Cp(FileSet("**/*.*", BaseDirectory : Path.GetFullPath("bootstrapper"), Excludes : ["**/.svn/**"]), bootstrapper, true)
@@ -127,6 +157,7 @@ Task @buildDeployPackage, [@build, @buildService, @buildInstaller, @cleanDeployP
 	config = XmlDocument()
 	config.Load("build/bootstrapper/Packages/${project}/Installer.exe.config")
 	config.SelectSingleNode("configuration/appSettings/add[@key=\"Application\"]").Attributes["value"].Value = project
+	config.SelectSingleNode("configuration/appSettings/add[@key=\"Publisher\"]").Attributes["value"].Value = publisher
 	config.SelectSingleNode("configuration/appSettings/add[@key=\"Version\"]").Attributes["value"].Value = version
 	config.SelectSingleNode("configuration/appSettings/add[@key=\"UpdateUri\"]").Attributes["value"].Value = Path.Combine(deploymentUrl, "update.xml")
 	config.Save("build/bootstrapper/Packages/${project}/Installer.exe.config")
@@ -142,14 +173,17 @@ Task @buildDeployPackage, [@build, @buildService, @buildInstaller, @cleanDeployP
 	update.Save("build/${project}.Setup/update.xml")
 	
 	GenerateBootstrapper(ApplicationName : project,
-						 ApplicationRequiresElevation : false,
-						 OutputPath : output,
-						 Path : bootstrapper,
-						 BootstrapperItems : items,
-						 ComponentsLocation : "Absolute",
-						 ComponentsUrl : deploymentUrl,
-						 CopyComponents : true,
-						 Culture : "ru").Execute()
+						ApplicationRequiresElevation : false,
+						OutputPath : output,
+						Path : bootstrapper,
+						BootstrapperItems : items,
+						BuildEngine: BakeMsbuildEngine(),
+						#ComponentsLocation: "HomeSite",
+						#для .net 4 установка зависимостей из папки с приложением не работает
+						ComponentsLocation : "Absolute",
+						ComponentsUrl : deploymentUrl,
+						CopyComponents : true,
+						Culture : "ru").Execute()
 	Mv("${output}setup.exe", "${output}${project}.Setup.exe")
 	
 	cert = X509Certificate2(System.IO.File.ReadAllBytes(certPath), password)
@@ -171,10 +205,11 @@ Task @cleanDeployPackage:
 	Clean("build/bootstrapper")
 	
 Task @deploy, [@buildDeployPackage, @Production, @Migrate, @cleanDeployDir, @deployService, @SendDeployNotification]:
+	deployDir = Path.Combine(Globals.PublishRoot, project)
 	Cp(FileSet("**/*.*", BaseDirectory : "build/${project}.Setup"), deployDir)
 	
 Task @cleanDeployDir:
-	path = deployDir
+	path = Path.Combine(Globals.PublishRoot, project)
 	if not Exist(path):
 		MkDir(path)
 	else:

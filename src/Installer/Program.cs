@@ -13,7 +13,7 @@ namespace Installer
 			XmlConfigurator.Configure();
 			try
 			{
-				var installer = new global::Installer.Installer();
+				var installer = new Installer();
 				if (args.Length > 0 && args[0] == "/uninstall")
 					installer.Uninstall();
 				else if (args.Length > 0 && args[0] == "/upgrade")
