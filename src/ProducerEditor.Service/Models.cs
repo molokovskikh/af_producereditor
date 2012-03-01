@@ -115,7 +115,7 @@ from farm.SynonymFirmCr sfc
 	join Future.Suppliers s on s.Id = pd.FirmCode
 	  join farm.Regions r on s.HomeRegion = r.RegionCode
   left join farm.Core0 c on c.SynonymFirmCrCode = sfc.SynonymFirmCrCode
-where {0} and s.Payer <> 921
+where {0} and s.Payer <> 921 and r.Retail = 0
 group by sfc.SynonymFirmCrCode", filter))
 				.SetParameter("value", query.Value)
 				.SetResultTransformer(new AliasToPropertyTransformer(typeof (ProducerSynonymDto)))

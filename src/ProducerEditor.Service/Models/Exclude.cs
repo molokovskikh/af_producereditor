@@ -85,6 +85,7 @@ farm.Excludes e
 	join usersettings.PricesData pd on pd.PriceCode = e.PriceCode
 		join Future.Suppliers s on s.Id = pd.FirmCode
 		join farm.Regions r on r.RegionCode = s.HomeRegion")
+				.Where("r.Retail = 0")
 				.OrderBy("e.CreatedOn"));
 		}
 
