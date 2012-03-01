@@ -14,7 +14,7 @@ import file from lib.bake
 import file from deploy.bake
 import file from Migration.bake
 import file from Tools.bake
-
+import file from AssemblyInfo.bake
 
 class BakeMsbuildEngine(IBuildEngine):
 
@@ -56,9 +56,10 @@ def GeneratePublishPage(file as string, version as string, projectName as string
 	System.IO.File.AppendAllText(file, result)
 
 project = "ProducerEditor"
+buildRoot = "output"
 projectFile = Path.GetFullPath("src/${project}/${project}.csproj")
-output = Path.GetFullPath("./build/${project}");
-version = "0.7.13"
+output = Path.GetFullPath("$buildRoot/${project}");
+version = GetVersion()
 deploymentUrl = "http://publish.analit.net/ProducerEditor/"
 publisher = "Inforoom"
 
@@ -73,9 +74,9 @@ def Clean(path as String):
 	else:
 		Rm("${path}*", true)
 
-Task @default, [@buildDeployPackage]
+task @default, [@buildDeployPackage]
 
-Task @build, [@clean]:
+task @build, [@clean]:
 	MsBuild(projectFile,
 			Parameters : { "OutDir" : output + "\\" ,
 						   "Configuration" : "release"},
@@ -84,52 +85,52 @@ Task @build, [@clean]:
 	Rm(FileSet("*.*", 
 			   BaseDirectory : output,
 			   Excludes : ["*.dll", "*.exe", "*.config"]))
-Task @clean:
+task @clean:
 	MsBuild(projectFile,
 			Target : "clean",
 			Parameters : { "Configuration" : "release" },
 			FrameworkVersion : "4.0.30319").Execute()
 	Clean(output)
 
-Task @buildService, [@cleanService]:
+task @buildService, [@cleanService]:
 	MsBuild(Path.GetFullPath("src/ProducerEditor.Service/ProducerEditor.Service.csproj"),
-			Parameters : { "OutDir" : Path.GetFullPath("build/ProducerEditor.Service/bin") + "\\" ,
+			Parameters : { "OutDir" : Path.GetFullPath("$buildRoot/ProducerEditor.Service/bin") + "\\" ,
 						   "Configuration" : "release"},
 			FrameworkVersion : "4.0.30319").Execute()
-	Cp("src/ProducerEditor.Service/Web.release.config", "build/ProducerEditor.Service/Web.config", true)
+	Cp("src/ProducerEditor.Service/Web.release.config", "$buildRoot/ProducerEditor.Service/Web.config", true)
 	Rm(FileSet("*.*", 
-			   BaseDirectory : "build/ProducerEditor.Service/bin",
+			   BaseDirectory : "$buildRoot/ProducerEditor.Service/bin",
 			   Excludes : ["*.dll", "*.exe", "*.config"]))
-	Cp(FileSet(["**/*.svc", "**/*.asax"], BaseDirectory : "src/ProducerEditor.Service/"), "build/ProducerEditor.Service/")
+	Cp(FileSet(["**/*.svc", "**/*.asax"], BaseDirectory : "src/ProducerEditor.Service/"), "$buildRoot/ProducerEditor.Service/")
 
-Task @cleanService:
+task @cleanService:
 	MsBuild("src/ProducerEditor.Service/ProducerEditor.Service.csproj",
 			Target : @clean,
 			Parameters : { @Configuration : @release },
 			FrameworkVersion : "4.0.30319").Execute()
-	Clean("build/ProducerEditor.Service")
+	Clean("$buildRoot/ProducerEditor.Service")
 
-Task @deployService, [@buildService, @cleanServiceDeployDir, @SendDeployNotification]: 
-	Cp(FileSet("**/*.*", BaseDirectory : "build/ProducerEditor.Service/"), "\\\\acdcserv\\WebApps\\ProducerEditor.Service\\")
+task @deployService, [@buildService, @cleanServiceDeployDir, @SendDeployNotification]: 
+	Cp(FileSet("**/*.*", BaseDirectory : "$buildRoot/ProducerEditor.Service/"), "\\\\acdcserv\\WebApps\\ProducerEditor.Service\\")
 
-Task @cleanServiceDeployDir:
+task @cleanServiceDeployDir:
 	Clean("\\\\acdcserv\\WebApps\\ProducerEditor.Service\\")
 
-Task @buildDeployPackage, [@build, @buildService, @buildInstaller, @cleanDeployPackage]:
-	output = Path.GetFullPath("build/${project}.Setup/")
-	source = Path.GetFullPath("build/${project}/")
+task @buildDeployPackage, [@GenerateAssemblyInfo, @build, @buildService, @buildInstaller, @cleanDeployPackage]:
+	output = Path.GetFullPath("$buildRoot/${project}.Setup/")
+	source = Path.GetFullPath("$buildRoot/${project}/")
 	certPath = Path.GetFullPath("lib/CodeSign.pfx")
 	password = "password"
 	
 	items = (TaskItem("${project}", {"Visible" : "false", "Install" : "true"}),
 			TaskItem(".NETFramework,Version=v4.0,Profile=Client", {"Visible" : "false", "Install" : "true"}),
 			TaskItem("Microsoft.Windows.Installer.3.1", {"Visible" : "false", "Install" : "true"}))
-	bootstrapper = Path.GetFullPath("build/bootstrapper/")
+	bootstrapper = Path.GetFullPath("$buildRoot/bootstrapper/")
 		
 	Cp(FileSet("**/*.*", BaseDirectory : Path.GetFullPath("bootstrapper"), Excludes : ["**/.svn/**"]), bootstrapper, true)
 	
-	installer = "build/Installer/"
-	Cp(FileSet("*.*", BaseDirectory : installer), "build/bootstrapper/Packages/${project}")
+	installer = "$buildRoot/Installer/"
+	Cp(FileSet("*.*", BaseDirectory : installer), "$buildRoot/bootstrapper/Packages/${project}")
 
 	config = XmlDocument()
 	config.Load("${source}/${project}.exe.config")
@@ -138,29 +139,29 @@ Task @buildDeployPackage, [@build, @buildService, @buildInstaller, @cleanDeployP
 	config.SelectSingleNode("configuration/runtime/n:assemblyBinding/n:probing", namespaceManager).Attributes["privatePath"].Value = version
 	config.Save("${source}/${project}.exe.config")
 	
-	FastZip().CreateZip(Path.Combine(Path.GetFullPath("build/bootstrapper/Packages/${project}"), "${project}.zip"), source, false, null)
+	FastZip().CreateZip(Path.Combine(Path.GetFullPath("$buildRoot/bootstrapper/Packages/${project}"), "${project}.zip"), source, false, null)
 	
 	updateFiles = ""
 	packageFiles = ""
-	for file in FileSet("*.*", BaseDirectory : "build/bootstrapper/Packages/${project}", Excludes : ["product.xml"]).Files:
+	for file in FileSet("*.*", BaseDirectory : "$buildRoot/bootstrapper/Packages/${project}", Excludes : ["product.xml"]).Files:
 		filename = Path.GetFileName(file)
 		updateFiles += "<file>${deploymentUrl}${project}/${filename}</file>"
 		packageFiles += "<PackageFile Name=\"${filename}\" />"
 	
 	product = XmlDocument()
-	product.Load("build/bootstrapper/Packages/${project}/product.xml")
+	product.Load("$buildRoot/bootstrapper/Packages/${project}/product.xml")
 	namespaceManager = XmlNamespaceManager(product.NameTable)
 	namespaceManager.AddNamespace("n", "http://schemas.microsoft.com/developer/2004/01/bootstrapper");
 	product.SelectSingleNode("//n:Product/n:PackageFiles", namespaceManager).InnerXml = packageFiles
-	product.Save("build/bootstrapper/Packages/${project}/product.xml")
+	product.Save("$buildRoot/bootstrapper/Packages/${project}/product.xml")
 
 	config = XmlDocument()
-	config.Load("build/bootstrapper/Packages/${project}/Installer.exe.config")
+	config.Load("$buildRoot/bootstrapper/Packages/${project}/Installer.exe.config")
 	config.SelectSingleNode("configuration/appSettings/add[@key=\"Application\"]").Attributes["value"].Value = project
 	config.SelectSingleNode("configuration/appSettings/add[@key=\"Publisher\"]").Attributes["value"].Value = publisher
 	config.SelectSingleNode("configuration/appSettings/add[@key=\"Version\"]").Attributes["value"].Value = version
 	config.SelectSingleNode("configuration/appSettings/add[@key=\"UpdateUri\"]").Attributes["value"].Value = Path.Combine(deploymentUrl, "update.xml")
-	config.Save("build/bootstrapper/Packages/${project}/Installer.exe.config")
+	config.Save("$buildRoot/bootstrapper/Packages/${project}/Installer.exe.config")
 
 	update = XmlDocument()
 	update.InnerXml = """<?xml version="1.0" encoding="utf-8"?>
@@ -170,7 +171,7 @@ Task @buildDeployPackage, [@build, @buildService, @buildInstaller, @cleanDeployP
 		${updateFiles}
 	</files>
 </update>"""
-	update.Save("build/${project}.Setup/update.xml")
+	update.Save("$buildRoot/${project}.Setup/update.xml")
 	
 	GenerateBootstrapper(ApplicationName : project,
 						ApplicationRequiresElevation : false,
@@ -191,24 +192,24 @@ Task @buildDeployPackage, [@build, @buildService, @buildInstaller, @cleanDeployP
 	
 	GeneratePublishPage("${output}/publish.htm", version, project)
 		
-Task @buildInstaller:
+task @buildInstaller:
 	projectFile = Path.GetFullPath("src/Installer/Installer.csproj")
-	output = Path.GetFullPath("build/Installer/")
+	output = Path.GetFullPath("$buildRoot/Installer/")
 	MsBuild(projectFile,
 			Parameters : { "OutDir" : output,
 						   "Configuration" : "release" },
 			FrameworkVersion : "4.0.30319").Execute()
 	Rm(FileSet("*.*", Excludes : ["*.dll", "*.exe", "*.config"], BaseDirectory : output))
 	
-Task @cleanDeployPackage:
-	Clean("build/${project}.Setup")
-	Clean("build/bootstrapper")
+task @cleanDeployPackage:
+	Clean("$buildRoot/${project}.Setup")
+	Clean("$buildRoot/bootstrapper")
 	
-Task @deploy, [@buildDeployPackage, @Production, @Migrate, @cleanDeployDir, @deployService, @SendDeployNotification]:
+task @deploy, [@buildDeployPackage, @Production, @Migrate, @cleanDeployDir, @deployService, @SendDeployNotification]:
 	deployDir = Path.Combine(Globals.PublishRoot, project)
-	Cp(FileSet("**/*.*", BaseDirectory : "build/${project}.Setup"), deployDir)
+	Cp(FileSet("**/*.*", BaseDirectory : "$buildRoot/${project}.Setup"), deployDir)
 	
-Task @cleanDeployDir:
+task @cleanDeployDir:
 	path = Path.Combine(Globals.PublishRoot, project)
 	if not Exist(path):
 		MkDir(path)
