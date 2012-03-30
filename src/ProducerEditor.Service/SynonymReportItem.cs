@@ -40,7 +40,7 @@ FROM logs.SynonymFirmCrLogs sfcl
   join farm.SynonymFirmCr sfc on sfc.SynonymFirmCrCode = sfcl.SynonymFirmCrCode
   left join farm.SuspiciousSynonyms ss on ss.ProducerSynonymId = sfc.SynonymFirmCrCode
     join usersettings.pricesdata pd on pd.pricecode = sfc.pricecode
-      join Future.Suppliers s on pd.FirmCode = s.Id
+      join Customers.Suppliers s on pd.FirmCode = s.Id
         join farm.Regions r on r.RegionCode = s.HomeRegion
     join Catalogs.Producers pr on pr.Id = sfc.CodeFirmCr
 where ((sfcl.Operation = 0 and sfcl.OperatorName != 'ProcessingSvc') or (sfcl.Operation = 1 and sfcl.OperatorName != 'ProducerEditor' and sfcl.OPeratorHost like 'OPT%')) and sfcl.LogTime between :begin and :end
@@ -74,7 +74,7 @@ FROM logs.SynonymFirmCrLogs sfcl
   join farm.SynonymFirmCr sfc on sfc.SynonymFirmCrCode = sfcl.SynonymFirmCrCode
   join farm.SuspiciousSynonyms ss on ss.ProducerSynonymId = sfc.SynonymFirmCrCode
     join usersettings.pricesdata pd on pd.pricecode = sfc.pricecode
-      join Future.Suppliers s on pd.FirmCode = s.Id
+      join Customers.Suppliers s on pd.FirmCode = s.Id
         join farm.Regions r on r.RegionCode = s.HomeRegion
     join Catalogs.Producers pr on pr.Id = sfc.CodeFirmCr
 where ((sfcl.Operation = 0 and sfcl.OperatorName != 'ProcessingSvc') or (sfcl.Operation = 1 and sfcl.OperatorName != 'ProducerEditor' and sfcl.OPeratorHost like 'OPT%'))

@@ -83,7 +83,7 @@ farm.Excludes e
 	left join farm.Synonym syn on syn.SynonymCode = e.OriginalSynonymId
 	left join farm.SynonymArchive synarch on synarch.SynonymCode = e.OriginalSynonymId
 	join usersettings.PricesData pd on pd.PriceCode = e.PriceCode
-		join Future.Suppliers s on s.Id = pd.FirmCode
+		join Customers.Suppliers s on s.Id = pd.FirmCode
 		join farm.Regions r on r.RegionCode = s.HomeRegion")
 				.Where("r.Retail = 0")
 				.OrderBy("e.CreatedOn"));

@@ -510,7 +510,7 @@ where a.Checked = 1 and a.CatalogId = :catalogId")
 		{
 			var sql = @"
 select distinct c.contactText
-from Future.Suppliers s
+from Customers.Suppliers s
 	join contacts.contact_groups cg on s.ContactGroupOwnerId = cg.ContactGroupOwnerId
 		join contacts.contacts c on cg.Id = c.ContactOwnerId
 where
@@ -521,7 +521,7 @@ and c.Type = 0
 union
 
 select distinct c.contactText
-from Future.Suppliers s
+from Customers.Suppliers s
 	join contacts.contact_groups cg on s.ContactGroupOwnerId = cg.ContactGroupOwnerId
 		join contacts.persons p on cg.id = p.ContactGroupId
 			join contacts.contacts c on p.Id = c.ContactOwnerId

@@ -21,7 +21,7 @@ namespace ProducerEditor.Service
 		public virtual Supplier Supplier { get; set; }
 	}
 
-	[Class(Table = "Suppliers", Schema = "Future")]
+	[Class(Table = "Suppliers", Schema = "Customers")]
 	public class Supplier
 	{
 		[Id(0, Name = "Id", Column = "Id")]
@@ -112,7 +112,7 @@ c.Id is not null as HaveOffers
 from farm.SynonymFirmCr sfc
   join Catalogs.Producers p on p.Id = sfc.CodeFirmCr
   join usersettings.PricesData pd on sfc.PriceCode = pd.PriceCode
-	join Future.Suppliers s on s.Id = pd.FirmCode
+	join Customers.Suppliers s on s.Id = pd.FirmCode
 	  join farm.Regions r on s.HomeRegion = r.RegionCode
   left join farm.Core0 c on c.SynonymFirmCrCode = sfc.SynonymFirmCrCode
 where {0} and s.Payer <> 921 and r.Retail = 0

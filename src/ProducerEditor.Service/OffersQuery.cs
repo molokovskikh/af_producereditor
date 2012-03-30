@@ -76,7 +76,7 @@ from farm.core0 c
   join farm.SynonymArchive sa on sa.SynonymCode = c.SynonymCode
   join farm.SynonymFirmCr sfc on sfc.SynonymFirmCrCode = c.SynonymFirmCrCode
   join usersettings.PricesData pd on pd.PriceCode = c.PriceCode
-    join Future.Suppliers s on s.Id = pd.FirmCode
+    join Customers.Suppliers s on s.Id = pd.FirmCode
 where {0}
 group by c.Id
 order by {1}", filter, sort))
