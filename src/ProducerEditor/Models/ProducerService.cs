@@ -13,7 +13,7 @@ namespace ProducerEditor.Models
 		List<OfferView> ShowOffers(OffersQuery query);
 
 		[OperationContract]
-		IList<ProducerDto> GetProducers();
+		IList<ProducerDto> GetProducers(string text);
 
 		[OperationContract]
 		List<ProductAndProducer> ShowProductsAndProducers(uint producerId);

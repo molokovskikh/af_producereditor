@@ -1,6 +1,7 @@
 ﻿using System.Linq;
 using System.Reflection;
 using System.Windows.Forms;
+using Common.Tools;
 
 namespace ProducerEditor.Infrastructure.UIPatterns
 {
@@ -16,18 +17,22 @@ namespace ProducerEditor.Infrastructure.UIPatterns
 
 		public void Apply(Form view)
 		{
-			var tools = view.Children().OfType<ToolStrip>().First();
-			if (tools == null)
-			{
-				tools = new ToolStrip();
-				view.Controls.Add(tools);
-			}
-			tools.Items.Insert(0, new ToolStripTextBox("SearchText"));
-			tools.Items.Insert(1, new ToolStripButton("Поиск"){Name = "Search"});
-			tools.Items.Insert(2, new ToolStripSeparator());
+			var tools = view.Children().OfType<ToolStrip>().ToArray();
+			var toolStrip = tools.FirstOrDefault(t => ((string)t.Tag).Match("Searchable"));
+			if (toolStrip == null)
+				toolStrip = tools.FirstOrDefault();
 
-			var searchText = ((ToolStripTextBox)tools.Items["SearchText"]);
-			tools.Items["Search"].Click += (s, a) => {
+			if (toolStrip == null)
+			{
+				toolStrip = new ToolStrip();
+				view.Controls.Add(toolStrip);
+			}
+			toolStrip.Items.Insert(0, new ToolStripTextBox("SearchText"));
+			toolStrip.Items.Insert(1, new ToolStripButton("Поиск"){Name = "Search"});
+			toolStrip.Items.Insert(2, new ToolStripSeparator());
+
+			var searchText = ((ToolStripTextBox)toolStrip.Items["SearchText"]);
+			toolStrip.Items["Search"].Click += (s, a) => {
 				Invoke(searchText.Text);
 			};
 			searchText.KeyDown += (s, a) => {

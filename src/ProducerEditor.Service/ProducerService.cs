@@ -115,16 +115,20 @@ namespace ProducerEditor.Service
 		}
 
 		[OperationContract]
-		public virtual IList<ProducerDto> GetProducers()
+		public virtual IList<ProducerDto> GetProducers(string text = "")
 		{
+			text = "%" + (text ?? "") + "%";
 			return Slave(s => s.CreateSQLQuery(@"
 select p.Id,
 p.Name,
 p.Checked,
 exists(select * from farm.core0 c where c.CodeFirmCr = p.Id) as HasOffers
 from Catalogs.Producers p
+where p.Name like :text
+or exists(select * from Catalogs.ProducerEquivalents e where e.Name like :text and e.ProducerId = p.Id)
 order by p.Name")
 				.SetResultTransformer(new AliasToPropertyTransformer(typeof (ProducerDto)))
+				.SetParameter("text", text)
 				.List<ProducerDto>());
 		}
 

@@ -97,8 +97,8 @@
     <Compile Include="ModelsFixture.cs" />
     <Compile Include="MvcHelperFixture.cs" />
     <Compile Include="ProducerServiceFixture.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="View\ShowExcludesFixture.cs" />
+    <Compile Include="View\ShowProducersFixture.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Common.Tools\Common.Tools\Common.Tools.csproj">
@@ -121,9 +121,16 @@
       <Project>{6FCA4BD0-283F-495D-BC9C-C7FB4E3F0140}</Project>
       <Name>ProducerEditor</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Subway\src\Subway\Subway.csproj">
+      <Project>{C6AA1C77-7848-4555-AEFE-6025DF0AA6F1}</Project>
+      <Name>Subway</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Properties\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

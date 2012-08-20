@@ -6,6 +6,7 @@ using Common.Tools;
 using ProducerEditor.Contract;
 using ProducerEditor.Infrastructure;
 using ProducerEditor.Models;
+using ProducerEditor.Presenters;
 using Subway.Dom;
 using Subway.Dom.Base;
 using Subway.Dom.Input;
@@ -22,22 +23,25 @@ namespace ProducerEditor.Views
 {
 	public class ShowProducers : View
 	{
-		private readonly VirtualTable producerTable;
-		private readonly VirtualTable synonymsTable;
-		private readonly ToolStrip toolStrip;
+		public static List<ProducerDto> producers;
+
+		private VirtualTable producerTable;
+		private VirtualTable synonymsTable;
+		private ToolStrip toolStrip;
 
 		private uint BookmarkProducerId = Settings.Default.BookmarkProducerId;
 		private VirtualTable equivalentTable;
-
-		public static List<ProducerDto> producers;
+		private ToolStripTextBox searchText;
 
 		public ShowProducers()
 		{
 			Text = "Производители";
+			searchText = ((ToolStripTextBox) toolStrip.Items["SearchText"]);
+		}
+
+		protected override void Init()
+		{
 			toolStrip = new ToolStrip()
-				.Edit("SearchText")
-				.Button("Поиск", SearchProducer)
-				.Separator()
 				.Button("Переименовать (F2)", ShowRenameView)
 				.Button("Объединить (F3)", ShowJoinView)
 				.Button("Удалить (Delete)", Delete)
@@ -46,16 +50,11 @@ namespace ProducerEditor.Views
 				.Button("Показать в ассортименте", ShowAssortmentForProducer)
 				.Separator()
 				.Button("Создать эквивалент", ShowCreateEquivalentForProducer);
+			toolStrip.Tag = "Searchable";
 
 			var bookmarksToolStrip = new ToolStrip()
 				.Button("К закаладке", MoveToBookmark)
 				.Button("Установить закладку", SetBookmark);
-
-			var searchText = ((ToolStripTextBox) toolStrip.Items["SearchText"]);
-			searchText.KeyDown += (sender, args) => {
-				if (args.KeyCode == Keys.Enter)
-					SearchProducer();
-			};
 
 			producerTable = new VirtualTable(new TemplateManager<List<ProducerDto>, ProducerDto>(
 				() => Row.Headers(new Header("Проверен").AddClass("CheckBoxColumn1"), "Производитель"), 
@@ -67,17 +66,15 @@ namespace ProducerEditor.Views
 						((IDomElementWithChildren)row.Children.Last()).Prepend(new TextBlock {Class = "BookmarkGlyph"});
 					return row;
 				}));
-			producerTable.CellSpacing = 1;
 			producerTable.RegisterBehavior(
-				new RowSelectionBehavior(),
-				new ToolTipBehavior(),
 				new InputController()
 			);
+			producerTable.Host.Name = "Producers";
 			producerTable.Host.KeyDown += (sender, args) => {
 				if (args.KeyCode == Keys.Enter && String.IsNullOrEmpty(searchText.Text))
 					ShowProductsAndProducersOrOffers();
 				else if (args.KeyCode == Keys.Enter)
-					SearchProducer();
+					((ShowProducersPresenter)Presenter).Search(searchText.Text);
 				else if (args.KeyCode == Keys.Escape && !String.IsNullOrEmpty(searchText.Text))
 					searchText.Text = "";
 				else if (args.KeyCode == Keys.Escape && String.IsNullOrEmpty(searchText.Text))
@@ -96,22 +93,16 @@ namespace ProducerEditor.Views
 					searchText.Text += args.KeyChar;
 			};
 
-			var behavior = producerTable.Behavior<IRowSelectionBehavior>();
-			behavior.SelectedRowChanged += (oldRow, newRow) => SelectedProducerChanged(behavior.Selected<ProducerDto>());
-
 			synonymsTable = new VirtualTable(new TemplateManager<List<ProducerSynonymDto>, ProducerSynonymDto>(
 				() =>{
 					var row = Row.Headers();
 					var header = new Header("Синоним").Sortable("Name");
-					header.InlineStyle.Set(StyleElementType.Width, WidthHolder.ProducerWidths[0]);
 					row.Append(header);
 
 					header = new Header("Поставщик").Sortable("Supplier");
-					header.InlineStyle.Set(StyleElementType.Width, WidthHolder.ProducerWidths[1]);
 					row.Append(header);
 
 					header = new Header("Регион").Sortable("Region");
-					header.InlineStyle.Set(StyleElementType.Width, WidthHolder.ProducerWidths[2]);
 					row.Append(header);
 
 					return row;
@@ -124,30 +115,24 @@ namespace ProducerEditor.Views
 						row.AddClass("WithoutOffers");
 					return row;
 				}));
-			synonymsTable.CellSpacing = 1;
-			synonymsTable.RegisterBehavior(new ToolTipBehavior(),
-				new SortInList(),
-				new ColumnResizeBehavior(),
-				new RowSelectionBehavior());
 
+			synonymsTable.Host.Name = "ProducerSynonyms";
 			synonymsTable.Host
 				.InputMap()
 				.KeyDown(Keys.Enter, ShowProductsAndProducersOrOffers)
 				.KeyDown(Keys.Delete, Delete)
 				.KeyDown(Keys.Escape, () => producerTable.Host.Focus());
-			synonymsTable.Behavior<ColumnResizeBehavior>().ColumnResized += column => WidthHolder.Update(synonymsTable, column, WidthHolder.ProducerWidths);
 
 			equivalentTable = new VirtualTable(new TemplateManager<List<string>, string>(
 				() => Row.Headers("Эквивалент"),
 				e => Row.Cells(e)));
+			equivalentTable.Host.Name = "Equivalents";
 
-			var producersToSynonymsSplit = new SplitContainer
-			{
+			var producersToSynonymsSplit = new SplitContainer {
 				Dock = DockStyle.Fill,
 				Orientation = Orientation.Horizontal
 			};
-			var producersToEquivalentsSplit = new SplitContainer
-			{
+			var producersToEquivalentsSplit = new SplitContainer {
 				Dock = DockStyle.Fill,
 			};
 			producersToEquivalentsSplit.Panel1.Controls.Add(producerTable.Host);
@@ -253,24 +238,6 @@ namespace ProducerEditor.Views
 			producerTable.Host.Focus();
 		}
 
-		private void SearchProducer()
-		{
-			var text = toolStrip.Items["SearchText"];
-			var producers = Search(text.Text);
-			text.Text = "";
-			if (producers.Count > 0)
-			{
-				producerTable.TemplateManager.Source = producers;
-				producerTable.Host.Focus();
-			}
-			else
-			{
-				MessageBox.Show("По вашему запросу ничеого не найдено", "Результаты поиска",
-					MessageBoxButtons.OK,
-					MessageBoxIcon.Warning);
-			}
-		}
-
 		private void ShowRenameView()
 		{
 			var producer = producerTable.Selected<ProducerDto>();
@@ -298,18 +265,13 @@ namespace ProducerEditor.Views
 
 		private void SelectedProducerChanged(ProducerDto producer)
 		{
-			if (producer == null)
-				return;
-			Action(s => {
-				synonymsTable.TemplateManager.Source = s.GetSynonyms(producer.Id).ToList();
-				equivalentTable.TemplateManager.Source = s.GetEquivalents(producer.Id).ToList();
-			});
+			((ShowProducersPresenter)Presenter).CurrentChanged(producer);
 		}
 
 		public void UpdateProducers()
 		{
 			Action(s => {
-				producers = s.GetProducers().ToList();
+				producers = s.GetProducers("").ToList();
 			});
 			producerTable.TemplateManager.Source = producers;
 		}
@@ -327,12 +289,6 @@ namespace ProducerEditor.Views
 			{
 				SelectedProducerChanged(producerTable.Selected<ProducerDto>());
 			}
-		}
-
-		public List<ProducerDto> Search(string text)
-		{
-			text = text ?? "";
-			return producers.Where(p => p.Name.ToLower().Contains(text.ToLower())).ToList();
 		}
 	}
 }

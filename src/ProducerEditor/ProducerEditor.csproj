@@ -87,7 +87,9 @@
     <Compile Include="Infrastructure\MessageInspectorRegistrator.cs" />
     <Compile Include="Models\ProducerService.cs" />
     <Compile Include="Models\Service.cs" />
+    <Compile Include="Presenters\Presenter.cs" />
     <Compile Include="Presenters\ShowExcludesPresenter.cs" />
+    <Compile Include="Presenters\ShowProducersPresenter.cs" />
     <Compile Include="Settings.cs" />
     <Compile Include="Infrastructure\Dialog.cs">
       <SubType>Form</SubType>

@@ -21,7 +21,6 @@ namespace ProducerEditor.Views
 			Text = "Исключения";
 			MinimumSize = new Size(640, 480);
 			((ShowExcludesPresenter) Presenter).page = pager;
-			Wire();
 		}
 
 		protected override void Init()

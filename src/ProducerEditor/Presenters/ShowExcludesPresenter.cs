@@ -11,9 +11,8 @@ using ProducerEditor.Views;
 
 namespace ProducerEditor.Presenters
 {
-	public class ShowExcludesPresenter
+	public class ShowExcludesPresenter : Presenter
 	{
-		private ILog _log = LogManager.GetLogger(typeof (ShowExcludesPresenter));
 		private Pager<ExcludeDto> _excludes;
 		private string _searchText;
 		private bool _showHidden;
@@ -21,16 +20,13 @@ namespace ProducerEditor.Presenters
 		private List<ProducerSynonymDto> _synonyms;
 		private List<ProducerOrEquivalentDto> _producers;
 
-		public event Action<string, object> Update;
-
 		public Pager<ExcludeDto> Excludes
 		{
 			get { return _excludes; }
 			set
 			{
 				_excludes = value;
-				if (Update != null)
-					Update("Excludes", value);
+				OnUpdate("Excludes", value);
 			}
 		}
 
@@ -41,8 +37,7 @@ namespace ProducerEditor.Presenters
 			{
 				value = SortAndMark(value);
 				_synonyms = value;
-				if (Update != null)
-					Update("ProducerSynonyms", value);
+				OnUpdate("ProducerSynonyms", value);
 			}
 		}
 
@@ -52,8 +47,7 @@ namespace ProducerEditor.Presenters
 			set
 			{
 				_producers = value;
-				if (Update != null)
-					Update("ProducerOrEquivalents", value);
+				OnUpdate("ProducerOrEquivalents", value);
 			}
 		}
 
@@ -199,41 +193,6 @@ namespace ProducerEditor.Presenters
 				s.CreateEquivalent(_currentExclude.Id, current.Id);
 			});
 			Refresh();
-		}
-
-		protected T Request<T>(Func<ProducerService, T> func)
-		{
-			var result = default(T);
-			WithService(s => {
-				result = func(s);
-			});
-			return result;
-		}
-
-		protected void Action(Action<ProducerService> action)
-		{
-			WithService(action);
-		}
-
-		protected void WithService(Action<ProducerService> action)
-		{
-			ICommunicationObject communicationObject = null;
-			try
-			{
-				var chanel = FactoryHolder.Factory.CreateChannel();
-				communicationObject = chanel as ICommunicationObject;
-				action(chanel);
-				communicationObject.Close();
-			}
-			catch (Exception e)
-			{
-				if (communicationObject != null 
-					&& communicationObject.State != CommunicationState.Closed)
-					communicationObject.Abort();
-
-				_log.Error("Ошибка при обращении к серверу", e);
-				throw;
-			}
 		}
 	}
 }

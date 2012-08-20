@@ -32,7 +32,7 @@ namespace ProducerEditor.Infrastructure
 	{
 		private ILog _log = LogManager.GetLogger(typeof (Form));
 
-		protected object Presenter;
+		public object Presenter;
 
 		public IBinder[] binders = new IBinder[] {
 			new UpdateBinder(),
@@ -54,6 +54,10 @@ namespace ProducerEditor.Infrastructure
 			var buttons = this.Children().OfType<ToolStrip>().SelectMany(t => t.Items.Cast<ToolStripItem>().OfType<ToolStripButton>());
 			foreach (var button in buttons)
 				WireButtonTo(button, Presenter);
+
+			if (Presenter != null) {
+				Wire();
+			}
 		}
 
 		private void WireBinding()
@@ -186,7 +190,7 @@ namespace ProducerEditor.Infrastructure
 			}
 		}
 
-		protected void Wire()
+		private void Wire()
 		{
 			var patterns = DetectPatterns(Presenter);
 			foreach (var pattern in patterns)
