@@ -92,6 +92,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AssortmentFixture.cs" />
+    <Compile Include="BaseFixture.cs" />
+    <Compile Include="FixtureSetup.cs" />
     <Compile Include="InitializationFixture.cs" />
     <Compile Include="InstallerFixture.cs" />
     <Compile Include="ModelsFixture.cs" />
@@ -126,9 +128,15 @@
       <Project>{C6AA1C77-7848-4555-AEFE-6025DF0AA6F1}</Project>
       <Name>Subway</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Test.Support\Test.Support\Test.Support.csproj">
+      <Project>{A215E837-1208-49E3-AF93-A9612223122C}</Project>
+      <Name>Test.Support</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <None Include="App.config" />
+    <None Include="App.config">
+      <SubType>Designer</SubType>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Properties\" />

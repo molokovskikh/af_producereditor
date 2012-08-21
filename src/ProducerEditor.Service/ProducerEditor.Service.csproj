@@ -88,7 +88,9 @@
   <ItemGroup>
     <Content Include="Global.asax" />
     <Content Include="ProducerService.svc" />
-    <Content Include="Web.config" />
+    <Content Include="Web.config">
+      <SubType>Designer</SubType>
+    </Content>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Models\Assortment.cs" />

@@ -25,7 +25,8 @@ namespace ProducerEditor.Infrastructure
 			toolStrip.Items["Prev"].Click += (s, a) => move((ToolStripButton)s);
 			toolStrip.Items["Next"].Click += (s, a) => move((ToolStripButton)s);
 
-			toolStrip.UpdatePaginator(pager);
+			if (pager != null)
+				toolStrip.UpdatePaginator(pager);
 
 			var form = toolStrip.Parent;
 			if (form == null)
@@ -35,7 +36,7 @@ namespace ProducerEditor.Infrastructure
 			var tables = controls.Where(control => control is TableHost);
 			Control table;
 			if (tables.Count() > 1)
-				table = tables.Where(t => t.Tag != null).Where(control => String.Compare(control.Tag.ToString(), TableName) == 0).First();
+				table = tables.Where(t => t.Tag != null).First(control => String.Compare(control.Tag.ToString(), TableName) == 0);
 			else
 				table = tables.First();
 			table.InputMap()

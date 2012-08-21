@@ -15,6 +15,7 @@ import file from deploy.bake
 import file from Migration.bake
 import file from Tools.bake
 import file from AssemblyInfo.bake
+import file from Db.bake
 
 class BakeMsbuildEngine(IBuildEngine):
 
@@ -65,7 +66,8 @@ publisher = "Inforoom"
 
 Global(
 	Project : "ProducerEditor",
-	HumanReadableName : "Редактор производителей"
+	HumanReadableName : "Редактор производителей",
+	Profile: @catalog
 )
 
 def Clean(path as String):

@@ -8,6 +8,7 @@ using NHibernate;
 using NHibernate.Linq;
 using ProducerEditor.Service;
 using ProducerEditor.Service.Models;
+using Test.Support.Suppliers;
 
 namespace ProducerEditor.Tests
 {
@@ -24,6 +25,28 @@ namespace ProducerEditor.Tests
 			mailer = new Mailer();
 			sessionFactory = Global.InitializeNHibernate();
 			service = new ProducerService(sessionFactory, mailer);
+
+			CreateExclude();
+		}
+
+		private void CreateExclude()
+		{
+			using(var session = sessionFactory.OpenSession()) {
+				var supplier = TestSupplier.Create();
+				var price = session.Load<Price>(supplier.Prices[0].Id);
+				var exclude = new Exclude {
+					CatalogProduct = session.Query<CatalogProduct>().First(),
+					Price = price,
+					ProducerSynonym = "Тетовый синоним",
+				};
+				var producerSynonym = new ProducerSynonym {
+					Name = "Тетовый синоним",
+					Price = price,
+					Producer = session.Query<Producer>().First()
+				};
+				session.Save(producerSynonym);
+				session.Save(exclude);
+			}
 		}
 
 		[Test]
@@ -114,71 +137,6 @@ namespace ProducerEditor.Tests
 				.GetSynonyms(producer.Id)
 				.FirstOrDefault(s => s.Name == exclude.ProducerSynonym && s.Supplier == exclude.Supplier);
 			Assert.That(synonym, Is.Not.Null, "не создали синоним");
-		}
-
-		[Test]
-		public void TestCreateEquivalentForProducer()
-		{
-			var equivalents = new[] { "test", "новый", "Эквивалент", "1test23", "тест" };
-			uint producerId;
-
-			using (var session = sessionFactory.OpenSession())
-			{
-				const string ProducerName = "Test producer for creating equivalent";
-				var testProducer = session.Query<Producer>().FirstOrDefault(p => p.Name == ProducerName);
-				if (testProducer != null)
-					session.Delete(testProducer);
-				session.Flush();
-
-				var producer = new Producer();
-				producer.Name = ProducerName;
-				session.Save(producer);
-				producerId = producer.Id;
-				session.Flush();
-
-				var queryDeleteFirmCr = @"
-delete from farm.catalogfirmcr
-where CodeFirmCr = :CodeFirmCr or FirmCr = :FirmCr
-";
-				var queryInsertFirmCr = @"
-insert into farm.catalogfirmcr
-values(:CodeFirmCr, :FirmCr, 0)
-";
-				// Пытаемся удалить запись из таблицы farm.CatalogFirmCr
-				session.CreateSQLQuery(queryDeleteFirmCr)
-					.SetParameter("CodeFirmCr", producerId)
-					.SetParameter("FirmCr", ProducerName).ExecuteUpdate();
-				// Вставляем запись для созданного производителя в таблицу farm.CatalogFirmCr
-				session.CreateSQLQuery(queryInsertFirmCr)
-					.SetParameter("CodeFirmCr", producerId)
-					.SetParameter("FirmCr", ProducerName).ExecuteUpdate();
-
-				// Создаем эквиваленты
-				foreach (var equivalent in equivalents)
-					service.CreateEquivalentForProducer(producer.Id, equivalent);
-
-				session.Flush();
-			}
-
-			using (var session = sessionFactory.OpenSession())
-			{
-				var querySelectCountEquivalent = @"
-select 
-	count(Id) 
-from
-	Catalogs.ProducerEquivalents 
-where 
-	ProducerId = :ProducerId and Name = :EqName
-";
-				foreach (var equivalent in equivalents)
-				{
-					var count = Convert.ToInt32(session.CreateSQLQuery(querySelectCountEquivalent)
-						.SetParameter("ProducerId", producerId)
-						.SetParameter("EqName", equivalent)
-						.UniqueResult());
-					Assert.IsTrue(count == 1);
-				}
-			}
 		}
 	}
 }

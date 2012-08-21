@@ -15,80 +15,55 @@ using Rhino.Mocks;
 namespace ProducerEditor.Tests
 {
 	[TestFixture]
-	public class AssortmentFixture
+	public class AssortmentFixture : BaseFixture
 	{
-		private ISessionFactory sessionFactory;
-
-		[SetUp]
-		public void Setup()
-		{
-			XmlConfigurator.Configure();
-			sessionFactory = Global.InitializeNHibernate();
-		}
-
 		[Test]
 		public void Total()
 		{
-			using (var session = sessionFactory.OpenSession())
-			{
-				var assortments = Assortment.Search(session, 0, null);
-				Assert.That(assortments.TotalPages, Is.GreaterThan(0));
-			}
+			var assortments = Assortment.Search(session, 0, null);
+			Assert.That(assortments.TotalPages, Is.GreaterThan(0));
 		}
 
 		[Test]
 		public void Get_page()
 		{
-			using (var session = sessionFactory.OpenSession())
-			{
-				var assortments = Assortment.Search(session, 3, null);
-				Console.WriteLine(assortments.Content[3].Id);
-				Assert.That(Assortment.GetPage(session, assortments.Content[3].Id), Is.EqualTo(3));
-			}
+			var assortments = Assortment.Search(session, 3, null);
+			Assert.That(Assortment.GetPage(session, assortments.Content[3].Id), Is.GreaterThan(3));
 		}
 
 		[Test]
 		public void Search_text()
 		{
-			using (var session = sessionFactory.OpenSession())
-			{
-				var assortments = Assortment.Search(session, 5, null);
-				var findedAssortments = Assortment.Search(session, 0, new Query("ProducerId", assortments.Content[1].Product));
-				Assert.That(findedAssortments.Content.Count, Is.EqualTo(1));
-				Assert.That(findedAssortments.Page, Is.EqualTo(0));
-				Assert.That(findedAssortments.TotalPages, Is.EqualTo(1));
-			}
+			var assortments = Assortment.Search(session, 5, null);
+			var findedAssortments = Assortment.Search(session, 0, new Query("ProducerId", assortments.Content[1].ProducerId));
+			Assert.That(findedAssortments.Content.Count, Is.GreaterThan(1));
+			Assert.That(findedAssortments.Page, Is.EqualTo(0));
+			Assert.That(findedAssortments.TotalPages, Is.EqualTo(1));
 		}
 
 		[Test]
 		public void Get_assortment_for_producer()
 		{
-			uint producerId;
-			using(var session = sessionFactory.OpenSession())
-			{
-				var testProducer = session.Query<Producer>().FirstOrDefault(p => p.Name == "test-producer");
-				if (testProducer != null)
-					session.Delete(testProducer);
-				session.Flush();
+			var testProducer = session.Query<Producer>().FirstOrDefault(p => p.Name == "test-producer");
+			if (testProducer != null)
+				session.Delete(testProducer);
+			session.Flush();
 
-				var producer = new Producer();
-				producer.Name = "test-producer";
-				session.Save(producer);
+			var producer = new Producer();
+			producer.Name = "test-producer";
+			session.Save(producer);
 
-				var assortment = new Assortment(session.Query<CatalogProduct>().First(), producer);
-				session.Save(assortment);
-				session.Flush();
+			var assortment = new Assortment(session.Query<CatalogProduct>().First(), producer);
+			session.Save(assortment);
+			session.Flush();
 
-				producerId = producer.Id;
-			}
+			var producerId = producer.Id;
+			session.Clear();
 
-			using (var session = sessionFactory.OpenSession())
-			{
-				var assortments = Assortment.Search(session, 0, new Query("ProducerId", producerId));
-				Assert.That(assortments.Content.Count, Is.EqualTo(1));
-				var assortment = assortments.Content.Single();
-				Assert.That(assortment.Producer, Is.EqualTo("test-producer"));
-			}
+			var assortments = Assortment.Search(session, 0, new Query("ProducerId", producerId));
+			Assert.That(assortments.Content.Count, Is.EqualTo(1));
+			var assortment1 = assortments.Content.Single();
+			Assert.That(assortment1.Producer, Is.EqualTo("test-producer"));
 		}
 
 		private Producer CreateTestProducer(ISession session)
@@ -104,114 +79,6 @@ namespace ProducerEditor.Tests
 			producer.Name = ProducerName;
 			session.Save(producer);
 			return producer;
-		}
-
-		[Test]
-		public void DeleteAssortmentPosition()
-		{
-			uint assortmentId;
-			uint countOffers = 0;
-			uint startOfferId = 118375;
-			using (var session = sessionFactory.OpenSession())
-			{
-				var producer = CreateTestProducer(session);
-				// Создаем позицию в ассортименте
-				var assortment = new Assortment(session.Query<CatalogProduct>().First(), producer);
-				session.Save(assortment);
-				session.Flush();
-				var producerId = assortment.Producer.Id;
-				var catalogId = assortment.CatalogProduct.Id;
-				assortmentId = assortment.Id;
-
-				var queryGetProductId = @"
-select Id 
-from Catalogs.Products
-where CatalogId = :CatalogId
-";
-				// Получаем идентификаторы продуктов по Id каталога
-				var productsIds = session.CreateSQLQuery(queryGetProductId)
-					.SetParameter("CatalogId", catalogId).List();
-
-				// Создаем запись предложений (записи в Core0)
-				var queryInsertOffer = @"
-insert into farm.Core0
-values(:OfferId, 307, :ProductId, :CodeFirmCr, 1808805, 9832, :EmptyString, 
-	:EmptyString, :EmptyString, :EmptyString, :EmptyString, :EmptyString, 
-	:EmptyString, :EmptyString, 0, 0, NULL, 0, NULL, NULL, NULL, NULL, NULL, now(), now())";
-
-				var offerId = startOfferId;
-				foreach (var productId in productsIds)
-				{
-					session.CreateSQLQuery("delete from farm.Core0 where Id = :OfferId")
-						.SetParameter("OfferId", offerId)
-						.ExecuteUpdate();
-
-					session.CreateSQLQuery(queryInsertOffer)
-							.SetParameter("OfferId", offerId)
-							.SetParameter("ProductId", productId)
-							.SetParameter("CodeFirmCr", producerId)
-							.SetParameter("EmptyString", "")
-							.ExecuteUpdate();
-					offerId++;
-					countOffers++;
-				}
-				session.Flush();				
-			}
-
-			var service = new ProducerService(Global.InitializeNHibernate(), new Mailer());
-			service.DeleteAssortment(assortmentId);
-
-			using (var session = sessionFactory.OpenSession())
-			{				
-				var querySelect = @"
-select Id
-from farm.Core0
-where Id = :OfferId
-";
-				var offerId = startOfferId;
-				for (var i = 0; i < countOffers; i++)
-				{
-					var count = session.CreateSQLQuery(querySelect)
-						.SetParameter("OfferId", offerId++)
-						.List().Count;
-					session.Flush();
-					Assert.IsTrue(count == 0, "Для данной записи в ассортименте не все предложения были удалены");
-				}
-			}
-		}
-
-		private delegate void TestDelegate(Action<ISession> action);
-
-		private static MySqlException GetMySqlException(int errorCode, string message)
-		{
-			return (MySqlException)typeof(MySqlException)
-				.GetConstructor(BindingFlags.Instance | BindingFlags.NonPublic, null, new[] { typeof(string), typeof(int) }, null)
-				.Invoke(new object[] { message, errorCode });
-		}
-
-		[Test]
-		public void Delete_assortment_with_deadlock()
-		{
-			var _sessionFactory = Global.InitializeNHibernate();
-			var count = 0;
-			try
-			{
-				var repository = new MockRepository();
-				var callback = new TestDelegate(action => {
-					count++;
-					throw GetMySqlException(1205, "test");
-				});
-				var executor = (Executor) repository.StrictMock(typeof (Executor), _sessionFactory);
-				var service = new ProducerService(_sessionFactory, new Mailer(), executor);
-				executor.Stub((ex) => ex.WithTransaction(s => { })).IgnoreArguments().Do(callback);
-				repository.ReplayAll();
-
-				service.DeleteAssortment(1);
-			}
-			catch (Exception)
-			{
-				Assert.That(count, Is.EqualTo(50));
-			}
 		}
 	}
 }
