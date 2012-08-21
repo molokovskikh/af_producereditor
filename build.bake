@@ -223,4 +223,4 @@ task @cleanDeployDir:
 		for dir in Directory.GetDirectories(path):
 			Directory.Delete(dir, true)
 
-task @BeforeTest, [@RunMySql]
+task @BeforeTest, [@RunMySql, PrepareLocal]
