@@ -40,8 +40,6 @@ namespace ProducerEditor.Presenters
 			}
 			catch (Exception e)
 			{
-				Console.WriteLine(e);
-				_log.Error("Ошибка при обращении к серверу", e);
 				if (communicationObject != null
 					&& communicationObject.State != CommunicationState.Closed)
 					communicationObject.Abort();

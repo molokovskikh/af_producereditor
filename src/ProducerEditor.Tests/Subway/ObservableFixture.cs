@@ -22,7 +22,6 @@ namespace ProducerEditor.Tests.Subway
 			var list = new ObservableCollection<string>();
 			table.TemplateManager.Source = list;
 			list.Add("test");
-			Console.WriteLine(table.ViewPort.ToString());
 			Assert.That(table.ViewPort.ToString(), Is.StringContaining("test"));
 		}
 	}

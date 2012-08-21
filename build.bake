@@ -16,6 +16,8 @@ import file from Migration.bake
 import file from Tools.bake
 import file from AssemblyInfo.bake
 import file from Db.bake
+import file from Test.bake
+import file from MySql.bake
 
 class BakeMsbuildEngine(IBuildEngine):
 
@@ -67,7 +69,8 @@ publisher = "Inforoom"
 Global(
 	Project : "ProducerEditor",
 	HumanReadableName : "Редактор производителей",
-	Profile: @catalog
+	Profile: @catalog,
+	Port: 3311
 )
 
 def Clean(path as String):
@@ -210,7 +213,7 @@ task @cleanDeployPackage:
 task @deploy, [@CheckScmChanges, @buildDeployPackage, @Production, @Migrate, @cleanDeployDir, @deployService, @SendDeployNotification]:
 	deployDir = Path.Combine(Globals.PublishRoot, project)
 	Cp(FileSet("**/*.*", BaseDirectory : "$buildRoot/${project}.Setup"), deployDir)
-	
+
 task @cleanDeployDir:
 	path = Path.Combine(Globals.PublishRoot, project)
 	if not Exist(path):
@@ -219,3 +222,5 @@ task @cleanDeployDir:
 		Rm(FileSet("**/*.*", BaseDirectory : path, Excludes : ["**/web.config"]), true)
 		for dir in Directory.GetDirectories(path):
 			Directory.Delete(dir, true)
+
+task @BeforeTest, [@RunMySql]
