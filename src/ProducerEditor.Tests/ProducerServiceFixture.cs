@@ -34,17 +34,24 @@ namespace ProducerEditor.Tests
 			using(var session = sessionFactory.OpenSession()) {
 				var supplier = TestSupplier.Create();
 				var price = session.Load<Price>(supplier.Prices[0].Id);
-				var exclude = new Exclude {
-					CatalogProduct = session.Query<CatalogProduct>().First(),
-					Price = price,
-					ProducerSynonym = "Тетовый синоним",
-				};
 				var producerSynonym = new ProducerSynonym {
 					Name = "Тетовый синоним",
 					Price = price,
 					Producer = session.Query<Producer>().First()
 				};
+				var productSynonym = new Synonym {
+					Name = "Тетовый синоним",
+					Price = price,
+					ProductId = session.Query<CatalogProduct>().First().Id
+				};
+				var exclude = new Exclude {
+					CatalogProduct = session.Query<CatalogProduct>().First(),
+					Price = price,
+					ProducerSynonym = "Тетовый синоним",
+					OriginalSynonym = productSynonym,
+				};
 				session.Save(producerSynonym);
+				session.Save(productSynonym);
 				session.Save(exclude);
 			}
 		}
@@ -66,7 +73,7 @@ namespace ProducerEditor.Tests
 		public void Delete_synonym()
 		{
 			var excludes = service.ShowExcludes();
-			var exclude = excludes.Content[0];
+			var exclude = excludes.Content.First(e => e.OriginalSynonymId != 0);
 			service.DeleteSynonym(exclude.OriginalSynonymId);
 			Assert.That(mailer.Messages[0].Body, Is.StringContaining(String.Format("Продукт: {0}", exclude.Catalog)));
 		}

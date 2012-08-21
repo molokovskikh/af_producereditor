@@ -22,14 +22,17 @@ namespace ProducerEditor.Service
 		[Property]
 		public virtual string ProducerSynonym { get; set; }
 
+		[Property]
+		public virtual bool DoNotShow { get; set; }
+
 		[ManyToOne(ClassType = typeof (CatalogProduct), Column = "CatalogId")]
 		public virtual CatalogProduct CatalogProduct { get; set; }
 
 		[ManyToOne(ClassType = typeof (Price), Column = "PriceCode")]
 		public virtual Price Price { get; set; }
 
-		[Property]
-		public virtual bool DoNotShow { get; set; }
+		[ManyToOne(ClassType = typeof(Synonym), Column = "OriginalSynonymId")]
+		public virtual Synonym OriginalSynonym { get; set; }
 
 		public virtual void Remove(ISession session)
 		{
