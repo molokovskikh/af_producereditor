@@ -1,16 +1,16 @@
 using System.ServiceModel;
 using System.ServiceModel.Dispatcher;
-using ProducerEditor.Models;
+using ProducerEditor.Contract;
 
 namespace ProducerEditor.Infrastructure
 {
 	public class FactoryHolder
 	{
-		public static ChannelFactory<ProducerService> Factory;
+		public static ChannelFactory<IProducerService> Factory;
 
 		static FactoryHolder()
 		{
-			Factory = new ChannelFactory<ProducerService>(Settings.Binding, Settings.Endpoint);
+			Factory = new ChannelFactory<IProducerService>(Settings.Binding, Settings.Endpoint);
 			Factory.Endpoint.Behaviors.Add(new MessageInspectorRegistrator(new IClientMessageInspector[] {
 				new UserNameInspector()
 			}));

@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Forms;
+using ProducerEditor.Contract;
 using ProducerEditor.Infrastructure;
-using ProducerEditor.Models;
 using Subway.Dom;
 using Subway.Dom.Styles;
 using Subway.Helpers;
@@ -19,7 +19,7 @@ namespace ProducerEditor.Views
 			MinimumSize = new Size(640, 480);
 			KeyPreview = true;
 			Text = "Предложения";
-			var offersTable = new VirtualTable(new TemplateManager<List<OfferView>, OfferView>(
+			var offersTable = new VirtualTable(new TemplateManager<OfferView>(
 				() => {
 					var row = Row.Headers();
 

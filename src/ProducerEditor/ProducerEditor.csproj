@@ -70,6 +70,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Infrastructure\Binders\CurrentBinder.cs" />
+    <Compile Include="Infrastructure\Binders\ButtonBinder.cs" />
     <Compile Include="Infrastructure\FactoryHolder.cs" />
     <Compile Include="Infrastructure\UIContributor.cs" />
     <Compile Include="Infrastructure\UIPatterns\IUIPattern.cs" />
@@ -85,8 +86,6 @@
     <Compile Include="Infrastructure\UserNameInspector.cs" />
     <Compile Include="Initializer.cs" />
     <Compile Include="Infrastructure\MessageInspectorRegistrator.cs" />
-    <Compile Include="Models\ProducerService.cs" />
-    <Compile Include="Models\Service.cs" />
     <Compile Include="Presenters\Presenter.cs" />
     <Compile Include="Presenters\ShowExcludesPresenter.cs" />
     <Compile Include="Presenters\ShowProducersPresenter.cs" />
@@ -161,6 +160,7 @@
       <Name>Subway</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

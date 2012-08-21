@@ -4,7 +4,6 @@ using System.Drawing;
 using System.Windows.Forms;
 using ProducerEditor.Contract;
 using ProducerEditor.Infrastructure;
-using ProducerEditor.Models;
 using ProducerEditor.Presenters;
 using Subway.Dom;
 using Subway.Dom.Styles;
@@ -25,7 +24,7 @@ namespace ProducerEditor.Views
 
 		protected override void Init()
 		{
-			var excludes = new VirtualTable(new TemplateManager<List<ExcludeDto>, ExcludeDto>(
+			var excludes = new VirtualTable(new TemplateManager<ExcludeDto>(
 				() => {
 					var row = Row.Headers(
 						new Header("Продукт").Sortable("Catalog"),
@@ -43,7 +42,7 @@ namespace ProducerEditor.Views
 			excludes.Host.Name = "Excludes";
 			excludes.Host.Tag = PaginatorExtention.TableName;
 
-			var synonymsTable = new VirtualTable(new TemplateManager<List<ProducerSynonymDto>, ProducerSynonymDto>(
+			var synonymsTable = new VirtualTable(new TemplateManager<ProducerSynonymDto>(
 				() => {
 					return Row.Headers(
 						new Header("Синоним").Sortable("Name"), 
@@ -64,7 +63,7 @@ namespace ProducerEditor.Views
 				}));
 			synonymsTable.Host.Name = "ProducerSynonyms";
 
-			var assortment = new VirtualTable(new TemplateManager<List<ProducerOrEquivalentDto>, ProducerOrEquivalentDto>(
+			var assortment = new VirtualTable(new TemplateManager<ProducerOrEquivalentDto>(
 				() => Row.Headers(new Header("Производитель").Sortable("Producer")),
 				synonym => Row.Cells(synonym.Name)));
 			assortment.Host.Name = "ProducerOrEquivalents";

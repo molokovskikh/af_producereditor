@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
+using ProducerEditor.Contract;
 using ProducerEditor.Infrastructure;
-using ProducerEditor.Models;
 using Subway.Dom;
 using Subway.Dom.Styles;
 using Subway.Helpers;
@@ -23,7 +23,7 @@ namespace ProducerEditor.Views
 		public ShowSynonymReport(IList<SynonymReportItem> items)
 		{
 			Text = "Отчет о сопоставлениях";
-			report = new VirtualTable(new TemplateManager<List<SynonymReportItem>, SynonymReportItem>(
+			report = new VirtualTable(new TemplateManager<SynonymReportItem>(
 				() => { 
 					var row = new Row();
 

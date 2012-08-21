@@ -2,6 +2,7 @@
 using System.Runtime.Serialization;
 using Common.Models.Helpers;
 using NHibernate;
+using ProducerEditor.Contract;
 
 namespace ProducerEditor.Service
 {
@@ -17,9 +18,7 @@ namespace ProducerEditor.Service
 			Value = value;
 		}
 
-		[DataMember]
 		public string Field { get; set; }
-		[DataMember]
 		public object Value { get; set; }
 
 		public static ISQLQuery GetQuery(ISession session, Query query, string sql)
@@ -50,9 +49,14 @@ namespace ProducerEditor.Service
 		}
 	}
 
-	[DataContract(Namespace = "http://schemas.datacontract.org/2004/07/ProducerEditor.Service")]
 	public class OffersQuery : Query
 	{
+		public OffersQuery(OffersQueryParams parameters)
+		{
+			Field = parameters.Field;
+			Value = parameters.Value;
+		}
+
 		public IQuery Apply(ISession session)
 		{
 			var filter = "";

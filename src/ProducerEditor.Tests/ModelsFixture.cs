@@ -46,7 +46,7 @@ namespace ProducerEditor.Tests
 
 			using(var session = sessionFactory.OpenSession())
 			{
-				var suspisioses = SynonymReportItem.Suspicious(session);
+				var suspisioses = SynonymReportQuery.Suspicious(session);
 				Assert.That(suspisioses.Count, Is.EqualTo(1));
 			}
 		}

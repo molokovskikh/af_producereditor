@@ -2,7 +2,6 @@ using System.Collections.Generic;
 using System.Windows.Forms;
 using ProducerEditor.Contract;
 using ProducerEditor.Infrastructure;
-using ProducerEditor.Models;
 using Subway.Helpers;
 using Subway.VirtualTable.Behaviors.Selection;
 

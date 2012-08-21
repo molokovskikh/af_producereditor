@@ -1,16 +1,14 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
-using System.Runtime.Serialization;
 using System.ServiceModel;
-using ProducerEditor.Contract;
 
-namespace ProducerEditor.Models
+namespace ProducerEditor.Contract
 {
 	[ServiceContract]
-	public interface ProducerService
+	public interface IProducerService
 	{
 		[OperationContract]
-		List<OfferView> ShowOffers(OffersQuery query);
+		List<OfferView> ShowOffers(OffersQueryParams query);
 
 		[OperationContract]
 		IList<ProducerDto> GetProducers(string text);
@@ -25,7 +23,7 @@ namespace ProducerEditor.Models
 		IList<SynonymReportItem> ShowSynonymReport(DateTime begin, DateTime end);
 
 		[OperationContract]
-		IList<string> GetEquivalents(uint producerId);
+		IList<ProducerEquivalentDto> GetEquivalents(uint producerId);
 
 		[OperationContract]
 		IList<ProducerSynonymDto> GetSynonyms(uint producerId);
@@ -57,6 +55,9 @@ namespace ProducerEditor.Models
 
 		[OperationContract]
 		void DeleteExclude(uint excludeId);
+
+		[OperationContract]
+		void DeleteEquivalent(uint id);
 
 
 		[OperationContract]
@@ -97,5 +98,8 @@ namespace ProducerEditor.Models
 
 		[OperationContract]
 		ExcludeData GetExcludeData(uint excludeId);
+
+		[OperationContract]
+		void Update(ProducerEquivalentDto equivalent);
 	}
 }

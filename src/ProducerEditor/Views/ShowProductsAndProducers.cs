@@ -4,8 +4,8 @@ using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
 using Common.Tools;
+using ProducerEditor.Contract;
 using ProducerEditor.Infrastructure;
-using ProducerEditor.Models;
 using Subway.Dom;
 using Subway.Dom.Input;
 using Subway.Dom.Styles;
@@ -15,6 +15,7 @@ using Subway.VirtualTable;
 using Subway.VirtualTable.Behaviors;
 using Subway.VirtualTable.Behaviors.Selection;
 using Subway.VirtualTable.Behaviors.Specialized;
+
 using View = ProducerEditor.Infrastructure.View;
 
 namespace ProducerEditor.Views
@@ -41,7 +42,7 @@ namespace ProducerEditor.Views
 					Close();
 			};
 
-			productsAndProducers = new VirtualTable(new TemplateManager<List<ProductAndProducer>, ProductAndProducer>(
+			productsAndProducers = new VirtualTable(new TemplateManager<ProductAndProducer>(
 				() => {
 					var row = Row.Headers(new Header().AddClass("CheckBoxColumn"));
 
@@ -111,14 +112,14 @@ namespace ProducerEditor.Views
 		{
 			var productAndProducer = productsAndProducers.Selected<ProductAndProducer>();
 			if (productAndProducer != null)
-				Controller(s => s.ShowOffers(new OffersQuery("CatalogId", productAndProducer.CatalogId)))();
+				Controller(s => s.ShowOffers(new OffersQueryParams("CatalogId", productAndProducer.CatalogId)))();
 		}
 
 		public void ShowOffersForProducerId()
 		{
 			var productAndProducer = productsAndProducers.Selected<ProductAndProducer>();
 			if (productAndProducer != null)
-				Controller(s => s.ShowOffers(new OffersQuery("ProducerId", productAndProducer.ProducerId)))();
+				Controller(s => s.ShowOffers(new OffersQueryParams("ProducerId", productAndProducer.ProducerId)))();
 		}
 
 		private void Join()

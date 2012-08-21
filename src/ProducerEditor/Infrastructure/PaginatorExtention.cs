@@ -2,7 +2,7 @@
 using System.Linq;
 using System.Windows.Forms;
 using Common.Tools;
-using ProducerEditor.Models;
+using ProducerEditor.Contract;
 using Subway.Helpers;
 using Subway.VirtualTable;
 

@@ -1,13 +1,24 @@
 using System;
+using System.Collections.ObjectModel;
+using System.Collections.Specialized;
+using System.Reflection;
 using System.ServiceModel;
+using System.Windows.Forms;
+using ProducerEditor.Contract;
 using ProducerEditor.Infrastructure;
-using ProducerEditor.Models;
+using ProducerEditor.Views;
 using log4net;
 
 namespace ProducerEditor.Presenters
 {
 	public class Presenter
 	{
+		//для тестирования
+		public bool UnderTest;
+
+		//для тестирования
+		public event Func<Form, DialogResult> Dialog;
+
 		protected ILog _log = LogManager.GetLogger(typeof (ShowExcludesPresenter));
 		public event Action<string, object> Update;
 
@@ -17,7 +28,7 @@ namespace ProducerEditor.Presenters
 				Update(name, value);
 		}
 
-		protected void WithService(Action<ProducerService> action)
+		protected void WithService(Action<IProducerService> action)
 		{
 			ICommunicationObject communicationObject = null;
 			try
@@ -29,6 +40,8 @@ namespace ProducerEditor.Presenters
 			}
 			catch (Exception e)
 			{
+				Console.WriteLine(e);
+				_log.Error("Ошибка при обращении к серверу", e);
 				if (communicationObject != null
 					&& communicationObject.State != CommunicationState.Closed)
 					communicationObject.Abort();
@@ -38,18 +51,38 @@ namespace ProducerEditor.Presenters
 			}
 		}
 
-		protected void Action(Action<ProducerService> action)
+		protected void Action(Action<IProducerService> action)
 		{
 			WithService(action);
 		}
 
-		protected T Request<T>(Func<ProducerService, T> func)
+		protected T Request<T>(Func<IProducerService, T> func)
 		{
 			var result = default(T);
 			WithService(s => {
 				result = func(s);
 			});
 			return result;
+		}
+
+		protected DialogResult ShowDialog(RenameView rename)
+		{
+			if (UnderTest)
+				return Dialog(rename);
+			else
+				return rename.ShowDialog();
+		}
+
+		protected void RefreshView<T>(ObservableCollection<T> collection)
+		{
+			collection.GetType()
+				.GetMethod("OnCollectionChanged",
+					BindingFlags.NonPublic | BindingFlags.Instance,
+					null,
+					CallingConventions.Any,
+					new[] { typeof(NotifyCollectionChangedEventArgs) },
+					null)
+				.Invoke(collection, new object[] { null });
 		}
 	}
 }

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.Serialization;
 using System.ServiceModel;
 using Common.Models.Helpers;
 using Common.MySql;
@@ -14,40 +13,7 @@ using ProducerEditor.Service.Helpers;
 
 namespace ProducerEditor.Service
 {
-	[DataContract(Namespace = "http://schemas.datacontract.org/2004/07/ProducerEditor.Service")]
-	public class ProductAndProducer
-	{
-		[DataMember]
-		public bool Selected { get; set; }
-		[DataMember]
-		public long ExistsInRls { get; set; }
-		[DataMember]
-		public uint ProducerId { get; set; }
-		[DataMember]
-		public string Producer { get; set; }
-		[DataMember]
-		public uint CatalogId { get; set; }
-		[DataMember]
-		public string Product { get; set; }
-		[DataMember]
-		public long OrdersCount { get; set; }
-		[DataMember]
-		public long OffersCount { get; set; }
-	}
-
-	[DataContract(Namespace = "http://schemas.datacontract.org/2004/07/ProducerEditor.Service")]
-	public class OfferView
-	{
-		[DataMember]
-		public string ProductSynonym { get; set; }
-		[DataMember]
-		public string ProducerSynonym { get; set; }
-		[DataMember]
-		public string Supplier { get; set; }
-	}
-
-	[ServiceContract]
-	public class ProducerService
+	public class ProducerService : IProducerService
 	{
 		private readonly ISessionFactory _factory;
 		private readonly Mailer _mailer;
@@ -67,7 +33,6 @@ namespace ProducerEditor.Service
 			_execute = executor;
 		}
 
-		[OperationContract]
 		public virtual void UpdateProducer(ProducerDto item)
 		{
 			if (!String.IsNullOrEmpty(item.Name))
@@ -76,13 +41,20 @@ namespace ProducerEditor.Service
 			Update(item);
 		}
 
-		[OperationContract]
 		public virtual void UpdateAssortment(AssortmentDto item)
 		{
 			Update(item);
 		}
 
-		[OperationContract]
+		public void Update(ProducerEquivalentDto equivalent)
+		{
+			Transaction(s => {
+				var producerEquivalent =  s.Load<ProducerEquivalent>(equivalent.Id);
+				producerEquivalent.Name = equivalent.Name;
+				s.SaveOrUpdate(producerEquivalent);
+			});
+		}
+
 		public virtual void Update(object item)
 		{
 			if (item is ProducerDto || item is AssortmentDto)
@@ -93,7 +65,7 @@ namespace ProducerEditor.Service
 					var id = item.GetType().GetProperty("Id").GetValue(item, null);
 					var entity = s.Load("ProducerEditor.Service.Models." + item.GetType().Name.Replace("Dto", ""), id);
 
-					if (entity is Assortment 
+					if (entity is Assortment
 						&& !((Assortment)entity).Checked
 						&& ((AssortmentDto)item).Checked)
 						doCleanup = true;
@@ -114,7 +86,6 @@ namespace ProducerEditor.Service
 				throw new Exception(String.Format("Не знаю как применять изменения для объекта {0}", item));
 		}
 
-		[OperationContract]
 		public virtual IList<ProducerDto> GetProducers(string text = "")
 		{
 			text = "%" + (text ?? "") + "%";
@@ -132,13 +103,11 @@ order by p.Name")
 				.List<ProducerDto>());
 		}
 
-		[OperationContract]
-		public virtual List<OfferView> ShowOffers(OffersQuery query)
+		public virtual List<OfferView> ShowOffers(OffersQueryParams query)
 		{
-			return Slave(s => query.Apply(s).List<OfferView>()).ToList();
+			return Slave(s => new OffersQuery(query).Apply(s).List<OfferView>()).ToList();
 		}
 
-		[OperationContract]
 		public virtual List<ProductAndProducer> ShowProductsAndProducers(uint producerId)
 		{
 			return Slave(s => s.CreateSQLQuery(@"
@@ -194,7 +163,6 @@ order by p.Id;")
 				.List<ProductAndProducer>()).ToList();
 		}
 
-		[OperationContract]
 		public virtual void DoJoin(uint[] sourceProduceIds, uint targetProducerId)
 		{
 			Transaction(session => {
@@ -227,37 +195,32 @@ where CodeFirmCr = :SourceId
 			});
 		}
 
-		[OperationContract]
 		public virtual IList<ProducerSynonymDto> GetSynonyms(uint producerId)
 		{
 			return Slave(session => ProducerSynonym.Load(session, new Query("ProducerId", producerId)));
 		}
 
-		[OperationContract]
 		public virtual IList<SynonymReportItem> ShowSynonymReport(DateTime begin, DateTime end)
 		{
 			if (begin.Date == end.Date)
 				begin = begin.AddDays(-1);
 
-			return Slave(s => SynonymReportItem.Load(s, begin, end));
+			return Slave(s => SynonymReportQuery.Load(s, begin, end));
 		}
 
-		[OperationContract]
 		public virtual IList<SynonymReportItem> ShowSuspiciousSynonyms()
 		{
-			return Slave(s => SynonymReportItem.Suspicious(s));
+			return Slave(s => SynonymReportQuery.Suspicious(s));
 		}
 
-		[OperationContract]
-		public virtual IList<string> GetEquivalents(uint producerId)
+		public virtual IList<ProducerEquivalentDto> GetEquivalents(uint producerId)
 		{
 			return Slave(s => {
 				var producer = s.Get<Producer>(producerId);
-				return producer.Equivalents.Select(e => e.Name).ToList();
+				return producer.Equivalents.Select(e => new ProducerEquivalentDto(e.Id, e.Name)).ToList();
 			});
 		}
 
-		[OperationContract]
 		public virtual void CreateEquivalentForProducer(uint producerId, string equivalentName)
 		{
 			Transaction(session => {
@@ -266,7 +229,6 @@ where CodeFirmCr = :SourceId
 			});
 		}
 
-		[OperationContract]
 		public virtual void DeleteProducerSynonym(uint producerSynonymId)
 		{
 			Transaction(session => {
@@ -278,7 +240,6 @@ where CodeFirmCr = :SourceId
 			});
 		}
 
-		[OperationContract]
 		public virtual void DeleteSynonym(uint synonymId)
 		{
 			Transaction(session => {
@@ -294,7 +255,7 @@ WHERE OriginalSynonymId = :SynonymId")
 					return;
 				session.Delete(synonym);
 				var productName = session.CreateSQLQuery(@"
-select c.Name 
+select c.Name
 from Catalogs.Products p
 join Catalogs.Catalog c on c.Id = p.CatalogId
 where p.Id = :productId")
@@ -304,7 +265,6 @@ where p.Id = :productId")
 			});
 		}
 
-		[OperationContract]
 		public virtual void Suspicious(uint producerSynonymId)
 		{
 			Transaction(session => {
@@ -313,7 +273,6 @@ where p.Id = :productId")
 			});
 		}
 
-		[OperationContract]
 		public virtual void DeleteSuspicious(uint producerSynonymId)
 		{
 			Transaction(session => {
@@ -322,25 +281,29 @@ where p.Id = :productId")
 			});
 		}
 
-		[OperationContract]
+		public void DeleteEquivalent(uint id)
+		{
+			Delete<ProducerEquivalent>(id);
+		}
+
 		public virtual void DeleteProducer(uint producerId)
 		{
+			Delete<Producer>(producerId);
+		}
+
+		public virtual void DeleteExclude(uint excludeId)
+		{
+			Delete<Exclude>(excludeId);
+		}
+
+		public void Delete<T>(uint id)
+		{
 			Transaction(session => {
-				var producer = session.Get<Producer>(producerId);
+				var producer = session.Get<T>(id);
 				session.Delete(producer);
 			});
 		}
 
-		[OperationContract]
-		public virtual void DeleteExclude(uint excludeId)
-		{
-			Transaction(s => {
-				var exclude = s.Load<Exclude>(excludeId);
-				exclude.Remove(s);
-			});
-		}
-
-		[OperationContract]
 		public virtual void DeleteAssortment(uint assortmentId)
 		{
 			With.DeadlockWraper(() =>
@@ -359,7 +322,6 @@ where CodeFirmCr = :ProducerId and ProductId in (
 			}));
 		}
 
-		[OperationContract]
 		public virtual Pager<AssortmentDto> ShowAssortment(uint assortimentId)
 		{
 			return Slave(session => {
@@ -370,31 +332,26 @@ where CodeFirmCr = :ProducerId and ProductId in (
 			});
 		}
 
-		[OperationContract]
 		public virtual Pager<AssortmentDto> GetAssortmentPage(uint page)
 		{
 			return Slave(session => Assortment.Search(session, page, null));
 		}
 
-		[OperationContract]
 		public virtual Pager<AssortmentDto> SearchAssortment(string text, uint page)
 		{
 			return Slave(session => Assortment.Search(session, page, new Query("CatalogName", "%" + text + "%")));
 		}
 
-		[OperationContract]
 		public virtual Pager<AssortmentDto> ShowAssortmentForProducer(uint producerId, uint page)
 		{
 			return Slave(session => Assortment.Search(session, page, new Query("ProducerId", producerId)));
 		}
 
-		[OperationContract]
 		public virtual Pager<ExcludeDto> ShowExcludes()
 		{
 			return SearchExcludes("", false, false, 0, false);
 		}
 
-		[OperationContract]
 		public virtual Pager<ExcludeDto> SearchExcludes(string text, bool showPharmacie, bool showHidden, uint page, bool isRefresh)
 		{
 			text = "%" + text + "%";
@@ -407,7 +364,6 @@ where CodeFirmCr = :ProducerId and ProductId in (
 			);
 		}
 
-		[OperationContract]
 		public virtual void DoNotShow(uint excludeId)
 		{
 			Transaction(session => {
@@ -417,7 +373,6 @@ where CodeFirmCr = :ProducerId and ProductId in (
 			});
 		}
 
-		[OperationContract]
 		public virtual void AddToAssotrment(uint excludeId, uint producerId, string equivalent)
 		{
 			Transaction(s => {
@@ -458,7 +413,6 @@ where CodeFirmCr = :ProducerId and ProductId in (
 			});
 		}
 
-		[OperationContract]
 		public virtual void CreateEquivalent(uint excludeId, uint producerId)
 		{
 			Transaction(s => {
@@ -484,7 +438,6 @@ where CodeFirmCr = :ProducerId and ProductId in (
 			});
 		}
 
-		[OperationContract]
 		public virtual ExcludeData GetExcludeData(uint excludeId)
 		{
 			return Slave(s => {
@@ -509,7 +462,6 @@ where a.Checked = 1 and a.CatalogId = :catalogId")
 			});
 		}
 
-		[OperationContract]
 		public virtual string GetSupplierEmails(uint supplierId)
 		{
 			var sql = @"
@@ -538,7 +490,7 @@ and c.Type = 0";
 			var emailList = emails.Aggregate("", (s, a) => s + a + "; ");
 			return emailList;
 		}
-		
+
 		private void Transaction(Action<ISession> action)
 		{
 			_execute.WithTransaction(action);

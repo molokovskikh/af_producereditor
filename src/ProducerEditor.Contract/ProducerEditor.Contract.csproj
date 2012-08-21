@@ -36,6 +36,7 @@
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.ServiceModel" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -45,7 +46,16 @@
   <ItemGroup>
     <Compile Include="AssortmentDto.cs" />
     <Compile Include="ExcludeData.cs" />
+    <Compile Include="IPager.cs" />
+    <Compile Include="OffersQueryParams.cs" />
+    <Compile Include="OfferView.cs" />
+    <Compile Include="Pager.cs" />
+    <Compile Include="ProducerDto.cs" />
+    <Compile Include="ProducerEquivalentDto.cs" />
+    <Compile Include="IProducerService.cs" />
     <Compile Include="ProducerSynonymDto.cs" />
+    <Compile Include="ProductAndProducer.cs" />
+    <Compile Include="SynonymReportItem.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Properties\" />

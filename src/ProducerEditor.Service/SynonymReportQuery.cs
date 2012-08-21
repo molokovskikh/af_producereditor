@@ -4,21 +4,12 @@ using System.Linq;
 using Common.Models.Helpers;
 using NHibernate;
 using NHibernate.Transform;
+using ProducerEditor.Contract;
 
 namespace ProducerEditor.Service
 {
-	public class SynonymReportItem
+	public class SynonymReportQuery
 	{
-		public uint Id { get; set; }
-		public string User { get; set; }
-		public string Price { get; set; }
-		public string Region { get; set; }
-		public string Synonym { get; set; }
-		public string Producer { get; set; }
-		public string Products { get; set; }
-		public int IsSuspicious { get; set; }
-		public uint SupplierId { get; set; }
-
 		public static IList<SynonymReportItem> Load(ISession session, DateTime begin, DateTime end)
 		{
 			return session.CreateSQLQuery(@"

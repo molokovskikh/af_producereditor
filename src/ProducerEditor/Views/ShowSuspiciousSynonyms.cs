@@ -4,8 +4,8 @@ using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
+using ProducerEditor.Contract;
 using ProducerEditor.Infrastructure;
-using ProducerEditor.Models;
 using Subway.Dom;
 using Subway.Dom.Styles;
 using Subway.Helpers;
@@ -31,7 +31,7 @@ namespace ProducerEditor.Views
 				.Button("Не подозрительный (Пробел)", NotSuspicious)
 				.Button("Отправить уведомление поставщику", SendNotificationToSupplier);
 
-			report = new VirtualTable(new TemplateManager<List<SynonymReportItem>, SynonymReportItem>(
+			report = new VirtualTable(new TemplateManager<SynonymReportItem>(
 				() => { 
 					var row = new Row();
 

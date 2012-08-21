@@ -76,12 +76,14 @@ namespace ProducerEditor.Service
 
 					Component.For<ErrorLoggingInterceptor>(),
 
-					AllTypes.Pick()
+					AllTypes
 						.FromAssembly(typeof (ProducerService).Assembly)
+						.Pick()
 						.If(t => t.Name.Contains("Service"))
+						.WithService.AllInterfaces()
 						.Configure(c => {
 							var conf = c.Named(c.ServiceType.Name)
-								.ActAs(new DefaultServiceModel().AddEndpoints(WcfEndpoint.BoundTo(binding)).Hosted())
+								.AsWcfService(new DefaultServiceModel().AddEndpoints(WcfEndpoint.BoundTo(binding)).Hosted())
 								.Interceptors(InterceptorReference.ForType<ErrorLoggingInterceptor>()).Anywhere;
 						})
 				);

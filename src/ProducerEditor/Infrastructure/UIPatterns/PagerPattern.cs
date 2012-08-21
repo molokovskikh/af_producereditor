@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Reflection;
 using System.Windows.Forms;
-using ProducerEditor.Models;
+using ProducerEditor.Contract;
 
 namespace ProducerEditor.Infrastructure.UIPatterns
 {

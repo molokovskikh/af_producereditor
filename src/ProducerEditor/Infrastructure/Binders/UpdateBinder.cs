@@ -2,7 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using ProducerEditor.Models;
+using ProducerEditor.Contract;
 using Subway.VirtualTable;
 
 namespace ProducerEditor.Infrastructure.Binders

@@ -6,10 +6,10 @@ using System.Reflection;
 using System.ServiceModel;
 using System.Windows.Forms;
 using Common.Tools;
+using ProducerEditor.Contract;
 using log4net;
 using ProducerEditor.Infrastructure.Binders;
 using ProducerEditor.Infrastructure.UIPatterns;
-using ProducerEditor.Models;
 using Subway.VirtualTable;
 using Subway.VirtualTable.Behaviors.Selection;
 
@@ -52,12 +52,14 @@ namespace ProducerEditor.Infrastructure
 			WireBinding();
 
 			var buttons = this.Children().OfType<ToolStrip>().SelectMany(t => t.Items.Cast<ToolStripItem>().OfType<ToolStripButton>());
-			foreach (var button in buttons)
-				WireButtonTo(button, Presenter);
+			var consumedButtons = new ButtonBinder(Presenter).Apply(this, buttons);
+			buttons = buttons.Except(consumedButtons);
 
-			if (Presenter != null) {
-				Wire();
+			foreach (var button in buttons) {
+				DefaultWireButtonTo(button, Presenter);
 			}
+
+			Wire();
 		}
 
 		private void WireBinding()
@@ -66,7 +68,7 @@ namespace ProducerEditor.Infrastructure
 				binder.Bind(Presenter, this);
 		}
 
-		private void WireButtonTo(ToolStripButton button, object presenter)
+		private void DefaultWireButtonTo(ToolStripButton button, object presenter)
 		{
 			var method = presenter.GetType().GetMethod(button.Name);
 			if (method == null)
@@ -74,8 +76,10 @@ namespace ProducerEditor.Infrastructure
 
 			button.Click += (s, a) => {
 				TableHost table = null;
-				if (method.GetParameters().Any(p => p.Name == "current"))
-					table = GetTableForParameter(method.GetParameters().First(p => p.Name == "current"));
+				var parameter = method.GetParameters().FirstOrDefault(p => p.Name == "current");
+				if (parameter != null)
+					table = GetTableForParameter(parameter);
+
 				int selectedIndex = 0;
 				if (table != null)
 					selectedIndex = table.Table.Behavior<IRowSelectionBehavior>().SelectedRowIndex;
@@ -93,7 +97,7 @@ namespace ProducerEditor.Infrastructure
 		protected virtual void Init()
 		{}
 
-		private object[] BindParameters(ToolStripButton button, MethodInfo method)
+		public object[] BindParameters(ToolStripButton button, MethodInfo method)
 		{
 			var parameters = method.GetParameters();
 			if (parameters.Length == 0)
@@ -118,7 +122,7 @@ namespace ProducerEditor.Infrastructure
 			return list.ToArray();
 		}
 
-		private object GetCurrent(ParameterInfo parameter)
+		public object GetCurrent(ParameterInfo parameter)
 		{
 			var table = GetTableForParameter(parameter);
 			if (table == null)
@@ -142,10 +146,11 @@ namespace ProducerEditor.Infrastructure
 
 		private IEnumerable<IUIPattern> DetectPatterns(object presenter)
 		{
-			return new IUIPattern[] {new PagerPattern(presenter), new SearchPattern(presenter)}.Where(p => p.IsApplicable());
+			var uiPatterns = new IUIPattern[] { new PagerPattern(presenter), new SearchPattern(presenter) };
+			return uiPatterns.Where(p => p.IsApplicable());
 		}
 
-		protected virtual Action Controller<T>(Expression<Func<ProducerService, T>> func)
+		protected virtual Action Controller<T>(Expression<Func<IProducerService, T>> func)
 		{
 			return () => WithService(s => {
 				var viewName = MvcHelper.GetViewName(func);
@@ -155,7 +160,7 @@ namespace ProducerEditor.Infrastructure
 			});
 		}
 
-		protected T Request<T>(Func<ProducerService, T> func)
+		protected T Request<T>(Func<IProducerService, T> func)
 		{
 			var result = default(T);
 			WithService(s => {
@@ -164,12 +169,12 @@ namespace ProducerEditor.Infrastructure
 			return result;
 		}
 
-		protected void Action(Action<ProducerService> action)
+		protected void Action(Action<IProducerService> action)
 		{
 			WithService(action);
 		}
 
-		protected void WithService(Action<ProducerService> action)
+		protected void WithService(Action<IProducerService> action)
 		{
 			ICommunicationObject communicationObject = null;
 			try

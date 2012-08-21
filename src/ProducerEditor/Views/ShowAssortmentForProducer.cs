@@ -6,7 +6,6 @@ using System.Text;
 using System.Windows.Forms;
 using ProducerEditor.Contract;
 using ProducerEditor.Infrastructure;
-using ProducerEditor.Models;
 using Subway.Dom;
 using Subway.Dom.Base;
 using Subway.Dom.Input;
@@ -36,7 +35,7 @@ namespace ProducerEditor.Views
 				.Label("PageLabel", "")
 				.Button("Next", "Следующая страница");
 
-			assortmentTable = new VirtualTable(new TemplateManager<List<AssortmentDto>, AssortmentDto>(
+			assortmentTable = new VirtualTable(new TemplateManager<AssortmentDto>(
 				() => Row.Headers(new Header("Проверен").AddClass("CheckBoxColumn1"), "Продукт", "Производитель"),
 				a => {
 					var row = Row.Cells(new CheckBoxInput(a.Checked).Attr("Name", "Checked"), a.Product, a.Producer);

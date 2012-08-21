@@ -87,7 +87,7 @@ namespace ProducerEditor.Tests
 			Assert.That(excludes.FirstOrDefault(e => e.Id == exclude.Id), Is.Null, "не удалили исключение");
 
 			var equivalents = service.GetEquivalents(producer.Id);
-			Assert.That(equivalents.First(e => e == exclude.ProducerSynonym.ToUpper()), Is.Not.Null, "не создали эквивалент");
+			Assert.That(equivalents.First(e => e.Name == exclude.ProducerSynonym.ToUpper()), Is.Not.Null, "не создали эквивалент");
 
 			var synonym = service
 				.GetSynonyms(producer.Id)
@@ -108,7 +108,7 @@ namespace ProducerEditor.Tests
 			Assert.That(excludes.FirstOrDefault(e => e.Id == exclude.Id), Is.Null, "не удалили исключение");
 
 			var equivalents = service.GetEquivalents(producer.Id);
-			Assert.That(equivalents.First(e => e == exclude.ProducerSynonym.ToUpper()), Is.Not.Null, "не создали эквивалент");
+			Assert.That(equivalents.First(e => e.Name == exclude.ProducerSynonym.ToUpper()), Is.Not.Null, "не создали эквивалент");
 
 			var synonym = service
 				.GetSynonyms(producer.Id)

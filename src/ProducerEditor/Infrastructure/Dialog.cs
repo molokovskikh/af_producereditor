@@ -36,7 +36,6 @@ namespace ProducerEditor.Infrastructure
 			flow.Controls.Add((Control)CancelButton);
 			table = new TableLayoutPanel
 			{
-				//AutoSize = true,
 				RowCount = 1,
 				ColumnCount = 1,
 				Dock = DockStyle.Fill
@@ -48,7 +47,6 @@ namespace ProducerEditor.Infrastructure
 			Controls.Add(flow);
 			AutoSize = true;
 			Height = 80;
-			//AutoSizeMode = AutoSizeMode.GrowAndShrink;
 		}
 	}
 }

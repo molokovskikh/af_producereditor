@@ -2,15 +2,15 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using ProducerEditor.Contract;
 using ProducerEditor.Infrastructure;
-using ProducerEditor.Models;
 using System.Windows.Forms;
 
 namespace ProducerEditor.Views
 {
 	public class CreateEquivalentView : Dialog
 	{		
-		public CreateEquivalentView(ProducerDto producer, IEnumerable<string> existsEquivalents, Action<string, uint> actionCreateEquivalent)
+		public CreateEquivalentView(ProducerDto producer, IEnumerable<ProducerEquivalentDto> existsEquivalents, Action<string, uint> actionCreateEquivalent)
 		{
 			var errorProvider = new ErrorProvider();
 			
@@ -36,7 +36,7 @@ namespace ProducerEditor.Views
 				if (existsEquivalents != null)
 				{
 					var exists =
-						existsEquivalents.Where(name => name.ToLower() == equivalentText.Text.ToLower().Trim()).FirstOrDefault();
+						existsEquivalents.Where(e => e.Name.ToLower() == equivalentText.Text.ToLower().Trim()).FirstOrDefault();
 					if (exists != null)
 					{
 						errorProvider.SetError(equivalentText, "Такой эквивалент уже существует");

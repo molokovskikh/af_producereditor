@@ -2,10 +2,10 @@ using System;
 using System.ServiceModel;
 using log4net;
 using ProducerEditor.Contract;
-using ProducerEditor.Models;
 using Subway.Dom;
 using Subway.Dom.Input;
 using Subway.Table;
+
 
 namespace ProducerEditor.Infrastructure
 {
@@ -55,12 +55,12 @@ namespace ProducerEditor.Infrastructure
 				Action(s => s.UpdateAssortment((AssortmentDto)item));
 		}
 
-		protected void Action(Action<ProducerService> action)
+		protected void Action(Action<IProducerService> action)
 		{
 			WithService(action);
 		}
 
-		protected void WithService(Action<ProducerService> action)
+		protected void WithService(Action<IProducerService> action)
 		{
 			ICommunicationObject communicationObject = null;
 			try

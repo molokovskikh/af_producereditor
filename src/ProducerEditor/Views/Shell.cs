@@ -2,8 +2,8 @@
 using System.Drawing;
 using System.Linq.Expressions;
 using System.Windows.Forms;
+using ProducerEditor.Contract;
 using ProducerEditor.Infrastructure;
-using ProducerEditor.Models;
 using Subway.Helpers;
 using View = ProducerEditor.Infrastructure.View;
 
@@ -53,7 +53,7 @@ namespace ProducerEditor.Views
 				tabs.TabPages.Remove(tabs.SelectedTab);
 		}
 
-		protected override Action Controller<T>(Expression<Func<ProducerService, T>> func)
+		protected override Action Controller<T>(Expression<Func<IProducerService, T>> func)
 		{
 			return () => WithService(s => {
 				var viewName = MvcHelper.GetViewName(func);

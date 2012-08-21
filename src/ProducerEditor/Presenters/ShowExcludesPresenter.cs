@@ -6,7 +6,6 @@ using System.Windows.Forms;
 using log4net;
 using ProducerEditor.Contract;
 using ProducerEditor.Infrastructure;
-using ProducerEditor.Models;
 using ProducerEditor.Views;
 
 namespace ProducerEditor.Presenters
@@ -19,6 +18,7 @@ namespace ProducerEditor.Presenters
 		private bool _showPharmacie;
 		private List<ProducerSynonymDto> _synonyms;
 		private List<ProducerOrEquivalentDto> _producers;
+		private ExcludeDto _currentExclude;
 
 		public Pager<ExcludeDto> Excludes
 		{
@@ -56,8 +56,6 @@ namespace ProducerEditor.Presenters
 			get { return Excludes; }
 			set { Excludes = value; }
 		}
-
-		private ExcludeDto _currentExclude;
 
 		public void ShowHidden(bool flag)
 		{

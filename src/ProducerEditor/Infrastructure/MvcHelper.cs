@@ -3,7 +3,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Windows.Forms;
-using ProducerEditor.Models;
+using ProducerEditor.Contract;
 
 namespace ProducerEditor.Infrastructure
 {
@@ -20,7 +20,7 @@ namespace ProducerEditor.Infrastructure
 			return viewType;
 		}
 
-		public static string GetViewName<T>(Expression<Func<ProducerService, T>> expression)
+		public static string GetViewName<T>(Expression<Func<IProducerService, T>> expression)
 		{
 			if (!(expression.Body is MethodCallExpression))
 				throw new Exception(String.Format("Не могу понять что за вызов такой {0}", expression));

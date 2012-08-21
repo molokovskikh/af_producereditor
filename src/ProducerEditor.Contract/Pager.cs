@@ -1,10 +1,10 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Runtime.Serialization;
 
-namespace ProducerEditor.Service
+namespace ProducerEditor.Contract
 {
 	[DataContract]
-	public class Pager<T>
+	public class Pager<T> : IPager
 	{
 		[DataMember]
 		public uint Page { get; set; }
@@ -12,6 +12,9 @@ namespace ProducerEditor.Service
 		public uint TotalPages { get; set; }
 		[DataMember]
 		public IList<T> Content { get; set; }
+
+		public Pager()
+		{}
 
 		public Pager(uint page, uint total, IList<T> content)
 		{

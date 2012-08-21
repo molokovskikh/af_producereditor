@@ -5,7 +5,6 @@ using System.Linq;
 using System.Windows.Forms;
 using ProducerEditor.Contract;
 using ProducerEditor.Infrastructure;
-using ProducerEditor.Models;
 using Subway.Dom;
 using Subway.Dom.Base;
 using Subway.Dom.Input;
@@ -50,7 +49,7 @@ namespace ProducerEditor.Views
 				.Label("PageLabel", "")
 				.Button("Next", "Следующая страница");
 
-			assortmentTable = new VirtualTable(new TemplateManager<List<AssortmentDto>, AssortmentDto>(
+			assortmentTable = new VirtualTable(new TemplateManager<AssortmentDto>(
 				() => Row.Headers(new Header("Проверен").AddClass("CheckBoxColumn1"), "Продукт", "Производитель"),
 				a => {
 					var row = Row.Cells(new CheckBoxInput(a.Checked).Attr("Name", "Checked"), new Cell(new TextBlock(a.Product)), new Cell(new TextBlock(a.Producer)));
@@ -100,7 +99,7 @@ namespace ProducerEditor.Views
 			var behavior = assortmentTable.Behavior<IRowSelectionBehavior>();
 			behavior.SelectedRowChanged += (oldRow, newRow) => SelectedAssortmentChanged(behavior.Selected<AssortmentDto>());
 
-			synonymsTable = new VirtualTable(new TemplateManager<List<ProducerSynonymDto>, ProducerSynonymDto>(
+			synonymsTable = new VirtualTable(new TemplateManager<ProducerSynonymDto>(
 				() => {
 					var row = Row.Headers();
 					var header = new Header("Синоним").Sortable("Name");
@@ -134,7 +133,7 @@ namespace ProducerEditor.Views
 			synonymsTable.Host.InputMap();
 			synonymsTable.Behavior<ColumnResizeBehavior>().ColumnResized += column => WidthHolder.Update(synonymsTable, column, WidthHolder.ProducerWidths);
 
-			equivalentTable = new VirtualTable(new TemplateManager<List<string>, string>(
+			equivalentTable = new VirtualTable(new TemplateManager<string>(
 				() => Row.Headers("Эквивалент"), e => Row.Cells(e)));
 
 			var producersToSynonymsSplit = new SplitContainer {

@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using NUnit.Framework;
 using ProducerEditor.Contract;
-using ProducerEditor.Models;
 using ProducerEditor.Views;
 
 namespace ProducerEditor.Tests.View

@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Forms;
+using ProducerEditor.Contract;
 using ProducerEditor.Infrastructure;
-using ProducerEditor.Models;
 using Subway.Dom;
 using Subway.Helpers;
 using Subway.VirtualTable;
@@ -73,7 +73,7 @@ namespace ProducerEditor.Views
 		public ProducerSearcher(List<ProducerDto> producers)
 		{
 			_producers = producers;
-			var producersTable = new VirtualTable(new TemplateManager<List<ProducerDto>, ProducerDto>(
+			var producersTable = new VirtualTable(new TemplateManager<ProducerDto>(
 				() => Row.Headers("Производитель"),
 				p => Row.Cells(p.Name)
 			));
