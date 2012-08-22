@@ -210,7 +210,7 @@ task @cleanDeployPackage:
 	Clean("$buildRoot/${project}.Setup")
 	Clean("$buildRoot/bootstrapper")
 	
-task @deploy, [@CheckScmChanges, @buildDeployPackage, @Production, @Migrate, @cleanDeployDir, @deployService, @SendDeployNotification]:
+task @deploy, [@CheckScmChanges, @UpdateRevision, @buildDeployPackage, @Production, @Migrate, @cleanDeployDir, @deployService, @SendDeployNotification]:
 	deployDir = Path.Combine(Globals.PublishRoot, project)
 	Cp(FileSet("**/*.*", BaseDirectory : "$buildRoot/${project}.Setup"), deployDir)
 
