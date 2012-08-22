@@ -133,8 +133,8 @@ namespace ProducerEditor.Views
 			synonymsTable.Host.InputMap();
 			synonymsTable.Behavior<ColumnResizeBehavior>().ColumnResized += column => WidthHolder.Update(synonymsTable, column, WidthHolder.ProducerWidths);
 
-			equivalentTable = new VirtualTable(new TemplateManager<string>(
-				() => Row.Headers("Эквивалент"), e => Row.Cells(e)));
+			equivalentTable = new VirtualTable(new TemplateManager<ProducerEquivalentDto>(
+				() => Row.Headers("Эквивалент"), e => Row.Cells(e.Name)));
 
 			var producersToSynonymsSplit = new SplitContainer {
 				Dock = DockStyle.Fill,

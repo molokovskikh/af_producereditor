@@ -176,23 +176,7 @@ namespace ProducerEditor.Infrastructure
 
 		protected void WithService(Action<IProducerService> action)
 		{
-			ICommunicationObject communicationObject = null;
-			try
-			{
-				var chanel = FactoryHolder.Factory.CreateChannel();
-				communicationObject = chanel as ICommunicationObject;
-				action(chanel);
-				communicationObject.Close();
-			}
-			catch (Exception e)
-			{
-				if (communicationObject != null 
-					&& communicationObject.State != CommunicationState.Closed)
-					communicationObject.Abort();
-
-				_log.Error("Ошибка при обращении к серверу", e);
-				throw;
-			}
+			FactoryHolder.WithService(action);
 		}
 
 		private void Wire()

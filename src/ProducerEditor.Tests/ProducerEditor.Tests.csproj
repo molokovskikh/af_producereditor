@@ -102,6 +102,7 @@
     <Compile Include="MvcHelperFixture.cs" />
     <Compile Include="ProducerServiceFixture.cs" />
     <Compile Include="Subway\ObservableFixture.cs" />
+    <Compile Include="View\ShowAssortmentFixture.cs" />
     <Compile Include="View\ShowExcludesFixture.cs" />
     <Compile Include="View\ShowProducersFixture.cs" />
   </ItemGroup>

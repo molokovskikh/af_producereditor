@@ -102,6 +102,9 @@
     <Compile Include="Views\JoinView.cs">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="Views\Legend.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
     <Compile Include="Views\Shell.cs">
       <SubType>Form</SubType>
     </Compile>
