@@ -501,5 +501,17 @@ and c.Type = 0";
 			using (var session = _factory.OpenSession())
 				return func(session);
 		}
+
+		public bool CheckProductIsMonobrend(uint excludeId)
+		{
+			bool result = false;
+			Transaction(s => {
+				var exclude = s.Load<Exclude>(excludeId);
+				if (exclude.CatalogProduct.Monobrend) {
+					result = true;
+				}
+			});
+			return result;
+		}
 	}
 }

@@ -6,6 +6,7 @@ using System.Text;
 using NUnit.Framework;
 using NHibernate;
 using NHibernate.Linq;
+using ProducerEditor.Contract;
 using ProducerEditor.Service;
 using ProducerEditor.Service.Models;
 using Test.Support.Suppliers;
@@ -123,6 +124,29 @@ namespace ProducerEditor.Tests
 				.GetSynonyms(producer.Id)
 				.FirstOrDefault(s => s.Name == exclude.ProducerSynonym && s.Supplier == exclude.Supplier);
 			Assert.That(synonym, Is.Not.Null, "не создали синоним");
+		}
+
+		[Test]
+		public void CheckMonobrendforExclude()
+		{
+			var excludes = service.ShowExcludes().Content;
+			var exclude = excludes.First();
+			// устанавливаем для продукта свойство монобренда
+			using(var session = sessionFactory.OpenSession()) {
+				var product = session.Load<Exclude>(exclude.Id).CatalogProduct;
+				product.Monobrend = true;
+				session.Save(product);
+				session.Flush();
+			}
+			Assert.That(service.CheckProductIsMonobrend(exclude.Id), Is.True);
+
+			// возвращаем все назад, чтобы не ломать остальные тесты
+			using(var session = sessionFactory.OpenSession()) {
+				var product = session.Load<Exclude>(exclude.Id).CatalogProduct;
+				product.Monobrend = false;
+				session.Save(product);
+				session.Flush();
+			}
 		}
 
 		[Test]

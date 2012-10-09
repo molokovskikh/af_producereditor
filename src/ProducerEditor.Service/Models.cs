@@ -198,5 +198,9 @@ group by sfc.SynonymFirmCrCode", filter))
 		[Id(0, Name = "Id")]
 		[Generator(1, Class = "native")]
 		public virtual uint Id { get; set; }
+
+		[Property(Column = "Monobrend")]
+		public virtual bool Monobrend { get; set; }
+
 	}
 }

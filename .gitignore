@@ -3,3 +3,4 @@ obj
 *.log
 AssemblyInfo.cs
 output/
+packages/

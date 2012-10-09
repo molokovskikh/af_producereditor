@@ -101,5 +101,8 @@ namespace ProducerEditor.Contract
 
 		[OperationContract]
 		void Update(ProducerEquivalentDto equivalent);
+
+		[OperationContract]
+		bool CheckProductIsMonobrend(uint excludeId);
 	}
 }
