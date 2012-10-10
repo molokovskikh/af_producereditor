@@ -1,17 +1,20 @@
 ﻿using System.Collections.ObjectModel;
 using System.Linq;
 using System.Windows.Forms;
+using NHibernate.Linq;
 using NUnit.Framework;
 using ProducerEditor.Contract;
 using ProducerEditor.Infrastructure;
 using ProducerEditor.Presenters;
+using ProducerEditor.Service;
+using ProducerEditor.Service.Models;
 using ProducerEditor.Views;
 using Subway.VirtualTable;
 
 namespace ProducerEditor.Tests.View
 {
 	[TestFixture]
-	public class ShowProducersFixture
+	public class ShowProducersFixture : BaseFixture
 	{
 		private ShowProducers view;
 		private ShowProducersPresenter presenter;
@@ -38,6 +41,12 @@ namespace ProducerEditor.Tests.View
 		public void Delete_equivalent()
 		{
 			presenter.Producers = new ObservableCollection<ProducerDto>(ShowProducers.producers);
+			var producer = session.Load<Producer>(presenter.Producers[1].Id);
+			if (producer.Equivalents == null || producer.Equivalents.Count == 0) {
+				producer.Equivalents.Add(new ProducerEquivalent(producer, "Тестовый Эквивалент"));
+				session.Save(producer);
+				session.Flush();
+			}
 			presenter.CurrentChanged(presenter.Producers[1]);
 			var equivalent = presenter.ProducerEquivalents[0];
 
@@ -48,6 +57,12 @@ namespace ProducerEditor.Tests.View
 		public void Rename_equivalent()
 		{
 			presenter.Producers = new ObservableCollection<ProducerDto>(ShowProducers.producers);
+			var producer = session.Load<Producer>(presenter.Producers[1].Id);
+			if (producer.Equivalents == null || producer.Equivalents.Count == 0) {
+				producer.Equivalents.Add(new ProducerEquivalent(producer, "Тестовый Эквивалент"));
+				session.Save(producer);
+				session.Flush();
+			}
 			presenter.CurrentChanged(presenter.Producers[1]);
 			var equivalent = presenter.ProducerEquivalents[0];
 			presenter.Dialog += form => {

@@ -79,7 +79,7 @@ namespace ProducerEditor.Service
 					s.Update(entity);
 
 					if (doCleanup)
-						((Assortment)item).CleanupExcludes(s);
+						((Assortment)entity).CleanupExcludes(s);
 				});
 			}
 			else
