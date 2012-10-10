@@ -20,17 +20,17 @@ namespace ProducerEditor.Service.Models
 		[Property]
 		public virtual bool Checked { get; set; }
 
-		[Bag(0, Lazy = true, Inverse = true, Cascade = "all")]
+		[Bag(0, Lazy = CollectionLazy.True, Inverse = true, Cascade = "all")]
 		[Key(1, Column = "ProducerId")]
 		[OneToMany(2, ClassType = typeof (Assortment))]
 		public virtual IList<Assortment> Assortments { get; set; }
 
-		[Bag(0, Lazy = true, Inverse = true, Cascade = "all")]
+		[Bag(0, Lazy = CollectionLazy.True, Inverse = true, Cascade = "all")]
 		[Key(1, Column = "CodeFirmCr")]
 		[OneToMany(2, ClassType = typeof (ProducerSynonym))]
 		public virtual IList<ProducerSynonym> Synonyms { get; set; }
 
-		[Bag(0, Lazy = true, Inverse = true, Cascade = "all")]
+		[Bag(0, Lazy = CollectionLazy.True, Inverse = true, Cascade = "all")]
 		[Key(1, Column = "ProducerId")]
 		[OneToMany(2, ClassType = typeof (ProducerEquivalent))]
 		public virtual IList<ProducerEquivalent> Equivalents { get; set; }
