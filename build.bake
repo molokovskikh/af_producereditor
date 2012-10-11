@@ -193,7 +193,7 @@ task @buildDeployPackage, [@GenerateAssemblyInfo, @build, @buildService, @buildI
 	Mv("${output}setup.exe", "${output}${project}.Setup.exe")
 	
 	cert = X509Certificate2(System.IO.File.ReadAllBytes(certPath), password)
-	Sh("\"${MicrosoftSdk.Path()}/signtool\" sign /sha1 ${cert.Thumbprint} ${output}${project}.Setup.exe")
+	Sh("\"signtool\" sign /sha1 ${cert.Thumbprint} ${output}${project}.Setup.exe")
 	
 	GeneratePublishPage("${output}/publish.htm", version, project)
 		
