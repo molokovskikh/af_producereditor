@@ -49,7 +49,7 @@ namespace ProducerEditor.Views
 			Action(s => {
 				if (!createEquivalent)
 					equivalent = null;
-					if(!s.CheckProductIsMonobrend(exclude.Id))
+					if(!s.CheckProductIsMonobrend(exclude.Id, producer.Id))
 						s.AddToAssotrment(exclude.Id, producer.Id, equivalent);
 					else {
 						MessageBox.Show("Товар помечен как \"Монобренд\", добавление к нему нового поставщика возможно только при снятии этой отметки.", "Невозможно добавить поставщика");

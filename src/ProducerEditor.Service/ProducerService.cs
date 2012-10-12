@@ -502,13 +502,18 @@ and c.Type = 0";
 				return func(session);
 		}
 
-		public bool CheckProductIsMonobrend(uint excludeId)
+		public bool CheckProductIsMonobrend(uint excludeId, uint producerId)
 		{
 			bool result = false;
 			Transaction(s => {
 				var exclude = s.Load<Exclude>(excludeId);
 				if (exclude.CatalogProduct.Monobrend) {
-					result = true;
+					var assortiment = s.Query<Assortment>().Where(a => a.CatalogProduct.Id == exclude.CatalogProduct.Id && a.Producer.Id == producerId);
+					if(assortiment.Count() == 0) {
+						result = true;
+					}
+					else
+						result = false;
 				}
 			});
 			return result;

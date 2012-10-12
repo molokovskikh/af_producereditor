@@ -131,14 +131,23 @@ namespace ProducerEditor.Tests
 		{
 			var excludes = service.ShowExcludes().Content;
 			var exclude = excludes.First();
+			uint existsProducerId;
 			// устанавливаем для продукта свойство монобренда
 			using(var session = sessionFactory.OpenSession()) {
 				var product = session.Load<Exclude>(exclude.Id).CatalogProduct;
 				product.Monobrend = true;
 				session.Save(product);
+				var producer = session.Query<Producer>().First();
+				var newAssortment = new Assortment {
+					CatalogProduct = product,
+					Producer = producer
+				};
+				session.Save(newAssortment);
 				session.Flush();
+				existsProducerId = producer.Id;
 			}
-			Assert.That(service.CheckProductIsMonobrend(exclude.Id), Is.True);
+			Assert.That(service.CheckProductIsMonobrend(exclude.Id, 0), Is.True);
+			Assert.That(service.CheckProductIsMonobrend(exclude.Id, existsProducerId), Is.False);
 
 			// возвращаем все назад, чтобы не ломать остальные тесты
 			using(var session = sessionFactory.OpenSession()) {
