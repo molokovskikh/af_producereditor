@@ -36,7 +36,7 @@ namespace ProducerEditor.Infrastructure
 					&& communicationObject.State != CommunicationState.Closed)
 					communicationObject.Abort();
 
-				_log.Error("Ошибка при обращении к серверу", e);
+				_log.Error("РћС€РёР±РєР° РїСЂРё РѕР±СЂР°С‰РµРЅРёРё Рє СЃРµСЂРІРµСЂСѓ", e);
 				throw;
 			}
 		}

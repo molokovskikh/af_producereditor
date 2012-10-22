@@ -13,10 +13,10 @@ namespace ProducerEditor.Presenters
 {
 	public class Presenter
 	{
-		//для тестирования
+		//РґР»СЏ С‚РµСЃС‚РёСЂРѕРІР°РЅРёСЏ
 		public bool UnderTest;
 
-		//для тестирования
+		//РґР»СЏ С‚РµСЃС‚РёСЂРѕРІР°РЅРёСЏ
 		public event Func<Form, DialogResult> Dialog;
 
 		protected ILog _log = LogManager.GetLogger(typeof (ShowExcludesPresenter));
@@ -44,7 +44,7 @@ namespace ProducerEditor.Presenters
 					&& communicationObject.State != CommunicationState.Closed)
 					communicationObject.Abort();
 
-				_log.Error("Ошибка при обращении к серверу", e);
+				_log.Error("РћС€РёР±РєР° РїСЂРё РѕР±СЂР°С‰РµРЅРёРё Рє СЃРµСЂРІРµСЂСѓ", e);
 				throw;
 			}
 		}
