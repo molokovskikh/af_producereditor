@@ -69,8 +69,7 @@ publisher = "Inforoom"
 Global(
 	Project : "ProducerEditor",
 	HumanReadableName : "Редактор производителей",
-	Profile: @catalog,
-	Port: 3311
+	Profile: @catalog
 )
 
 def Clean(path as String):
@@ -87,7 +86,7 @@ task @build, [@clean]:
 						   "Configuration" : "release"},
 			FrameworkVersion : "4.0.30319").Execute()
 	Cp("src/${project}/App.release.config", "${output}/${project}.exe.config", true)
-	Rm(FileSet("*.*", 
+	Rm(FileSet("*.*",
 			   BaseDirectory : output,
 			   Excludes : ["*.dll", "*.exe", "*.config"]))
 task @clean:
@@ -103,7 +102,7 @@ task @buildService, [@cleanService]:
 						   "Configuration" : "release"},
 			FrameworkVersion : "4.0.30319").Execute()
 	Cp("src/ProducerEditor.Service/Web.release.config", "$buildRoot/ProducerEditor.Service/Web.config", true)
-	Rm(FileSet("*.*", 
+	Rm(FileSet("*.*",
 			   BaseDirectory : "$buildRoot/ProducerEditor.Service/bin",
 			   Excludes : ["*.dll", "*.exe", "*.config"]))
 	Cp(FileSet(["**/*.svc", "**/*.asax"], BaseDirectory : "src/ProducerEditor.Service/"), "$buildRoot/ProducerEditor.Service/")
@@ -115,7 +114,7 @@ task @cleanService:
 			FrameworkVersion : "4.0.30319").Execute()
 	Clean("$buildRoot/ProducerEditor.Service")
 
-task @deployService, [@buildService, @cleanServiceDeployDir, @SendDeployNotification]: 
+task @deployService, [@buildService, @cleanServiceDeployDir, @SendDeployNotification]:
 	Cp(FileSet("**/*.*", BaseDirectory : "$buildRoot/ProducerEditor.Service/"), "\\\\acdcserv\\WebApps\\ProducerEditor.Service\\")
 
 task @cleanServiceDeployDir:
@@ -126,14 +125,14 @@ task @buildDeployPackage, [@GenerateAssemblyInfo, @build, @buildService, @buildI
 	source = Path.GetFullPath("$buildRoot/${project}/")
 	certPath = Path.GetFullPath("lib/CodeSign.pfx")
 	password = "password"
-	
+
 	items = (TaskItem("${project}", {"Visible" : "false", "Install" : "true"}),
 			TaskItem(".NETFramework,Version=v4.0,Profile=Client", {"Visible" : "false", "Install" : "true"}),
 			TaskItem("Microsoft.Windows.Installer.3.1", {"Visible" : "false", "Install" : "true"}))
 	bootstrapper = Path.GetFullPath("$buildRoot/bootstrapper/")
-		
+
 	Cp(FileSet("**/*.*", BaseDirectory : Path.GetFullPath("bootstrapper"), Excludes : ["**/.svn/**"]), bootstrapper, true)
-	
+
 	installer = "$buildRoot/Installer/"
 	Cp(FileSet("*.*", BaseDirectory : installer), "$buildRoot/bootstrapper/Packages/${project}")
 
@@ -143,16 +142,16 @@ task @buildDeployPackage, [@GenerateAssemblyInfo, @build, @buildService, @buildI
 	namespaceManager.AddNamespace("n", "urn:schemas-microsoft-com:asm.v1");
 	config.SelectSingleNode("configuration/runtime/n:assemblyBinding/n:probing", namespaceManager).Attributes["privatePath"].Value = version
 	config.Save("${source}/${project}.exe.config")
-	
+
 	FastZip().CreateZip(Path.Combine(Path.GetFullPath("$buildRoot/bootstrapper/Packages/${project}"), "${project}.zip"), source, false, null)
-	
+
 	updateFiles = ""
 	packageFiles = ""
 	for file in FileSet("*.*", BaseDirectory : "$buildRoot/bootstrapper/Packages/${project}", Excludes : ["product.xml"]).Files:
 		filename = Path.GetFileName(file)
 		updateFiles += "<file>${deploymentUrl}${project}/${filename}</file>"
 		packageFiles += "<PackageFile Name=\"${filename}\" />"
-	
+
 	product = XmlDocument()
 	product.Load("$buildRoot/bootstrapper/Packages/${project}/product.xml")
 	namespaceManager = XmlNamespaceManager(product.NameTable)
@@ -177,7 +176,7 @@ task @buildDeployPackage, [@GenerateAssemblyInfo, @build, @buildService, @buildI
 	</files>
 </update>"""
 	update.Save("$buildRoot/${project}.Setup/update.xml")
-	
+
 	GenerateBootstrapper(ApplicationName : project,
 						ApplicationRequiresElevation : false,
 						OutputPath : output,
@@ -191,12 +190,12 @@ task @buildDeployPackage, [@GenerateAssemblyInfo, @build, @buildService, @buildI
 						CopyComponents : true,
 						Culture : "ru").Execute()
 	Mv("${output}setup.exe", "${output}${project}.Setup.exe")
-	
+
 	cert = X509Certificate2(System.IO.File.ReadAllBytes(certPath), password)
 	Sh("\"signtool\" sign /sha1 ${cert.Thumbprint} ${output}${project}.Setup.exe")
-	
+
 	GeneratePublishPage("${output}/publish.htm", version, project)
-		
+
 task @buildInstaller:
 	projectFile = Path.GetFullPath("src/Installer/Installer.csproj")
 	output = Path.GetFullPath("$buildRoot/Installer/")
@@ -205,11 +204,11 @@ task @buildInstaller:
 						   "Configuration" : "release" },
 			FrameworkVersion : "4.0.30319").Execute()
 	Rm(FileSet("*.*", Excludes : ["*.dll", "*.exe", "*.config"], BaseDirectory : output))
-	
+
 task @cleanDeployPackage:
 	Clean("$buildRoot/${project}.Setup")
 	Clean("$buildRoot/bootstrapper")
-	
+
 task @deploy, [@CheckScmChanges, @UpdateRevision, @buildDeployPackage, @Production, @Migrate, @cleanDeployDir, @deployService, @SendDeployNotification]:
 	deployDir = Path.Combine(Globals.PublishRoot, project)
 	Cp(FileSet("**/*.*", BaseDirectory : "$buildRoot/${project}.Setup"), deployDir)
@@ -222,5 +221,3 @@ task @cleanDeployDir:
 		Rm(FileSet("**/*.*", BaseDirectory : path, Excludes : ["**/web.config"]), true)
 		for dir in Directory.GetDirectories(path):
 			Directory.Delete(dir, true)
-
-task @BeforeTest, [@RunMySql, @PrepareLocal]
