@@ -13,7 +13,8 @@ namespace ProducerEditor.Service.Models
 	public class Assortment
 	{
 		public Assortment()
-		{}
+		{
+		}
 
 		public Assortment(CatalogProduct product, Producer producer)
 		{
@@ -25,10 +26,10 @@ namespace ProducerEditor.Service.Models
 		[Generator(1, Class = "native")]
 		public virtual uint Id { get; set; }
 
-		[ManyToOne(ClassType = typeof (CatalogProduct), Column = "CatalogId")]
+		[ManyToOne(ClassType = typeof(CatalogProduct), Column = "CatalogId")]
 		public virtual CatalogProduct CatalogProduct { get; set; }
 
-		[ManyToOne(ClassType = typeof (Producer), Column = "ProducerId")]
+		[ManyToOne(ClassType = typeof(Producer), Column = "ProducerId")]
 		public virtual Producer Producer { get; set; }
 
 		[Property]
@@ -64,8 +65,8 @@ from catalogs.Assortment a
 		public static uint GetPage(ISession session, uint assortimentId)
 		{
 			//nhibernate воспринимает : как начало параметра по этому, ado
-			var connection = (MySqlConnection) session.Connection;
-			var command =new MySqlCommand(@"
+			var connection = (MySqlConnection)session.Connection;
+			var command = new MySqlCommand(@"
 set @i = 0;
 
 select assortmentIndex

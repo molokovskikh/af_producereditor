@@ -24,7 +24,7 @@ namespace ProducerEditor.Infrastructure.UIPatterns
 
 			view.Controls.Add(navigation);
 
-			var pager = (IPager) _presenter.GetType().GetProperty("page").GetValue(_presenter, null);
+			var pager = (IPager)_presenter.GetType().GetProperty("page").GetValue(_presenter, null);
 
 			navigation.ActAsPaginator(pager, page => {
 				var paginator = Invoke(page);
@@ -34,17 +34,15 @@ namespace ProducerEditor.Infrastructure.UIPatterns
 			var update = _presenter.GetType().GetEvent("Update");
 			if (update != null)
 				update.AddEventHandler(_presenter, new Action<string, object>((n, v) => {
-					if (v is IPager)
-					{
-						navigation.UpdatePaginator((IPager) v);
+					if (v is IPager) {
+						navigation.UpdatePaginator((IPager)v);
 					}
 				}));
-				
 		}
 
 		public IPager Invoke(uint page)
 		{
-			return (IPager)_method.Invoke(_presenter, new object[] {page});
+			return (IPager)_method.Invoke(_presenter, new object[] { page });
 		}
 
 		public bool IsApplicable()

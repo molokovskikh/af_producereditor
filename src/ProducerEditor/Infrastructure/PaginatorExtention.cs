@@ -19,7 +19,7 @@ namespace ProducerEditor.Infrastructure
 				if (pageIndex < 0)
 					return;
 
-				pager = page((uint) pageIndex);
+				pager = page((uint)pageIndex);
 				toolStrip.UpdatePaginator(pager);
 			};
 			toolStrip.Items["Prev"].Click += (s, a) => move((ToolStripButton)s);
@@ -40,8 +40,8 @@ namespace ProducerEditor.Infrastructure
 			else
 				table = tables.First();
 			table.InputMap()
-				.KeyDown(Keys.Left, () => move((ToolStripButton) toolStrip.Items["Prev"]))
-				.KeyDown(Keys.Right, () => move((ToolStripButton) toolStrip.Items["Next"]));
+				.KeyDown(Keys.Left, () => move((ToolStripButton)toolStrip.Items["Prev"]))
+				.KeyDown(Keys.Right, () => move((ToolStripButton)toolStrip.Items["Next"]));
 			return toolStrip;
 		}
 

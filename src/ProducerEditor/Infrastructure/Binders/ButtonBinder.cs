@@ -13,8 +13,8 @@ namespace ProducerEditor.Infrastructure.Binders
 		private object _presenter;
 
 		public Dictionary<string, Keys> knownKeys = new Dictionary<string, Keys> {
-			{"Delete", Keys.Delete},
-			{"Rename", Keys.F2},
+			{ "Delete", Keys.Delete },
+			{ "Rename", Keys.F2 },
 		};
 
 		public ButtonBinder(object presenter)

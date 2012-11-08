@@ -7,20 +7,28 @@ namespace ProducerEditor.Contract
 	{
 		[DataMember]
 		public uint Id { get; set; }
+
 		[DataMember]
 		public string User { get; set; }
+
 		[DataMember]
 		public string Price { get; set; }
+
 		[DataMember]
 		public string Region { get; set; }
+
 		[DataMember]
 		public string Synonym { get; set; }
+
 		[DataMember]
 		public string Producer { get; set; }
+
 		[DataMember]
 		public string Products { get; set; }
+
 		[DataMember]
 		public int IsSuspicious { get; set; }
+
 		[DataMember]
 		public uint SupplierId { get; set; }
 	}

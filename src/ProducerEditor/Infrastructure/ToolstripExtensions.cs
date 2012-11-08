@@ -7,8 +7,7 @@ namespace ProducerEditor.Infrastructure
 	{
 		public static ToolStrip Edit(this ToolStrip toolStrip, string name)
 		{
-			var edit = new ToolStripTextBox
-			{
+			var edit = new ToolStripTextBox {
 				Name = name
 			};
 			toolStrip.Items.Add(edit);
@@ -17,8 +16,7 @@ namespace ProducerEditor.Infrastructure
 
 		public static ToolStrip Button(this ToolStrip toolStrip, string label, Action onclick)
 		{
-			var button = new ToolStripButton
-			{
+			var button = new ToolStripButton {
 				Text = label
 			};
 			button.Click += (sender, args) => onclick();
@@ -28,8 +26,7 @@ namespace ProducerEditor.Infrastructure
 
 		public static ToolStrip Button(this ToolStrip toolStrip, string name, string label, Action onclick)
 		{
-			var button = new ToolStripButton
-			{
+			var button = new ToolStripButton {
 				Text = label,
 				Name = name
 			};
@@ -46,8 +43,7 @@ namespace ProducerEditor.Infrastructure
 
 		public static ToolStrip Button(this ToolStrip toolStrip, string name, string label)
 		{
-			var button = new ToolStripButton
-			{
+			var button = new ToolStripButton {
 				Text = label,
 				Name = name
 			};
@@ -64,8 +60,7 @@ namespace ProducerEditor.Infrastructure
 
 		public static ToolStrip Label(this ToolStrip toolStrip, string label)
 		{
-			toolStrip.Items.Add(new ToolStripLabel
-			{
+			toolStrip.Items.Add(new ToolStripLabel {
 				Text = label
 			});
 			return toolStrip;
@@ -73,8 +68,7 @@ namespace ProducerEditor.Infrastructure
 
 		public static ToolStrip Label(this ToolStrip toolStrip, string name, string label)
 		{
-			toolStrip.Items.Add(new ToolStripLabel
-			{
+			toolStrip.Items.Add(new ToolStripLabel {
 				Text = label,
 				Name = name,
 			});

@@ -32,7 +32,7 @@ namespace ProducerEditor.Views
 				.Button("Отправить уведомление поставщику", SendNotificationToSupplier);
 
 			report = new VirtualTable(new TemplateManager<SynonymReportItem>(
-				() => { 
+				() => {
 					var row = new Row();
 
 					var header = new Header("Пользователь").Sortable("User");
@@ -61,8 +61,7 @@ namespace ProducerEditor.Views
 
 					return row;
 				},
-				i => Row.Cells(i.User, i.Price, i.Region, i.Synonym, i.Producer, i.Products)
-			));
+				i => Row.Cells(i.User, i.Price, i.Region, i.Synonym, i.Producer, i.Products)));
 			report.CellSpacing = 1;
 			report.RegisterBehavior(new ToolTipBehavior(),
 				new ColumnResizeBehavior(),

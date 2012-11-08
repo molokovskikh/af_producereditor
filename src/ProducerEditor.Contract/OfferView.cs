@@ -7,8 +7,10 @@ namespace ProducerEditor.Contract
 	{
 		[DataMember]
 		public string ProductSynonym { get; set; }
+
 		[DataMember]
 		public string ProducerSynonym { get; set; }
+
 		[DataMember]
 		public string Supplier { get; set; }
 	}

@@ -16,9 +16,9 @@ namespace ProducerEditor.Tests
 	[TestFixture]
 	public class ProducerServiceFixture
 	{
-		ISessionFactory sessionFactory;
-		ProducerService service;
-		Mailer mailer;
+		private ISessionFactory sessionFactory;
+		private ProducerService service;
+		private Mailer mailer;
 
 		[SetUp]
 		public void Setup()
@@ -32,7 +32,7 @@ namespace ProducerEditor.Tests
 
 		private void CreateExclude()
 		{
-			using(var session = sessionFactory.OpenSession()) {
+			using (var session = sessionFactory.OpenSession()) {
 				var supplier = TestSupplier.Create();
 				var price = session.Load<Price>(supplier.Prices[0].Id);
 				var producerSynonym = new ProducerSynonym {
@@ -60,8 +60,7 @@ namespace ProducerEditor.Tests
 		[Test]
 		public void Check_service()
 		{
-			foreach (var method in typeof(ProducerService).GetMethods())
-			{
+			foreach (var method in typeof(ProducerService).GetMethods()) {
 				if (!method.GetCustomAttributes(false).Any(a => a.GetType() == typeof(OperationContractAttribute)))
 					continue;
 
@@ -133,7 +132,7 @@ namespace ProducerEditor.Tests
 			var exclude = excludes.First();
 			uint existsProducerId;
 			// устанавливаем для продукта свойство монобренда
-			using(var session = sessionFactory.OpenSession()) {
+			using (var session = sessionFactory.OpenSession()) {
 				var product = session.Load<Exclude>(exclude.Id).CatalogProduct;
 				product.Monobrend = true;
 				session.Save(product);
@@ -150,7 +149,7 @@ namespace ProducerEditor.Tests
 			Assert.That(service.CheckProductIsMonobrend(exclude.Id, existsProducerId), Is.False);
 
 			// возвращаем все назад, чтобы не ломать остальные тесты
-			using(var session = sessionFactory.OpenSession()) {
+			using (var session = sessionFactory.OpenSession()) {
 				var product = session.Load<Exclude>(exclude.Id).CatalogProduct;
 				product.Monobrend = false;
 				session.Save(product);

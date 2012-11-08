@@ -37,10 +37,10 @@ FROM logs.SynonymFirmCrLogs sfcl
 where ((sfcl.Operation = 0 and sfcl.OperatorName != 'ProcessingSvc') or (sfcl.Operation = 1 and sfcl.OperatorName != 'ProducerEditor' and sfcl.OPeratorHost like 'OPT%')) and sfcl.LogTime between :begin and :end
 group by sfc.SynonymFirmCrCode
 order by sfc.Synonym;")
-					.SetParameter("begin", begin)
-					.SetParameter("end", end)
-					.SetResultTransformer(new AliasToPropertyTransformer(typeof (SynonymReportItem)))
-					.List<SynonymReportItem>().ToList();
+				.SetParameter("begin", begin)
+				.SetParameter("end", end)
+				.SetResultTransformer(new AliasToPropertyTransformer(typeof(SynonymReportItem)))
+				.List<SynonymReportItem>().ToList();
 		}
 
 		public static IList<SynonymReportItem> Suspicious(ISession session)
@@ -71,8 +71,8 @@ FROM logs.SynonymFirmCrLogs sfcl
 where ((sfcl.Operation = 0 and sfcl.OperatorName != 'ProcessingSvc') or (sfcl.Operation = 1 and sfcl.OperatorName != 'ProducerEditor' and sfcl.OPeratorHost like 'OPT%'))
 group by sfc.SynonymFirmCrCode
 order by sfc.Synonym;")
-					.SetResultTransformer(new AliasToPropertyTransformer(typeof (SynonymReportItem)))
-					.List<SynonymReportItem>().ToList();
+				.SetResultTransformer(new AliasToPropertyTransformer(typeof(SynonymReportItem)))
+				.List<SynonymReportItem>().ToList();
 		}
 	}
 }

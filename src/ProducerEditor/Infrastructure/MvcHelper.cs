@@ -29,7 +29,7 @@ namespace ProducerEditor.Infrastructure
 
 		public static void ShowDialog(Type type, params object[] args)
 		{
-			var form = (Form) Activator.CreateInstance(type, args);
+			var form = (Form)Activator.CreateInstance(type, args);
 			form.ShowDialog();
 		}
 	}

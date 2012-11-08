@@ -15,7 +15,6 @@ using Subway.VirtualTable;
 using Subway.VirtualTable.Behaviors;
 using Subway.VirtualTable.Behaviors.Selection;
 using Subway.VirtualTable.Behaviors.Specialized;
-
 using View = ProducerEditor.Infrastructure.View;
 
 namespace ProducerEditor.Views
@@ -83,11 +82,11 @@ namespace ProducerEditor.Views
 				new RowSelectionBehavior(),
 				new ColumnResizeBehavior(),
 				new InputSupport(input => {
-					var row = (Row) input.Parent.Parent;
+					var row = (Row)input.Parent.Parent;
 					var productAndProducer = productsAndProducers.Translate<ProductAndProducer>(row);
-					((IList<ProductAndProducer>) productsAndProducers.TemplateManager.Source)
+					((IList<ProductAndProducer>)productsAndProducers.TemplateManager.Source)
 						.Where(p => p.ProducerId == productAndProducer.ProducerId)
-						.Each(p => p.Selected = ((CheckBoxInput) input).Checked);
+						.Each(p => p.Selected = ((CheckBoxInput)input).Checked);
 					productsAndProducers.RebuildViewPort();
 				}));
 			productsAndProducers.TemplateManager.Source = productAndProducers;
@@ -126,16 +125,14 @@ namespace ProducerEditor.Views
 		{
 			var joinedProducers = productAndProducers
 				.Where(p => p.Selected)
-				.Select(p => new ProducerDto {Id = p.ProducerId, Name = p.Producer})
+				.Select(p => new ProducerDto { Id = p.ProducerId, Name = p.Producer })
 				.GroupBy(p => p.Id)
 				.Select(g => g.First()).ToArray();
 			Action(s => s.DoJoin(joinedProducers.Select(source => source.Id).ToArray(), producer.Id));
 			foreach (var source in joinedProducers)
 				producers.Remove(source);
 
-			Action(s => {
-				productsAndProducers.TemplateManager.Source = s.ShowProductsAndProducers(producer.Id);
-			});
+			Action(s => { productsAndProducers.TemplateManager.Source = s.ShowProductsAndProducers(producer.Id); });
 		}
 	}
 }

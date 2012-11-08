@@ -11,13 +11,13 @@ namespace ProducerEditor.Tests.View
 		[Test]
 		public void Load_view()
 		{
-			var view = new ShowExcludes(new Pager<ExcludeDto>{Content = new List<ExcludeDto>()});
+			var view = new ShowExcludes(new Pager<ExcludeDto> { Content = new List<ExcludeDto>() });
 		}
 
 		[Test]
 		public void Convert_content_to_list()
 		{
-			var view = new ShowExcludes(new Pager<ExcludeDto>{Content = new ExcludeDto[0]});
+			var view = new ShowExcludes(new Pager<ExcludeDto> { Content = new ExcludeDto[0] });
 		}
 	}
 }

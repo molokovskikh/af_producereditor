@@ -13,7 +13,8 @@ namespace ProducerEditor.Contract
 
 
 		public ProducerEquivalentDto()
-		{}
+		{
+		}
 
 		public ProducerEquivalentDto(uint id, string name)
 		{

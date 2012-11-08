@@ -43,7 +43,7 @@ namespace ProducerEditor.Views
 			Controls.Add(tabs);
 			Controls.Add(navigation);
 
-			((ToolStripButton) navigation.Items["Producers"]).Checked = true;
+			((ToolStripButton)navigation.Items["Producers"]).Checked = true;
 			OpenView(typeof(ShowProducers));
 		}
 
@@ -65,7 +65,7 @@ namespace ProducerEditor.Views
 
 		private void OpenView(Type viewType, params object[] args)
 		{
-			var form = (Form) Activator.CreateInstance(viewType, args);
+			var form = (Form)Activator.CreateInstance(viewType, args);
 
 			form.ControlBox = false;
 			form.FormBorderStyle = FormBorderStyle.None;

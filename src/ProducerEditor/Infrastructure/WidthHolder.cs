@@ -21,16 +21,14 @@ namespace ProducerEditor.Infrastructure
 		public static void Update(VirtualTable table, Column column, List<int> widths)
 		{
 			var element = column;
-			do
-			{
+			do {
 				widths[table.Columns.IndexOf(element)] = element.ReadonlyStyle.Get(StyleElementType.Width);
 				var node = table.Columns.Find(element).Next;
 				if (node != null)
 					element = node.Value;
 				else
 					element = null;
-			}
-			while(element != null);
+			} while (element != null);
 		}
 	}
 }

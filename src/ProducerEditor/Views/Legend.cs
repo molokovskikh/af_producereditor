@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Forms;
 
@@ -6,9 +6,9 @@ namespace ProducerEditor.Views
 {
 	public class Legend : UserControl
 	{
-		Dictionary<string, string> knownStyles = new Dictionary<string, string>{
-			{"WithoutOffers", "Есть предложения"},
-			{"SameAsCurrent", "Синоним аналог"}
+		private Dictionary<string, string> knownStyles = new Dictionary<string, string> {
+			{ "WithoutOffers", "Есть предложения" },
+			{ "SameAsCurrent", "Синоним аналог" }
 		};
 
 		public Legend(params string[] styles)
@@ -20,8 +20,7 @@ namespace ProducerEditor.Views
 			flowPanel.SuspendLayout();
 			SuspendLayout();
 
-			foreach (var item in styles)
-			{
+			foreach (var item in styles) {
 				var label = knownStyles[item];
 				Color color = Color.White;
 				if (item == "SameAsCurrent")

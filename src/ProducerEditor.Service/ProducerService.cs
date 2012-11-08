@@ -8,7 +8,7 @@ using NHibernate;
 using NHibernate.Linq;
 using ProducerEditor.Contract;
 using ProducerEditor.Service.Models;
-using ISession=NHibernate.ISession;
+using ISession = NHibernate.ISession;
 using ProducerEditor.Service.Helpers;
 
 namespace ProducerEditor.Service
@@ -49,7 +49,7 @@ namespace ProducerEditor.Service
 		public void Update(ProducerEquivalentDto equivalent)
 		{
 			Transaction(s => {
-				var producerEquivalent =  s.Load<ProducerEquivalent>(equivalent.Id);
+				var producerEquivalent = s.Load<ProducerEquivalent>(equivalent.Id);
 				producerEquivalent.Name = equivalent.Name;
 				s.SaveOrUpdate(producerEquivalent);
 			});
@@ -57,8 +57,7 @@ namespace ProducerEditor.Service
 
 		public virtual void Update(object item)
 		{
-			if (item is ProducerDto || item is AssortmentDto)
-			{
+			if (item is ProducerDto || item is AssortmentDto) {
 				Transaction(s => {
 					var doCleanup = false;
 
@@ -74,7 +73,7 @@ namespace ProducerEditor.Service
 					entity.GetType().GetProperty("Checked").SetValue(entity, value, null);
 
 					if (item is ProducerDto)
-						((Producer) entity).Name = ((ProducerDto) item).Name;
+						((Producer)entity).Name = ((ProducerDto)item).Name;
 
 					s.Update(entity);
 
@@ -98,7 +97,7 @@ from Catalogs.Producers p
 where p.Name like :text
 or exists(select * from Catalogs.ProducerEquivalents e where e.Name like :text and e.ProducerId = p.Id)
 order by p.Name")
-				.SetResultTransformer(new AliasToPropertyTransformer(typeof (ProducerDto)))
+				.SetResultTransformer(new AliasToPropertyTransformer(typeof(ProducerDto)))
 				.SetParameter("text", text)
 				.List<ProducerDto>());
 		}
@@ -159,7 +158,7 @@ from ProductsAndProducers pap
 group by pap.ProductId, pap.CodeFirmCr
 order by p.Id;")
 				.SetParameter("ProducerId", producerId)
-				.SetResultTransformer(new AliasToPropertyTransformer(typeof (ProductAndProducer)))
+				.SetResultTransformer(new AliasToPropertyTransformer(typeof(ProductAndProducer)))
 				.List<ProductAndProducer>()).ToList();
 		}
 
@@ -167,8 +166,7 @@ order by p.Id;")
 		{
 			Transaction(session => {
 				var target = session.Load<Producer>(targetProducerId);
-				foreach (var sourceId in sourceProduceIds)
-				{
+				foreach (var sourceId in sourceProduceIds) {
 					var source = session.Load<Producer>(sourceId);
 					session.CreateSQLQuery(@"
 update farm.SynonymFirmCr
@@ -308,18 +306,18 @@ where p.Id = :productId")
 		{
 			With.DeadlockWraper(() =>
 				Transaction(session => {
-				var productAssortment = session.Load<Assortment>(assortmentId);
-				session.Delete(productAssortment);
+					var productAssortment = session.Load<Assortment>(assortmentId);
+					session.Delete(productAssortment);
 
-				var assortment = session.Load<Assortment>(assortmentId);
-				session.CreateSQLQuery(@"
+					var assortment = session.Load<Assortment>(assortmentId);
+					session.CreateSQLQuery(@"
 delete from farm.Core0
 where CodeFirmCr = :ProducerId and ProductId in (
 	select id from catalogs.Products where CatalogId = :CatalogId)")
-				.SetParameter("CatalogId", assortment.CatalogProduct.Id)
-				.SetParameter("ProducerId", assortment.Producer.Id)
-				.ExecuteUpdate();
-			}));
+						.SetParameter("CatalogId", assortment.CatalogProduct.Id)
+						.SetParameter("ProducerId", assortment.Producer.Id)
+						.ExecuteUpdate();
+				}));
 		}
 
 		public virtual Pager<AssortmentDto> ShowAssortment(uint assortimentId)
@@ -357,11 +355,10 @@ where CodeFirmCr = :ProducerId and ProductId in (
 			text = "%" + text + "%";
 			return Slave(
 				session => session.SqlQuery<ExcludeDto>()
-					.Filter("(e.ProducerSynonym like :text or c.Name like :text)", new {text})
-					.Filter("e.DoNotShow = :showHidden", new {showHidden})
-					.Filter("(:showPharmacie = 0 or c.Pharmacie = :showPharmacie)", new {showPharmacie})
-					.Page(page)
-			);
+					.Filter("(e.ProducerSynonym like :text or c.Name like :text)", new { text })
+					.Filter("e.DoNotShow = :showHidden", new { showHidden })
+					.Filter("(:showPharmacie = 0 or c.Pharmacie = :showPharmacie)", new { showPharmacie })
+					.Page(page));
 		}
 
 		public virtual void DoNotShow(uint excludeId)
@@ -382,15 +379,13 @@ where CodeFirmCr = :ProducerId and ProductId in (
 					Checked = true
 				};
 
-				if (assortment.Exist(s))
-				{
+				if (assortment.Exist(s)) {
 					assortment = s.Query<Assortment>()
 						.First(a => a.Producer == assortment.Producer && a.CatalogProduct == assortment.CatalogProduct);
 					assortment.Checked = true;
 				}
 
-				if (!String.IsNullOrEmpty(equivalent))
-				{
+				if (!String.IsNullOrEmpty(equivalent)) {
 					equivalent = equivalent.Trim();
 					if (!producer.Equivalents.Any(e => e.Name.Equals(equivalent, StringComparison.CurrentCultureIgnoreCase)))
 						s.Save(new ProducerEquivalent(producer, equivalent));
@@ -416,7 +411,6 @@ where CodeFirmCr = :ProducerId and ProductId in (
 		public virtual void CreateEquivalent(uint excludeId, uint producerId)
 		{
 			Transaction(s => {
-
 				var exclude = s.Load<Exclude>(excludeId);
 				var producer = s.Load<Producer>(producerId);
 
@@ -449,11 +443,11 @@ join Catalogs.Assortment a on a.ProducerId = e.ProducerId
 join Catalogs.Producers p on p.Id = a.ProducerId
 where a.Checked = 1 and a.CatalogId = :catalogId")
 					.SetParameter("catalogId", exclude.CatalogProduct.Id)
-					.SetResultTransformer(new AliasToPropertyTransformer(typeof (ProducerOrEquivalentDto)))
+					.SetResultTransformer(new AliasToPropertyTransformer(typeof(ProducerOrEquivalentDto)))
 					.List<ProducerOrEquivalentDto>();
 				var assortment = Assortment.Search(s, 0, new Query("CatalogId", exclude.CatalogProduct.Id)).Content.Where(a => a.Checked).ToList();
 				var producers = equivalients
-					.Concat(assortment.Select(a => new ProducerOrEquivalentDto {Id = a.ProducerId, Name = a.Producer}))
+					.Concat(assortment.Select(a => new ProducerOrEquivalentDto { Id = a.ProducerId, Name = a.Producer }))
 					.OrderBy(p => p.Name).ToList();
 				return new ExcludeData {
 					Producers = producers,
@@ -509,7 +503,7 @@ and c.Type = 0";
 				var exclude = s.Load<Exclude>(excludeId);
 				if (exclude.CatalogProduct.Monobrend) {
 					var assortiment = s.Query<Assortment>().Where(a => a.CatalogProduct.Id == exclude.CatalogProduct.Id && a.Producer.Id == producerId);
-					if(assortiment.Count() == 0) {
+					if (assortiment.Count() == 0) {
 						result = true;
 					}
 					else

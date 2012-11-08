@@ -14,7 +14,7 @@ namespace ProducerEditor.Views
 			Text = "Добавление в ассортимент";
 			Width = 400;
 			Height = 500;
-			var accept = ((Button) AcceptButton);
+			var accept = ((Button)AcceptButton);
 			accept.Text = "Добавить";
 			AcceptButton = null;
 
@@ -41,7 +41,6 @@ namespace ProducerEditor.Views
 
 			accept.InputMap().Click(() => Add(searcher.Table.Selected<ProducerDto>(), equivalent.Text, createEquivalent.Checked, exclude));
 			searcher.Table.Host.InputMap().KeyDown(Keys.Enter, () => Add(searcher.Table.Selected<ProducerDto>(), equivalent.Text, createEquivalent.Checked, exclude));
-
 		}
 
 		public void Add(ProducerDto producer, string equivalent, bool createEquivalent, ExcludeDto exclude)
@@ -49,11 +48,11 @@ namespace ProducerEditor.Views
 			Action(s => {
 				if (!createEquivalent)
 					equivalent = null;
-					if(!s.CheckProductIsMonobrend(exclude.Id, producer.Id))
-						s.AddToAssotrment(exclude.Id, producer.Id, equivalent);
-					else {
-						MessageBox.Show("Товар помечен как \"Монобренд\", добавление к нему нового поставщика возможно только при снятии этой отметки.", "Невозможно добавить поставщика");
-					}
+				if (!s.CheckProductIsMonobrend(exclude.Id, producer.Id))
+					s.AddToAssotrment(exclude.Id, producer.Id, equivalent);
+				else {
+					MessageBox.Show("Товар помечен как \"Монобренд\", добавление к нему нового поставщика возможно только при снятии этой отметки.", "Невозможно добавить поставщика");
+				}
 			});
 		}
 	}

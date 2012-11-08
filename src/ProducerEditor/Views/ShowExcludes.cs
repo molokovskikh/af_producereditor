@@ -18,7 +18,7 @@ namespace ProducerEditor.Views
 		{
 			Text = "Исключения";
 			MinimumSize = new Size(640, 480);
-			((ShowExcludesPresenter) Presenter).page = pager;
+			((ShowExcludesPresenter)Presenter).page = pager;
 		}
 
 		protected override void Init()
@@ -31,12 +31,10 @@ namespace ProducerEditor.Views
 						new Header("Синоним").Sortable("ProducerSynonym"),
 						new Header("Поставщик").Sortable("Supplier"),
 						new Header("Регион").Sortable("Region"),
-						new Header("Оператор").Sortable("Operator")
-						);
+						new Header("Оператор").Sortable("Operator"));
 					return row;
 				},
-				e => Row.Cells(e.Catalog, e.OriginalSynonym, e.ProducerSynonym, e.Supplier, e.Region, e.Operator)
-			));
+				e => Row.Cells(e.Catalog, e.OriginalSynonym, e.ProducerSynonym, e.Supplier, e.Region, e.Operator)));
 
 			excludes.Host.Name = "Excludes";
 			excludes.Host.Tag = PaginatorExtention.TableName;
@@ -44,7 +42,7 @@ namespace ProducerEditor.Views
 			var synonymsTable = new VirtualTable(new TemplateManager<ProducerSynonymDto>(
 				() => {
 					return Row.Headers(
-						new Header("Синоним").Sortable("Name"), 
+						new Header("Синоним").Sortable("Name"),
 						new Header("Производитель").Sortable("Producer"),
 						new Header("Поставщик").Sortable("Supplier"),
 						new Header("Регион").Sortable("Region"));
@@ -75,13 +73,13 @@ namespace ProducerEditor.Views
 			split.Panel1.Controls.Add(assortment.Host);
 			split.Panel2.Controls.Add(synonymsTable.Host);
 
-			
+
 			Controls.Add(excludes.Host);
 			Controls.Add(split);
 			Controls.Add(new Legend("WithoutOffers", "SameAsCurrent"));
 			Controls.Add(new ToolStrip()
-				.Item(new ToolStripButton{CheckOnClick = true, Name = "ShowHidden", Text = "Показать скрытых"})
-				.Item(new ToolStripButton{CheckOnClick = true, Name = "ShowPharmacie", Text = "Показать только фармацевтику"})
+				.Item(new ToolStripButton { CheckOnClick = true, Name = "ShowHidden", Text = "Показать скрытых" })
+				.Item(new ToolStripButton { CheckOnClick = true, Name = "ShowPharmacie", Text = "Показать только фармацевтику" })
 				.Separator()
 				.Button("AddToAssortment", "Добавить в ассортимент")
 				.Button("DoNotShow", "Больше не показывать")

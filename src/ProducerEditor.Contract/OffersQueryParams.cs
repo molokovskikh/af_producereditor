@@ -13,6 +13,7 @@ namespace ProducerEditor.Contract
 
 		[DataMember]
 		public string Field { get; set; }
+
 		[DataMember]
 		public object Value { get; set; }
 	}

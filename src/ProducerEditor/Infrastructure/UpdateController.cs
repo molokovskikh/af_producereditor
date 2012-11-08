@@ -14,9 +14,9 @@ namespace ProducerEditor.Infrastructure
 		public InputController()
 		{
 			Click = input => {
-				var row = (Row) input.Parent.Parent;
+				var row = (Row)input.Parent.Parent;
 				var producer = Host.Table.Translate(row);
-				var value = ((CheckBoxInput) input).Checked;
+				var value = ((CheckBoxInput)input).Checked;
 				if (!input.HasAttr("Name"))
 					return;
 				var name = input.Attr("Name").ToString();
@@ -63,16 +63,14 @@ namespace ProducerEditor.Infrastructure
 		protected void WithService(Action<IProducerService> action)
 		{
 			ICommunicationObject communicationObject = null;
-			try
-			{
+			try {
 				var chanel = FactoryHolder.Factory.CreateChannel();
 				communicationObject = chanel as ICommunicationObject;
 				action(chanel);
 				communicationObject.Close();
 			}
-			catch (Exception e)
-			{
-				if (communicationObject != null 
+			catch (Exception e) {
+				if (communicationObject != null
 					&& communicationObject.State != CommunicationState.Closed)
 					communicationObject.Abort();
 
@@ -80,6 +78,5 @@ namespace ProducerEditor.Infrastructure
 				throw;
 			}
 		}
-
 	}
 }

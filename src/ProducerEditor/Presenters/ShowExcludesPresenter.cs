@@ -71,19 +71,16 @@ namespace ProducerEditor.Presenters
 
 		private List<ProducerSynonymDto> SortAndMark(List<ProducerSynonymDto> synonyms)
 		{
-			foreach (var synonym in synonyms)
-			{
+			foreach (var synonym in synonyms) {
 				if (synonym.Name.Equals(_currentExclude.ProducerSynonym, StringComparison.CurrentCultureIgnoreCase)
 					&& synonym.Supplier == _currentExclude.Supplier
-					&& synonym.Region == _currentExclude.Region)
-				{
+					&& synonym.Region == _currentExclude.Region) {
 					synonym.SameAsCurrent = true;
 				}
 			}
 
 			return synonyms.Where(s => s.SameAsCurrent).Concat(
-				synonyms.Where(s => !s.SameAsCurrent).OrderBy(s => s.Supplier).ThenBy(s => s.Region)
-			).ToList();
+				synonyms.Where(s => !s.SameAsCurrent).OrderBy(s => s.Supplier).ThenBy(s => s.Region)).ToList();
 		}
 
 		public void CurrentChanged(ExcludeDto exclude)
@@ -105,8 +102,7 @@ namespace ProducerEditor.Presenters
 
 			Action(s => {
 				var pager = s.SearchExcludes(text, _showPharmacie, _showHidden, 0, false);
-				if (pager == null)
-				{
+				if (pager == null) {
 					MessageBox.Show("По вашему запросу ничего не найдено");
 					return;
 				}
@@ -135,8 +131,7 @@ namespace ProducerEditor.Presenters
 
 		public void DeleteSynonym(ExcludeDto current)
 		{
-			if (String.IsNullOrEmpty(current.OriginalSynonym) && current.OriginalSynonymId == 0)
-			{
+			if (String.IsNullOrEmpty(current.OriginalSynonym) && current.OriginalSynonymId == 0) {
 				MessageBox.Show("Для выбранного исключения не задано оригинальное наименование", "Предупреждение",
 					MessageBoxButtons.OK, MessageBoxIcon.Warning);
 				return;
@@ -168,16 +163,14 @@ namespace ProducerEditor.Presenters
 
 		public void MistakenExclude(ExcludeDto current)
 		{
-			Action(s => {
-				s.DeleteExclude(current.Id);
-			});
+			Action(s => { s.DeleteExclude(current.Id); });
 			Refresh();
 		}
 
 		public void AddEquivalent(ProducerOrEquivalentDto current)
 		{
 			var result = MessageBox.Show(
-				String.Format("Создать эквивалент '{0}' для производителя '{1}'", 
+				String.Format("Создать эквивалент '{0}' для производителя '{1}'",
 					_currentExclude.ProducerSynonym.ToUpper(),
 					current.Name),
 				"Запрос",
@@ -187,9 +180,7 @@ namespace ProducerEditor.Presenters
 			if (result != DialogResult.OK)
 				return;
 
-			Action(s => {
-				s.CreateEquivalent(_currentExclude.Id, current.Id);
-			});
+			Action(s => { s.CreateEquivalent(_currentExclude.Id, current.Id); });
 			Refresh();
 		}
 	}

@@ -20,7 +20,7 @@ namespace ProducerEditor.Infrastructure.Binders
 				var current = host.Table.Selected();
 				if (current == null)
 					return;
-				method.Invoke(presenter, new[] {current});
+				method.Invoke(presenter, new[] { current });
 			};
 		}
 	}

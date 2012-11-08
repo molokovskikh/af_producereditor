@@ -4,15 +4,14 @@ using log4net.Config;
 
 namespace Installer
 {
-	class Program
+	internal class Program
 	{
-		private static readonly ILog _log = LogManager.GetLogger(typeof (Program));
+		private static readonly ILog _log = LogManager.GetLogger(typeof(Program));
 
-		static int Main(string[] args)
+		private static int Main(string[] args)
 		{
 			XmlConfigurator.Configure();
-			try
-			{
+			try {
 				var installer = new Installer();
 				if (args.Length > 0 && args[0] == "/uninstall")
 					installer.Uninstall();
@@ -22,8 +21,7 @@ namespace Installer
 					installer.Install();
 				return 0;
 			}
-			catch (Exception e)
-			{
+			catch (Exception e) {
 				Console.Error.WriteLine(e);
 				_log.Error("Ошибка установщика", e);
 				return 1;

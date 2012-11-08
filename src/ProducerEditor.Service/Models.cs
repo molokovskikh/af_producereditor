@@ -17,7 +17,7 @@ namespace ProducerEditor.Service
 		[Generator(1, Class = "native")]
 		public virtual uint Id { get; set; }
 
-		[ManyToOne(ClassType = typeof (Supplier), Column = "FirmCode")]
+		[ManyToOne(ClassType = typeof(Supplier), Column = "FirmCode")]
 		public virtual Supplier Supplier { get; set; }
 	}
 
@@ -31,7 +31,7 @@ namespace ProducerEditor.Service
 		[Property]
 		public virtual string Name { get; set; }
 
-		[ManyToOne(ClassType = typeof (Region), Column = "HomeRegion")]
+		[ManyToOne(ClassType = typeof(Region), Column = "HomeRegion")]
 		public virtual Region Region { get; set; }
 	}
 
@@ -50,7 +50,8 @@ namespace ProducerEditor.Service
 	public class BlockedProducerSynonym
 	{
 		protected BlockedProducerSynonym()
-		{}
+		{
+		}
 
 		public BlockedProducerSynonym(ProducerSynonym synonym)
 		{
@@ -64,7 +65,7 @@ namespace ProducerEditor.Service
 		[Generator(1, Class = "native")]
 		public virtual uint Id { get; set; }
 
-		[ManyToOne(ClassType = typeof (Producer), Column = "ProducerId")]
+		[ManyToOne(ClassType = typeof(Producer), Column = "ProducerId")]
 		public virtual Producer Producer { get; set; }
 
 		[Property]
@@ -73,7 +74,7 @@ namespace ProducerEditor.Service
 		[Property]
 		public virtual DateTime BlockedOn { get; set; }
 
-		[ManyToOne(ClassType = typeof (Price), Column = "PriceCode")]
+		[ManyToOne(ClassType = typeof(Price), Column = "PriceCode")]
 		public virtual Price Price { get; set; }
 	}
 
@@ -87,10 +88,10 @@ namespace ProducerEditor.Service
 		[Property(Column = "Synonym")]
 		public virtual string Name { get; set; }
 
-		[ManyToOne(ClassType = typeof (Producer), Column = "CodeFirmCr")]
+		[ManyToOne(ClassType = typeof(Producer), Column = "CodeFirmCr")]
 		public virtual Producer Producer { get; set; }
 
-		[ManyToOne(ClassType = typeof (Price), Column = "PriceCode")]
+		[ManyToOne(ClassType = typeof(Price), Column = "PriceCode")]
 		public virtual Price Price { get; set; }
 
 		public static List<ProducerSynonymDto> Load(ISession session, Query query)
@@ -118,7 +119,7 @@ from farm.SynonymFirmCr sfc
 where {0} and s.Payer <> 921 and r.Retail = 0
 group by sfc.SynonymFirmCrCode", filter))
 				.SetParameter("value", query.Value)
-				.SetResultTransformer(new AliasToPropertyTransformer(typeof (ProducerSynonymDto)))
+				.SetResultTransformer(new AliasToPropertyTransformer(typeof(ProducerSynonymDto)))
 				.List<ProducerSynonymDto>().ToList();
 		}
 
@@ -154,7 +155,8 @@ group by sfc.SynonymFirmCrCode", filter))
 	public class ProducerEquivalent
 	{
 		protected ProducerEquivalent()
-		{}
+		{
+		}
 
 		public ProducerEquivalent(Producer producer, string name)
 		{
@@ -169,7 +171,7 @@ group by sfc.SynonymFirmCrCode", filter))
 		[Property]
 		public virtual string Name { get; set; }
 
-		[ManyToOne(ClassType = typeof (Producer), Column = "ProducerId")]
+		[ManyToOne(ClassType = typeof(Producer), Column = "ProducerId")]
 		public virtual Producer Producer { get; set; }
 	}
 
@@ -177,7 +179,8 @@ group by sfc.SynonymFirmCrCode", filter))
 	public class SuspiciousProducerSynonym
 	{
 		public SuspiciousProducerSynonym()
-		{}
+		{
+		}
 
 		public SuspiciousProducerSynonym(ProducerSynonym synonym)
 		{
@@ -188,7 +191,7 @@ group by sfc.SynonymFirmCrCode", filter))
 		[Generator(1, Class = "native")]
 		public virtual uint Id { get; set; }
 
-		[ManyToOne(ClassType = typeof (ProducerSynonym), Column = "ProducerSynonymId")]
+		[ManyToOne(ClassType = typeof(ProducerSynonym), Column = "ProducerSynonymId")]
 		public virtual ProducerSynonym Synonym { get; set; }
 	}
 
@@ -201,6 +204,5 @@ group by sfc.SynonymFirmCrCode", filter))
 
 		[Property(Column = "Monobrend")]
 		public virtual bool Monobrend { get; set; }
-
 	}
 }

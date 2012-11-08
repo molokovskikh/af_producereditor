@@ -10,7 +10,8 @@ using ProducerEditor.Contract;
 namespace ProducerEditor.Service
 {
 	public class UniuqAttribute : Attribute
-	{}
+	{
+	}
 
 	[Class(Table = "Farm.Excludes")]
 	public class Exclude
@@ -25,10 +26,10 @@ namespace ProducerEditor.Service
 		[Property]
 		public virtual bool DoNotShow { get; set; }
 
-		[ManyToOne(ClassType = typeof (CatalogProduct), Column = "CatalogId")]
+		[ManyToOne(ClassType = typeof(CatalogProduct), Column = "CatalogId")]
 		public virtual CatalogProduct CatalogProduct { get; set; }
 
-		[ManyToOne(ClassType = typeof (Price), Column = "PriceCode")]
+		[ManyToOne(ClassType = typeof(Price), Column = "PriceCode")]
 		public virtual Price Price { get; set; }
 
 		[ManyToOne(ClassType = typeof(Synonym), Column = "OriginalSynonymId")]
@@ -38,8 +39,7 @@ namespace ProducerEditor.Service
 		{
 			var sameExcludeCount = session.Query<Exclude>().Count(e => e.Price == Price && e.ProducerSynonym == ProducerSynonym);
 			session.Delete(this);
-			if (sameExcludeCount == 1)
-			{
+			if (sameExcludeCount == 1) {
 				var synonym = session.Query<ProducerSynonym>()
 					.FirstOrDefault(s => s.Price == Price && s.Name == ProducerSynonym && s.Producer == null);
 				if (synonym == null)
@@ -95,7 +95,7 @@ farm.Excludes e
 
 		public static Pager<T> Page<T>(this TypedQuery<T> query, uint page)
 		{
-			query.Query.Params(new {begin = page*100});
+			query.Query.Params(new { begin = page * 100 });
 			query.Query.Limit(":begin, 100");
 
 			var sqlQuery = query.Session.CreateSQLQuery(query.Query.ToSql());
@@ -103,7 +103,7 @@ farm.Excludes e
 				sqlQuery.SetParameter(parameters.Key, parameters.Value);
 
 			var items = sqlQuery
-				.SetResultTransformer(new AliasToPropertyTransformer(typeof (T)))
+				.SetResultTransformer(new AliasToPropertyTransformer(typeof(T)))
 				.List<T>();
 
 			query.Query.SelectParts.Clear();
@@ -116,7 +116,7 @@ farm.Excludes e
 
 			var total = sqlQuery
 				.UniqueResult<long>();
-			return new Pager<T>(page, (uint) total, items);
+			return new Pager<T>(page, (uint)total, items);
 		}
 	}
 }

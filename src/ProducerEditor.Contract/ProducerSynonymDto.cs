@@ -7,14 +7,19 @@ namespace ProducerEditor.Contract
 	{
 		[DataMember]
 		public virtual uint Id { get; set; }
+
 		[DataMember]
 		public virtual string Name { get; set; }
+
 		[DataMember]
 		public virtual string Producer { get; set; }
+
 		[DataMember]
 		public string Supplier { get; set; }
+
 		[DataMember]
 		public string Region { get; set; }
+
 		[DataMember]
 		public bool HaveOffers { get; set; }
 

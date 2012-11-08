@@ -30,7 +30,7 @@ namespace ProducerEditor.Infrastructure
 
 	public abstract class View : Form
 	{
-		private ILog _log = LogManager.GetLogger(typeof (Form));
+		private ILog _log = LogManager.GetLogger(typeof(Form));
 
 		public object Presenter;
 
@@ -95,7 +95,8 @@ namespace ProducerEditor.Infrastructure
 		}
 
 		protected virtual void Init()
-		{}
+		{
+		}
 
 		public object[] BindParameters(ToolStripButton button, MethodInfo method)
 		{
@@ -103,17 +104,14 @@ namespace ProducerEditor.Infrastructure
 			if (parameters.Length == 0)
 				return new object[0];
 			var list = new List<object>();
-			foreach (var parameter in parameters)
-			{
-				if (parameter.Name == "current")
-				{
+			foreach (var parameter in parameters) {
+				if (parameter.Name == "current") {
 					var current = GetCurrent(parameter);
 					if (current == null)
 						return null;
 					list.Add(current);
 				}
-				else if (parameter.Name == "flag")
-				{
+				else if (parameter.Name == "flag") {
 					list.Add(button.Checked);
 				}
 				else
@@ -163,9 +161,7 @@ namespace ProducerEditor.Infrastructure
 		protected T Request<T>(Func<IProducerService, T> func)
 		{
 			var result = default(T);
-			WithService(s => {
-				result = func(s);
-			});
+			WithService(s => { result = func(s); });
 			return result;
 		}
 

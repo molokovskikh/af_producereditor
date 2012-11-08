@@ -9,24 +9,24 @@ namespace Installer
 	[Flags]
 	public enum SHGetFileInfoConstants
 	{
-		SHGFI_ICON = 0x100,                // get icon 
-		SHGFI_DISPLAYNAME = 0x200,         // get display name 
-		SHGFI_TYPENAME = 0x400,            // get type name 
-		SHGFI_ATTRIBUTES = 0x800,          // get attributes 
-		SHGFI_ICONLOCATION = 0x1000,       // get icon location 
-		SHGFI_EXETYPE = 0x2000,            // return exe type 
-		SHGFI_SYSICONINDEX = 0x4000,       // get system icon index 
-		SHGFI_LINKOVERLAY = 0x8000,        // put a link overlay on icon 
-		SHGFI_SELECTED = 0x10000,          // show icon in selected state 
-		SHGFI_ATTR_SPECIFIED = 0x20000,    // get only specified attributes 
-		SHGFI_LARGEICON = 0x0,             // get large icon 
-		SHGFI_SMALLICON = 0x1,             // get small icon 
-		SHGFI_OPENICON = 0x2,              // get open icon 
-		SHGFI_SHELLICONSIZE = 0x4,         // get shell size icon 
-		//SHGFI_PIDL = 0x8,                  // pszPath is a pidl 
-		SHGFI_USEFILEATTRIBUTES = 0x10,     // use passed dwFileAttribute 
-		SHGFI_ADDOVERLAYS = 0x000000020,     // apply the appropriate overlays
-		SHGFI_OVERLAYINDEX = 0x000000040     // Get the index of the overlay
+		SHGFI_ICON = 0x100, // get icon
+		SHGFI_DISPLAYNAME = 0x200, // get display name
+		SHGFI_TYPENAME = 0x400, // get type name
+		SHGFI_ATTRIBUTES = 0x800, // get attributes
+		SHGFI_ICONLOCATION = 0x1000, // get icon location
+		SHGFI_EXETYPE = 0x2000, // return exe type
+		SHGFI_SYSICONINDEX = 0x4000, // get system icon index
+		SHGFI_LINKOVERLAY = 0x8000, // put a link overlay on icon
+		SHGFI_SELECTED = 0x10000, // show icon in selected state
+		SHGFI_ATTR_SPECIFIED = 0x20000, // get only specified attributes
+		SHGFI_LARGEICON = 0x0, // get large icon
+		SHGFI_SMALLICON = 0x1, // get small icon
+		SHGFI_OPENICON = 0x2, // get open icon
+		SHGFI_SHELLICONSIZE = 0x4, // get shell size icon
+		//SHGFI_PIDL = 0x8,                  // pszPath is a pidl
+		SHGFI_USEFILEATTRIBUTES = 0x10, // use passed dwFileAttribute
+		SHGFI_ADDOVERLAYS = 0x000000020, // apply the appropriate overlays
+		SHGFI_OVERLAYINDEX = 0x000000040 // Get the index of the overlay
 	}
 
 	[StructLayout(LayoutKind.Sequential)]
@@ -35,10 +35,8 @@ namespace Installer
 		public IntPtr hIcon;
 		public int iIcon;
 		public int dwAttributes;
-		[MarshalAs(UnmanagedType.ByValTStr, SizeConst = 260)]
-		public string szDisplayName;
-		[MarshalAs(UnmanagedType.ByValTStr, SizeConst = 80)]
-		public string szTypeName;
+		[MarshalAs(UnmanagedType.ByValTStr, SizeConst = 260)] public string szDisplayName;
+		[MarshalAs(UnmanagedType.ByValTStr, SizeConst = 80)] public string szTypeName;
 	}
 
 	public static class PInvoke
@@ -55,7 +53,7 @@ namespace Installer
 		public static extern int DestroyIcon(IntPtr hIcon);
 
 		[DllImport("kernel32")]
-		public extern static int FormatMessage(
+		public static extern int FormatMessage(
 			int dwFlags,
 			IntPtr lpSource,
 			int dwMessageId,
@@ -65,14 +63,13 @@ namespace Installer
 			int argumentsLong);
 
 		[DllImport("kernel32")]
-		public extern static int GetLastError();
+		public static extern int GetLastError();
 
-		[DllImport("Shell32", CharSet=CharSet.Auto)]
-		internal extern static int ExtractIconEx (
-			[MarshalAs(UnmanagedType.LPTStr)] 
-				string lpszFile,
+		[DllImport("Shell32", CharSet = CharSet.Auto)]
+		internal static extern int ExtractIconEx(
+			[MarshalAs(UnmanagedType.LPTStr)] string lpszFile,
 			int nIconIndex,
-			IntPtr[] phIconLarge, 
+			IntPtr[] phIconLarge,
 			IntPtr[] phIconSmall,
 			int nIcons);
 	}
@@ -92,7 +89,7 @@ namespace Installer
 		/// <summary>
 		/// Gets/sets the flags used to extract the icon
 		/// </summary>
-		public SHGetFileInfoConstants Flags { get;  set; }
+		public SHGetFileInfoConstants Flags { get; set; }
 
 		/// <summary>
 		/// Gets/sets the filename to get the icon for
@@ -130,16 +127,14 @@ namespace Installer
 			var shfiSize = (uint)Marshal.SizeOf(shfi.GetType());
 
 			var ret = PInvoke.SHGetFileInfo(FileName, 0, ref shfi, shfiSize, (uint)Flags);
-			if (ret == 0)
-			{
+			if (ret == 0) {
 				var errorCode = PInvoke.GetLastError();
 				var txtS = new string('\0', 256);
 				var len = PInvoke.FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
-				                                IntPtr.Zero, errorCode, 0, txtS, 256, 0);
+					IntPtr.Zero, errorCode, 0, txtS, 256, 0);
 				throw new Exception(String.Format("Faild SHGetFileInfo return code {0} last error {1} message {2}", ret, errorCode, txtS));
 			}
-			if (shfi.hIcon != IntPtr.Zero)
-			{
+			if (shfi.hIcon != IntPtr.Zero) {
 				ShellIcon = Icon.FromHandle(shfi.hIcon);
 				// Now owned by the GDI+ object
 				//DestroyIcon(shfi.hIcon);
@@ -157,11 +152,12 @@ namespace Installer
 		public FileIcon()
 		{
 			Flags = SHGetFileInfoConstants.SHGFI_ICON |
-			        SHGetFileInfoConstants.SHGFI_DISPLAYNAME |
-			        SHGetFileInfoConstants.SHGFI_TYPENAME |
-			        SHGetFileInfoConstants.SHGFI_ATTRIBUTES |
-			        SHGetFileInfoConstants.SHGFI_EXETYPE;
+				SHGetFileInfoConstants.SHGFI_DISPLAYNAME |
+				SHGetFileInfoConstants.SHGFI_TYPENAME |
+				SHGetFileInfoConstants.SHGFI_ATTRIBUTES |
+				SHGetFileInfoConstants.SHGFI_EXETYPE;
 		}
+
 		/// <summary>
 		/// Constructs a new instance of the FileIcon class
 		/// and retrieves the icon, display name and type name
@@ -175,6 +171,7 @@ namespace Installer
 			FileName = fileName;
 			GetInfo();
 		}
+
 		/// <summary>
 		/// Constructs a new instance of the FileIcon class
 		/// and retrieves the information specified in the 
@@ -190,7 +187,6 @@ namespace Installer
 			Flags = flags;
 			GetInfo();
 		}
-
 	}
 
 	[ComImport]
@@ -313,7 +309,9 @@ namespace Installer
 	[Guid("00021401-0000-0000-C000-000000000046")]
 	[ClassInterface(ClassInterfaceType.None)]
 	[ComImport()]
-	public class CShellLink { }
+	public class CShellLink
+	{
+	}
 
 	public enum EShellLinkGP : uint
 	{
@@ -351,10 +349,11 @@ namespace Installer
 		public uint nFileSizeLow;
 		public uint dwReserved0;
 		public uint dwReserved1;
+
 		[MarshalAs(UnmanagedType.ByValTStr, SizeConst = 260)] // MAX_PATH
-			public string cFileName;
-		[MarshalAs(UnmanagedType.ByValTStr, SizeConst = 14)]
-		public string cAlternateFileName;
+		public string cFileName;
+
+		[MarshalAs(UnmanagedType.ByValTStr, SizeConst = 14)] public string cAlternateFileName;
 	}
 
 	[StructLayout(LayoutKind.Sequential, Pack = 4, Size = 0, CharSet = CharSet.Ansi)]
@@ -368,10 +367,11 @@ namespace Installer
 		public uint nFileSizeLow;
 		public uint dwReserved0;
 		public uint dwReserved1;
+
 		[MarshalAs(UnmanagedType.ByValTStr, SizeConst = 260)] // MAX_PATH
-			public string cFileName;
-		[MarshalAs(UnmanagedType.ByValTStr, SizeConst = 14)]
-		public string cAlternateFileName;
+		public string cFileName;
+
+		[MarshalAs(UnmanagedType.ByValTStr, SizeConst = 14)] public string cAlternateFileName;
 	}
 
 	[StructLayout(LayoutKind.Sequential, Pack = 4, Size = 0)]
@@ -393,10 +393,12 @@ namespace Installer
 		/// on ME/2000 or above, use the other flags instead.
 		/// </summary>
 		SLR_ANY_MATCH = 0x2,
+
 		/// <summary>
 		/// Call the Microsoft Windows Installer. 
 		/// </summary>
 		SLR_INVOKE_MSI = 0x80,
+
 		/// <summary>
 		/// Disable distributed link tracking. By default, 
 		/// distributed link tracking tracks removable media 
@@ -406,6 +408,7 @@ namespace Installer
 		/// SLR_NOLINKINFO disables both types of tracking.
 		/// </summary>
 		SLR_NOLINKINFO = 0x40,
+
 		/// <summary>
 		/// Do not display a dialog box if the link cannot be resolved. 
 		/// When SLR_NO_UI is set, a time-out value that specifies the 
@@ -416,23 +419,28 @@ namespace Installer
 		/// set to the default value of 3,000 milliseconds (3 seconds). 
 		/// </summary>										    
 		SLR_NO_UI = 0x1,
+
 		/// <summary>
 		/// Not documented in SDK.  Assume same as SLR_NO_UI but 
 		/// intended for applications without a hWnd.
 		/// </summary>
 		SLR_NO_UI_WITH_MSG_PUMP = 0x101,
+
 		/// <summary>
 		/// Do not update the link information. 
 		/// </summary>
 		SLR_NOUPDATE = 0x8,
+
 		/// <summary>
 		/// Do not execute the search heuristics. 
 		/// </summary>																																																																																																																																																																																																														
 		SLR_NOSEARCH = 0x10,
+
 		/// <summary>
 		/// Do not use distributed link tracking. 
 		/// </summary>
 		SLR_NOTRACK = 0x20,
+
 		/// <summary>
 		/// If the link object has changed, update its path and list 
 		/// of identifiers. If SLR_UPDATE is set, you do not need to 
@@ -486,8 +494,7 @@ namespace Installer
 		/// </summary>
 		public void Dispose()
 		{
-			if (link != null ) 
-			{
+			if (link != null) {
 				Marshal.ReleaseComObject(link);
 				link = null;
 			}
@@ -529,7 +536,7 @@ namespace Installer
 		/// Gets/sets the initial display mode when the shortcut is
 		/// run
 		/// </summary>
-		public LinkDisplayMode DisplayMode { get; set;}
+		public LinkDisplayMode DisplayMode { get; set; }
 
 		/// <summary>
 		/// Gets/sets the HotKey to start the shortcut (if any)
@@ -553,8 +560,8 @@ namespace Installer
 			if (!String.IsNullOrEmpty(Arguments))
 				link.SetArguments(Arguments);
 
-			link.SetShowCmd((uint) DisplayMode);
-			link.SetHotkey((short) HotKey);
+			link.SetShowCmd((uint)DisplayMode);
+			link.SetHotkey((short)HotKey);
 
 			if (!String.IsNullOrEmpty(Description))
 				link.SetDescription(Description);
@@ -578,12 +585,12 @@ namespace Installer
 		/// <param name="linkFile">The shortcut file (.lnk) to load</param>
 		public void Open(string linkFile)
 		{
-			Open(linkFile, 
-			     IntPtr.Zero, 
-			     (EShellLinkResolveFlags.SLR_ANY_MATCH | EShellLinkResolveFlags.SLR_NO_UI),
-			     1);
+			Open(linkFile,
+				IntPtr.Zero,
+				(EShellLinkResolveFlags.SLR_ANY_MATCH | EShellLinkResolveFlags.SLR_NO_UI),
+				1);
 		}
-		
+
 		/// <summary>
 		/// Loads a shortcut from the specified file, and allows flags controlling
 		/// the UI behaviour if the shortcut's target isn't found to be set.
@@ -592,13 +599,13 @@ namespace Installer
 		/// <param name="hWnd">The window handle of the application's UI, if any</param>
 		/// <param name="resolveFlags">Flags controlling resolution behaviour</param>
 		public void Open(string linkFile,
-		                 IntPtr hWnd,
-		                 EShellLinkResolveFlags resolveFlags)
+			IntPtr hWnd,
+			EShellLinkResolveFlags resolveFlags)
 		{
-			Open(linkFile, 
-			     hWnd, 
-			     resolveFlags, 
-			     1);
+			Open(linkFile,
+				hWnd,
+				resolveFlags,
+				1);
 		}
 
 		/// <summary>
@@ -611,9 +618,9 @@ namespace Installer
 		/// <param name="resolveFlags">Flags controlling resolution behaviour</param>
 		/// <param name="timeOut">Timeout if SLR_NO_UI is specified, in ms.</param>
 		public void Open(string linkFile,
-		                 IntPtr hWnd,
-		                 EShellLinkResolveFlags resolveFlags,
-		                 ushort timeOut)
+			IntPtr hWnd,
+			EShellLinkResolveFlags resolveFlags,
+			ushort timeOut)
 		{
 			uint flags;
 

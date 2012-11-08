@@ -9,14 +9,12 @@ namespace ProducerEditor.Infrastructure
 
 		public Dialog()
 		{
-			AcceptButton = new Button
-			{
+			AcceptButton = new Button {
 				DialogResult = DialogResult.OK,
 				Text = "Сохранить",
 				AutoSize = true,
 			};
-			CancelButton = new Button
-			{
+			CancelButton = new Button {
 				DialogResult = DialogResult.Cancel,
 				Text = "Отмена",
 				AutoSize = true,
@@ -26,16 +24,14 @@ namespace ProducerEditor.Infrastructure
 			MinimizeBox = false;
 			ShowInTaskbar = false;
 			StartPosition = FormStartPosition.CenterParent;
-			var flow = new FlowLayoutPanel
-			{
+			var flow = new FlowLayoutPanel {
 				AutoSize = true,
 				Dock = DockStyle.Bottom,
 				FlowDirection = FlowDirection.RightToLeft
 			};
 			flow.Controls.Add((Control)AcceptButton);
 			flow.Controls.Add((Control)CancelButton);
-			table = new TableLayoutPanel
-			{
+			table = new TableLayoutPanel {
 				RowCount = 1,
 				ColumnCount = 1,
 				Dock = DockStyle.Fill

@@ -22,17 +22,17 @@ namespace ProducerEditor.Service.Models
 
 		[Bag(0, Lazy = CollectionLazy.True, Inverse = true, Cascade = "all")]
 		[Key(1, Column = "ProducerId")]
-		[OneToMany(2, ClassType = typeof (Assortment))]
+		[OneToMany(2, ClassType = typeof(Assortment))]
 		public virtual IList<Assortment> Assortments { get; set; }
 
 		[Bag(0, Lazy = CollectionLazy.True, Inverse = true, Cascade = "all")]
 		[Key(1, Column = "CodeFirmCr")]
-		[OneToMany(2, ClassType = typeof (ProducerSynonym))]
+		[OneToMany(2, ClassType = typeof(ProducerSynonym))]
 		public virtual IList<ProducerSynonym> Synonyms { get; set; }
 
 		[Bag(0, Lazy = CollectionLazy.True, Inverse = true, Cascade = "all")]
 		[Key(1, Column = "ProducerId")]
-		[OneToMany(2, ClassType = typeof (ProducerEquivalent))]
+		[OneToMany(2, ClassType = typeof(ProducerEquivalent))]
 		public virtual IList<ProducerEquivalent> Equivalents { get; set; }
 
 		public virtual void MergeToEquivalent(Producer producer, ISession session)
@@ -41,7 +41,7 @@ namespace ProducerEditor.Service.Models
 
 			producer.Assortments
 				.Where(a => Assortments.All(x => x.CatalogProduct.Id != a.CatalogProduct.Id))
-				.Select(a => new Assortment(a.CatalogProduct, this){Checked =  a.Checked})
+				.Select(a => new Assortment(a.CatalogProduct, this) { Checked = a.Checked })
 				.Each(a => Assortments.Add(a));
 
 			producer.Equivalents

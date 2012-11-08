@@ -17,7 +17,7 @@ namespace ProducerEditor.Infrastructure
 
 		private static void MaintainNavigation(object sender, EventArgs e)
 		{
-			var button = (ToolStripButton) sender;
+			var button = (ToolStripButton)sender;
 			if (!button.Checked)
 				button.Checked = true;
 

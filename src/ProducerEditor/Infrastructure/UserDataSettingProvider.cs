@@ -32,9 +32,8 @@ namespace ProducerEditor.Infrastructure
 			var userSection = GetUserSettingsSection(sectionName, userConfig);
 			var appSection = GetApplicationSettingsSection(sectionName);
 
-			var propertyValues =  new SettingsPropertyValueCollection();
-			foreach (SettingsProperty property in collection)
-			{
+			var propertyValues = new SettingsPropertyValueCollection();
+			foreach (SettingsProperty property in collection) {
 				var value = new SettingsPropertyValue(property);
 				if (IsUser(property))
 					ReadValue(property, userSection, value);
@@ -56,11 +55,12 @@ namespace ProducerEditor.Infrastructure
 			var dirtySettings = collection
 				.OfType<SettingsPropertyValue>()
 				.Where(i => i.IsDirty)
-				.Select(i =>  {
+				.Select(i => {
 					var element = new SettingElement(i.Name, i.Property.SerializeAs) {
-					Value = {
-						ValueXml = SerializeToXmlElement(i)
-					}};
+						Value = {
+							ValueXml = SerializeToXmlElement(i)
+						}
+					};
 					i.IsDirty = false;
 					return element;
 				})
@@ -72,8 +72,7 @@ namespace ProducerEditor.Infrastructure
 
 		private void ReadValue(SettingsProperty property, ClientSettingsSection userSection, SettingsPropertyValue value)
 		{
-			if (userSection != null)
-			{
+			if (userSection != null) {
 				var element = userSection.Settings.Get(property.Name);
 				if (element != null)
 					value.SerializedValue = element.Value.ValueXml.InnerXml;
@@ -85,12 +84,10 @@ namespace ProducerEditor.Infrastructure
 			var userConfig = OpenConfigurationFile();
 			var section = GetUserSettingsSection(sectionName, userConfig);
 
-			if (section == null)
-			{
+			if (section == null) {
 				var userSettingsSectionGroup = (UserSettingsGroup)userConfig.SectionGroups["userSettings"];
-				if (userSettingsSectionGroup == null)
-				{
-					userSettingsSectionGroup = new  UserSettingsGroup();
+				if (userSettingsSectionGroup == null) {
+					userSettingsSectionGroup = new UserSettingsGroup();
 					userConfig.SectionGroups.Add("userSettings", userSettingsSectionGroup);
 				}
 				section = new ClientSettingsSection();
@@ -125,11 +122,10 @@ namespace ProducerEditor.Infrastructure
 
 		private string GetSectionName(SettingsContext context)
 		{
-			var group = (string) context["GroupName"];
-			var key = (string) context["SettingsKey"];
+			var group = (string)context["GroupName"];
+			var key = (string)context["SettingsKey"];
 			var name = group;
-			if (!string.IsNullOrEmpty(key))
-			{
+			if (!string.IsNullOrEmpty(key)) {
 				name = String.Format(CultureInfo.InvariantCulture, "{0}.{1}", name, key);
 			}
 			return XmlConvert.EncodeLocalName(name);
@@ -139,13 +135,11 @@ namespace ProducerEditor.Infrastructure
 		{
 			var element = new XmlDocument().CreateElement("value");
 			var serializedValue = value.SerializedValue as string;
-			if (serializedValue == null)
-			{
+			if (serializedValue == null) {
 				serializedValue = string.Empty;
 			}
-			else if (value.Property.SerializeAs == SettingsSerializeAs.Binary && value.SerializedValue is byte[])
-			{
-				serializedValue = Convert.ToBase64String((byte[]) value.SerializedValue);
+			else if (value.Property.SerializeAs == SettingsSerializeAs.Binary && value.SerializedValue is byte[]) {
+				serializedValue = Convert.ToBase64String((byte[])value.SerializedValue);
 			}
 			element.InnerText = serializedValue;
 			return element;
@@ -153,5 +147,4 @@ namespace ProducerEditor.Infrastructure
 
 		public override string ApplicationName { get; set; }
 	}
-
 }

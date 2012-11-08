@@ -29,7 +29,7 @@ namespace ProducerEditor.Views
 		private readonly VirtualTable equivalentTable;
 
 		private string _searchText;
-		
+
 		public ShowAssortment(Pager<AssortmentDto> assortments)
 		{
 			Text = "Ассортимент";
@@ -54,7 +54,7 @@ namespace ProducerEditor.Views
 				a => {
 					var row = Row.Cells(new CheckBoxInput(a.Checked).Attr("Name", "Checked"), new Cell(new TextBlock(a.Product)), new Cell(new TextBlock(a.Producer)));
 					if (a.Id == Settings.Default.BookmarkAssortimentId)
-						((IDomElementWithChildren)row.Children.ElementAt(1)).Prepend(new TextBlock {Class = "BookmarkGlyph"});
+						((IDomElementWithChildren)row.Children.ElementAt(1)).Prepend(new TextBlock { Class = "BookmarkGlyph" });
 					return row;
 				}));
 			assortmentTable.CellSpacing = 1;
@@ -62,8 +62,7 @@ namespace ProducerEditor.Views
 				new RowSelectionBehavior(),
 				new ToolTipBehavior(),
 				new ColumnResizeBehavior(),
-				new InputController()
-			);
+				new InputController());
 			assortmentTable.Behavior<ColumnResizeBehavior>().ColumnResized += column => WidthHolder.Update(assortmentTable, column, WidthHolder.AssortimentWidths);
 			assortmentTable.TemplateManager.ResetColumns();
 			assortmentTable.Host
@@ -73,7 +72,7 @@ namespace ProducerEditor.Views
 			UpdateAssortment(assortments);
 
 			var searchText = ((ToolStripTextBox)tools.Items["SearchText"]);
-			searchText.KeyDown += (sender,args) => {
+			searchText.KeyDown += (sender, args) => {
 				if (args.KeyCode == Keys.Enter)
 					Search();
 			};
@@ -82,8 +81,7 @@ namespace ProducerEditor.Views
 				.KeyDown(Keys.Enter, Search)
 				.KeyDown(Keys.Escape, () => {
 					searchText.Text = "";
-					if (!String.IsNullOrEmpty(_searchText))
-					{
+					if (!String.IsNullOrEmpty(_searchText)) {
 						_searchText = "";
 						var pager = Request(s => s.GetAssortmentPage(0));
 						UpdateAssortment(pager);
@@ -95,7 +93,7 @@ namespace ProducerEditor.Views
 						return;
 					searchText.Text += a.KeyChar;
 				});
-			
+
 			var behavior = assortmentTable.Behavior<IRowSelectionBehavior>();
 			behavior.SelectedRowChanged += (oldRow, newRow) => SelectedAssortmentChanged(behavior.Selected<AssortmentDto>());
 
@@ -164,13 +162,9 @@ namespace ProducerEditor.Views
 				page => {
 					Pager<AssortmentDto> pager = null;
 					if (String.IsNullOrEmpty(_searchText))
-						Action(s => {
-							pager = s.GetAssortmentPage(page);
-						});
+						Action(s => { pager = s.GetAssortmentPage(page); });
 					else
-						Action(s => {
-							pager = s.SearchAssortment(_searchText, page);
-						});
+						Action(s => { pager = s.SearchAssortment(_searchText, page); });
 					UpdateAssortment(pager);
 					return pager;
 				});
@@ -211,8 +205,7 @@ namespace ProducerEditor.Views
 
 			Action(s => {
 				var pager = s.SearchAssortment(searchText, 0);
-				if (pager == null)
-				{
+				if (pager == null) {
 					MessageBox.Show("По вашему запросу ничего не найдено");
 					return;
 				}
@@ -224,8 +217,7 @@ namespace ProducerEditor.Views
 		private void SetBookmark()
 		{
 			var selectedItem = assortmentTable.Selected<AssortmentDto>();
-			if (selectedItem == null)
-			{
+			if (selectedItem == null) {
 				MessageBox.Show("Выделите позицию в ассортименте");
 				return;
 			}

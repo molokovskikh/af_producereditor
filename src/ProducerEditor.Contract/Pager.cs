@@ -8,13 +8,16 @@ namespace ProducerEditor.Contract
 	{
 		[DataMember]
 		public uint Page { get; set; }
+
 		[DataMember]
 		public uint TotalPages { get; set; }
+
 		[DataMember]
 		public IList<T> Content { get; set; }
 
 		public Pager()
-		{}
+		{
+		}
 
 		public Pager(uint page, uint total, IList<T> content)
 		{

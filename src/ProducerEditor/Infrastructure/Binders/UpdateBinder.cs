@@ -26,26 +26,24 @@ namespace ProducerEditor.Infrastructure.Binders
 			var control = view.Children().FirstOrDefault(c => c.Name == name);
 			if (control == null)
 				return;
-			if (control is TableHost)
-			{
-				((TableHost) control).Table.TemplateManager.Source = ConvertValue(value);
+			if (control is TableHost) {
+				((TableHost)control).Table.TemplateManager.Source = ConvertValue(value);
 			}
 		}
 
 		private object ToList(object content, Type genericArgument)
 		{
 			var constructor =
-				typeof (List<>).MakeGenericType(genericArgument).GetConstructor(new[]
-				{typeof (IEnumerable<>).MakeGenericType(genericArgument)});
-			return constructor.Invoke(new [] {content});
+				typeof(List<>).MakeGenericType(genericArgument)
+					.GetConstructor(new[] { typeof(IEnumerable<>).MakeGenericType(genericArgument) });
+			return constructor.Invoke(new[] { content });
 		}
 
 		private object ConvertValue(object value)
 		{
 			if (value is IList)
 				return value;
-			if (value is IPager)
-			{
+			if (value is IPager) {
 				var content = value.GetType().GetProperty("Content").GetValue(value, null);
 				var genericArgument = value.GetType().GetGenericArguments()[0];
 				if (content.GetType() != typeof(List<>).MakeGenericType(genericArgument))

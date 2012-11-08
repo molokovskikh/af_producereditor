@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Reflection;
@@ -19,7 +19,7 @@ namespace ProducerEditor.Presenters
 		//для тестирования
 		public event Func<Form, DialogResult> Dialog;
 
-		protected ILog _log = LogManager.GetLogger(typeof (ShowExcludesPresenter));
+		protected ILog _log = LogManager.GetLogger(typeof(ShowExcludesPresenter));
 		public event Action<string, object> Update;
 
 		protected void OnUpdate(string name, object value)
@@ -31,15 +31,13 @@ namespace ProducerEditor.Presenters
 		protected void WithService(Action<IProducerService> action)
 		{
 			ICommunicationObject communicationObject = null;
-			try
-			{
+			try {
 				var chanel = FactoryHolder.Factory.CreateChannel();
 				communicationObject = chanel as ICommunicationObject;
 				action(chanel);
 				communicationObject.Close();
 			}
-			catch (Exception e)
-			{
+			catch (Exception e) {
 				if (communicationObject != null
 					&& communicationObject.State != CommunicationState.Closed)
 					communicationObject.Abort();
@@ -57,9 +55,7 @@ namespace ProducerEditor.Presenters
 		protected T Request<T>(Func<IProducerService, T> func)
 		{
 			var result = default(T);
-			WithService(s => {
-				result = func(s);
-			});
+			WithService(s => { result = func(s); });
 			return result;
 		}
 

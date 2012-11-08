@@ -23,17 +23,17 @@ namespace ProducerEditor.Views
 			Text = "Объединение производителей";
 			Width = 400;
 			Height = 500;
-			var accept = ((Button) AcceptButton);
+			var accept = ((Button)AcceptButton);
 			accept.Text = "Объединить";
 			AcceptButton = null;
 
 			var searcher = new ProducerSearcher(_producers);
-			table.Controls.Add(new Label { 
+			table.Controls.Add(new Label {
 				Padding = new Padding(0, 5, 0, 0),
 				AutoSize = true,
 				Text = String.Format("Объединить выбранного производителя с {0}.", producer.Name)
 			}, 0, 0);
-			table.Controls.Add(new Label { 
+			table.Controls.Add(new Label {
 				Padding = new Padding(0, 0, 0, 5),
 				AutoSize = true,
 				Text = "Выбранный прозводитель будет удален."
@@ -49,8 +49,7 @@ namespace ProducerEditor.Views
 
 		private void Join(ProducerDto p, ProducerDto producer)
 		{
-			if (p == null)
-			{
+			if (p == null) {
 				MessageBox.Show("Не выбран производитель для объединения", "Не выбран производитель", MessageBoxButtons.OK, MessageBoxIcon.Warning);
 				return;
 			}
@@ -75,11 +74,10 @@ namespace ProducerEditor.Views
 			_producers = producers;
 			var producersTable = new VirtualTable(new TemplateManager<ProducerDto>(
 				() => Row.Headers("Производитель"),
-				p => Row.Cells(p.Name)
-			));
-			
+				p => Row.Cells(p.Name)));
+
 			_table = producersTable;
-			
+
 			producersTable.CellSpacing = 1;
 
 			ToolStrip = new ToolStrip();
@@ -121,13 +119,11 @@ namespace ProducerEditor.Views
 			else
 				producers = _producers;
 
-			if (producers.Count > 0)
-			{
+			if (producers.Count > 0) {
 				producersTable.TemplateManager.Source = producers;
 				producersTable.Host.Focus();
 			}
-			else
-			{
+			else {
 				MessageBox.Show("По вашему запросу ничеого не найдено", "Результаты поиска",
 					MessageBoxButtons.OK,
 					MessageBoxIcon.Warning);

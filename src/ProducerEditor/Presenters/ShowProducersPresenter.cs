@@ -25,10 +25,7 @@ namespace ProducerEditor.Presenters
 
 		public ObservableCollection<ProducerDto> Producers
 		{
-			get
-			{
-				return producers;
-			}
+			get { return producers; }
 			set
 			{
 				producers = value;
@@ -38,10 +35,7 @@ namespace ProducerEditor.Presenters
 
 		public ObservableCollection<ProducerSynonymDto> ProducerSynonyms
 		{
-			get
-			{
-				return producerSynonyms;
-			}
+			get { return producerSynonyms; }
 			set
 			{
 				producerSynonyms = value;
@@ -51,10 +45,7 @@ namespace ProducerEditor.Presenters
 
 		public ObservableCollection<ProducerEquivalentDto> ProducerEquivalents
 		{
-			get
-			{
-				return _producerEquivalents;
-			}
+			get { return _producerEquivalents; }
 			set
 			{
 				_producerEquivalents = value;
@@ -121,13 +112,12 @@ namespace ProducerEditor.Presenters
 			var rename = new RenameView(producer.Name);
 			rename.Text = "Переименование производителя";
 			rename.CheckValidation += () => {
-
 				if (String.IsNullOrEmpty(rename.Value))
 					return "Название производителя не может быть пустым";
 
 				var existsProducer = ShowProducers.producers.FirstOrDefault(p =>
 					p.Name.Equals(rename.Value, StringComparison.CurrentCultureIgnoreCase)
-					&& p.Id != producer.Id);
+						&& p.Id != producer.Id);
 				if (existsProducer != null)
 					return "Такой производитель уже существует";
 
@@ -148,13 +138,12 @@ namespace ProducerEditor.Presenters
 			var rename = new RenameView(equivalent.Name);
 			rename.Text = "Переименование эквивалента";
 			rename.CheckValidation += () => {
-
 				if (String.IsNullOrEmpty(rename.Value))
 					return "Название эквивалента не может быть пустым";
 
 				var existsProducer = ProducerEquivalents.FirstOrDefault(p =>
 					p.Name.Equals(rename.Value, StringComparison.CurrentCultureIgnoreCase)
-					&& p.Id != equivalent.Id);
+						&& p.Id != equivalent.Id);
 				if (existsProducer != null)
 					return "Такой эквивалент уже существует";
 

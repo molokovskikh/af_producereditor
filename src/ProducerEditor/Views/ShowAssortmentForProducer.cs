@@ -40,7 +40,7 @@ namespace ProducerEditor.Views
 				a => {
 					var row = Row.Cells(new CheckBoxInput(a.Checked).Attr("Name", "Checked"), a.Product, a.Producer);
 					if (a.Id == Settings.Default.BookmarkAssortimentId)
-						((IDomElementWithChildren)row.Children.ElementAt(1)).Prepend(new TextBlock {Class = "BookmarkGlyph"});
+						((IDomElementWithChildren)row.Children.ElementAt(1)).Prepend(new TextBlock { Class = "BookmarkGlyph" });
 					return row;
 				}));
 			assortmentTable.CellSpacing = 1;
@@ -48,8 +48,7 @@ namespace ProducerEditor.Views
 				new RowSelectionBehavior(),
 				new ToolTipBehavior(),
 				new ColumnResizeBehavior(),
-				new InputController()
-			);
+				new InputController());
 			assortmentTable.Behavior<ColumnResizeBehavior>().ColumnResized += column => WidthHolder.Update(assortmentTable, column, WidthHolder.AssortimentWidths);
 			assortmentTable.TemplateManager.ResetColumns();
 			assortmentTable.Host
@@ -67,9 +66,7 @@ namespace ProducerEditor.Views
 				assortments,
 				page => {
 					Pager<AssortmentDto> pager = null;
-					Action(s => {
-						pager = s.ShowAssortmentForProducer(producerId, page);
-					});
+					Action(s => { pager = s.ShowAssortmentForProducer(producerId, page); });
 					assortmentTable.TemplateManager.Source = pager.Content.ToList();
 					return pager;
 				});
@@ -89,6 +86,5 @@ namespace ProducerEditor.Views
 			((List<AssortmentDto>)assortmentTable.TemplateManager.Source).Remove(assortment);
 			assortmentTable.RebuildViewPort();
 		}
-
 	}
 }

@@ -10,7 +10,8 @@ namespace ProducerEditor.Service
 	public class Query
 	{
 		public Query()
-		{}
+		{
+		}
 
 		public Query(string field, object value)
 		{
@@ -24,8 +25,7 @@ namespace ProducerEditor.Service
 		public static ISQLQuery GetQuery(ISession session, Query query, string sql)
 		{
 			var where = "";
-			if (query != null)
-			{
+			if (query != null) {
 				var tableField = "";
 				if (query.Field == "CatalogName")
 					tableField = "c.Name";
@@ -65,8 +65,7 @@ namespace ProducerEditor.Service
 				filter = "p.CatalogId = :CatalogId";
 			else if (Field == "ProducerId")
 				filter = "c.CodeFirmCr = :ProducerId";
-			else if (Field == "ProducerSynonymId")
-			{
+			else if (Field == "ProducerSynonymId") {
 				filter = "c.SynonymFirmCrCode = :ProducerSynonymId";
 				sort = "s.Synonym, sfc.Synonym";
 			}
@@ -84,7 +83,7 @@ from farm.core0 c
 where {0}
 group by c.Id
 order by {1}", filter, sort))
-				.SetResultTransformer(new AliasToPropertyTransformer(typeof (OfferView)));
+				.SetResultTransformer(new AliasToPropertyTransformer(typeof(OfferView)));
 
 			if (String.IsNullOrEmpty(filter))
 				throw new Exception(String.Format("Не знаю как фильтровать по полю, {0}", Field));

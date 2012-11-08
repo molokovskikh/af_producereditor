@@ -15,8 +15,7 @@ namespace ProducerEditor.Infrastructure
 		public void Contribute(View view)
 		{
 			var tables = view.Children().OfType<TableHost>();
-			foreach (var holder in tables)
-			{
+			foreach (var holder in tables) {
 				var table = holder.Table;
 				table.CellSpacing = 1;
 				table.RegisterBehavior(
@@ -24,8 +23,7 @@ namespace ProducerEditor.Infrastructure
 					new SortInList(),
 					new RowSelectionBehavior());
 
-				if (!String.IsNullOrEmpty(holder.Name))
-				{
+				if (!String.IsNullOrEmpty(holder.Name)) {
 					var name = view.GetType().Name + "." + holder.Name;
 
 					if (!WidthHolder.Widths.ContainsKey(name))
@@ -53,11 +51,9 @@ namespace ProducerEditor.Infrastructure
 
 		public void Decorate(Row row, int rowIndex)
 		{
-			if (rowIndex == ViewPort.HeaderRowIndex)
-			{
+			if (rowIndex == ViewPort.HeaderRowIndex) {
 				var index = 0;
-				foreach (var child in row.Children/*.Where(c => !c.ReadonlyStyle.Get(StyleElementType.IsFixed))*/)
-				{
+				foreach (var child in row.Children /*.Where(c => !c.ReadonlyStyle.Get(StyleElementType.IsFixed))*/) {
 					if (_widths.Count <= index)
 						_widths.Add(100);
 
@@ -68,6 +64,7 @@ namespace ProducerEditor.Infrastructure
 		}
 
 		public void Reset()
-		{}
+		{
+		}
 	}
 }

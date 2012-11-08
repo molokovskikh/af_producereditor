@@ -37,8 +37,7 @@ namespace Installer
 
 			var appSettings = ConfigurationManager.AppSettings;
 
-			if (appSettings["Version"] == null)
-			{
+			if (appSettings["Version"] == null) {
 				var conf = ConfigurationManager.OpenExeConfiguration(Assembly.GetExecutingAssembly().Location);
 				var version = conf.AppSettings.Settings["Version"];
 				if (version == null || String.IsNullOrEmpty(version.Value))
@@ -48,8 +47,7 @@ namespace Installer
 				_publisher = conf.AppSettings.Settings["Publisher"].Value;
 				_updateUri = conf.AppSettings.Settings["UpdateUri"].Value;
 			}
-			else
-			{
+			else {
 				_version = appSettings["Version"];
 				_application = appSettings["Application"];
 				_publisher = appSettings["Publisher"];
@@ -93,8 +91,7 @@ namespace Installer
 
 		public void Install()
 		{
-			if (IsApplicationInstalled())
-			{
+			if (IsApplicationInstalled()) {
 				Start();
 				return;
 			}
@@ -146,8 +143,7 @@ namespace Installer
 		{
 			if (File.Exists(shortcut))
 				return;
-			using (var link = new ShellLink())
-			{
+			using (var link = new ShellLink()) {
 				link.Target = _mainExecutable;
 				link.Description = _application;
 				link.WorkingDirectory = Path.GetDirectoryName(Path.GetDirectoryName(_mainExecutable));
@@ -157,13 +153,11 @@ namespace Installer
 
 		private void CreateRegistory()
 		{
-			using (var uninstall = _registryRoot.OpenSubKey(_uninstalRegistryKey, true))
-			{
+			using (var uninstall = _registryRoot.OpenSubKey(_uninstalRegistryKey, true)) {
 				var uninstallLocal = uninstall;
 				if (uninstall == null)
 					uninstallLocal = _registryRoot.CreateSubKey(_uninstalRegistryKey, RegistryKeyPermissionCheck.ReadWriteSubTree);
-				using (var app = uninstallLocal.CreateSubKey(_application))
-				{
+				using (var app = uninstallLocal.CreateSubKey(_application)) {
 					app.SetValue("DisplayIcon", String.Format("{0},0", _mainExecutable));
 					app.SetValue("DisplayName", _application);
 					app.SetValue("DisplayVersion", _version);
@@ -191,7 +185,7 @@ namespace Installer
 			//Path.Combine(_applicationFiles, "Installer");
 			//Directory.CreateDirectory(installer);
 			File.Copy(Assembly.GetExecutingAssembly().Location,
-				Path.Combine(installer, Path.GetFileName(Assembly.GetExecutingAssembly().Location)), 
+				Path.Combine(installer, Path.GetFileName(Assembly.GetExecutingAssembly().Location)),
 				true);
 			var config = Assembly.GetExecutingAssembly().Location + ".config";
 			if (File.Exists(config))
@@ -214,8 +208,7 @@ namespace Installer
 
 		private bool IsApplicationInstalled()
 		{
-			using(var uninstall = _registryRoot.OpenSubKey(_uninstalRegistryKey))
-			{
+			using (var uninstall = _registryRoot.OpenSubKey(_uninstalRegistryKey)) {
 				if (uninstall == null)
 					return false;
 				using (var application = uninstall.OpenSubKey(_application))
@@ -248,14 +241,13 @@ namespace Installer
 
 		private void DeleteRegistry()
 		{
-			using(var uninstall = _registryRoot.OpenSubKey(_uninstalRegistryKey, true))
+			using (var uninstall = _registryRoot.OpenSubKey(_uninstalRegistryKey, true))
 				uninstall.DeleteSubKey(_application);
 		}
 
 		public void DeleteShortcuts()
 		{
-			foreach (var shortcut in _shortcuts)
-			{
+			foreach (var shortcut in _shortcuts) {
 				if (File.Exists(shortcut))
 					File.Delete(shortcut);
 			}
@@ -266,40 +258,33 @@ namespace Installer
 
 		private void UpdateRegistry()
 		{
-			using(var uninstall = _registryRoot.OpenSubKey(_uninstalRegistryKey, true))
-			using(var app = uninstall.OpenSubKey(_application, true))
-			{
-				app.SetValue("DisplayVersion", _version);
-				app.SetValue("Version", _version);
-				app.SetValue("InstallDate", DateTime.Now.ToString("yyyyMMdd"));
-				app.SetValue("UninstallString", UninstallCommand);
-			}
+			using (var uninstall = _registryRoot.OpenSubKey(_uninstalRegistryKey, true))
+				using (var app = uninstall.OpenSubKey(_application, true)) {
+					app.SetValue("DisplayVersion", _version);
+					app.SetValue("Version", _version);
+					app.SetValue("InstallDate", DateTime.Now.ToString("yyyyMMdd"));
+					app.SetValue("UninstallString", UninstallCommand);
+				}
 		}
 
 		public string UninstallCommand
 		{
-			get
-			{
-				return Path.Combine(_applicationFiles, @"Installer.exe /uninstall");
-			}
+			get { return Path.Combine(_applicationFiles, @"Installer.exe /uninstall"); }
 		}
 
 		public bool Update()
 		{
 			var files = new List<string>();
-			using (var client = new WebClient())
-			{
+			using (var client = new WebClient()) {
 				var buffer = client.DownloadData(_updateUri);
-				using(var stream = new MemoryStream(buffer))
-				{
+				using (var stream = new MemoryStream(buffer)) {
 					var doc = new XmlDocument();
 					doc.Load(stream);
 					var versionNode = doc.SelectSingleNode("update/version");
 					if (versionNode.InnerText == _version)
 						return false;
 					var filesNodes = doc.SelectNodes("update/files/file");
-					foreach (XmlNode fileNode in filesNodes)
-					{
+					foreach (XmlNode fileNode in filesNodes) {
 						var file = fileNode.InnerText;
 						files.Add(file);
 						client.DownloadFile(file, Path.Combine(Path.GetTempPath(), Path.GetFileName(file)));
@@ -308,15 +293,14 @@ namespace Installer
 			}
 
 			var executable = files.First(f => Path.GetExtension(f).ToLower() == ".exe");
-			var startInfo = new ProcessStartInfo(
-				Path.Combine(Path.GetTempPath(), 
+			var startInfo = new ProcessStartInfo(Path.Combine(Path.GetTempPath(),
 				Path.GetFileName(executable)),
-				String.Format("/upgrade {0}", Process.GetCurrentProcess().Id)) {
-					CreateNoWindow = true,
-					UseShellExecute = false,
-					RedirectStandardOutput = true,
-					RedirectStandardError = true,
-				};
+				String.Format("/upgrade {0}",
+					Process.GetCurrentProcess().Id));
+			startInfo.CreateNoWindow = true;
+			startInfo.UseShellExecute = false;
+			startInfo.RedirectStandardOutput = true;
+			startInfo.RedirectStandardError = true;
 			var process = Process.Start(startInfo);
 			string data = null;
 			process.OutputDataReceived += (sender, args) => {
@@ -347,7 +331,7 @@ namespace Installer
 
 		private static void DeleteDirectory(string dir)
 		{
-			foreach(var file in Directory.GetFiles(dir))
+			foreach (var file in Directory.GetFiles(dir))
 				File.Delete(file);
 
 			foreach (var subDir in Directory.GetDirectories(dir))

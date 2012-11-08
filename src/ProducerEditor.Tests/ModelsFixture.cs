@@ -26,7 +26,7 @@ namespace ProducerEditor.Tests
 		{
 			var all = session.Query<SuspiciousProducerSynonym>().ToList();
 			all.Each(session.Delete);
-			var testSynonym =  session.Query<ProducerSynonym>().FirstOrDefault(s => s.Name == "test");
+			var testSynonym = session.Query<ProducerSynonym>().FirstOrDefault(s => s.Name == "test");
 			if (testSynonym != null)
 				session.Delete(testSynonym);
 			session.Flush();

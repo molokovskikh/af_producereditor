@@ -24,7 +24,7 @@ namespace ProducerEditor.Views
 		{
 			Text = "Отчет о сопоставлениях";
 			report = new VirtualTable(new TemplateManager<SynonymReportItem>(
-				() => { 
+				() => {
 					var row = new Row();
 
 					var widths = WidthHolder.ReportWidths;
@@ -60,8 +60,7 @@ namespace ProducerEditor.Views
 					if (i.IsSuspicious == 1)
 						row.AddClass("Suspicious");
 					return row;
-				}
-			));
+				}));
 			report.CellSpacing = 1;
 			report.RegisterBehavior(new ToolTipBehavior(),
 				new ColumnResizeBehavior(),
@@ -83,14 +82,12 @@ namespace ProducerEditor.Views
 			var begin = DateTime.Now.AddDays(-1).Date;
 			var end = DateTime.Now.Date;
 
-			var beginPeriodCalendar = new DateTimePicker
-			{
+			var beginPeriodCalendar = new DateTimePicker {
 				Value = begin,
 				Width = 130,
 			};
 
-			var endPeriodCalendar = new DateTimePicker
-			{
+			var endPeriodCalendar = new DateTimePicker {
 				Value = end,
 				Width = 130,
 			};
@@ -100,11 +97,7 @@ namespace ProducerEditor.Views
 				.Host(beginPeriodCalendar)
 				.Label("По")
 				.Host(endPeriodCalendar)
-				.Button("Показать", () => {
-					Action(s => {
-						report.TemplateManager.Source = s.ShowSynonymReport(beginPeriodCalendar.Value, endPeriodCalendar.Value).ToList();
-					});
-				})
+				.Button("Показать", () => { Action(s => { report.TemplateManager.Source = s.ShowSynonymReport(beginPeriodCalendar.Value, endPeriodCalendar.Value).ToList(); }); })
 				.Separator()
 				.Button("Suspicious", "Подозрительный (Пробел)", Suspicios)
 				.Button("Удалить (Delete)", Delete);
@@ -140,13 +133,11 @@ namespace ProducerEditor.Views
 				if (item == null)
 					return;
 
-				if (item.IsSuspicious == 1)
-				{
+				if (item.IsSuspicious == 1) {
 					s.DeleteSuspicious(item.Id);
 					item.IsSuspicious = 0;
 				}
-				else
-				{
+				else {
 					s.Suspicious(item.Id);
 					item.IsSuspicious = 1;
 				}

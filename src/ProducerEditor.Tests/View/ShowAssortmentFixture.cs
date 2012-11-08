@@ -13,9 +13,7 @@ namespace ProducerEditor.Tests.View
 		public void Show_assortment()
 		{
 			Pager<AssortmentDto> data = null;
-			FactoryHolder.WithService(s => {
-				data = s.ShowAssortment(0);
-			});
+			FactoryHolder.WithService(s => { data = s.ShowAssortment(0); });
 			var view = new ShowAssortment(data);
 		}
 	}

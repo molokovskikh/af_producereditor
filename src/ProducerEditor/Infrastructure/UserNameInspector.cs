@@ -14,6 +14,7 @@ namespace ProducerEditor.Infrastructure
 		}
 
 		public void AfterReceiveReply(ref Message reply, object correlationState)
-		{}
+		{
+		}
 	}
 }

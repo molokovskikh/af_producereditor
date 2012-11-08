@@ -23,15 +23,13 @@ namespace ProducerEditor.Infrastructure
 		public static void WithService(Action<IProducerService> action)
 		{
 			ICommunicationObject communicationObject = null;
-			try
-			{
+			try {
 				var chanel = Factory.CreateChannel();
 				communicationObject = chanel as ICommunicationObject;
 				action(chanel);
 				communicationObject.Close();
 			}
-			catch (Exception e)
-			{
+			catch (Exception e) {
 				if (communicationObject != null
 					&& communicationObject.State != CommunicationState.Closed)
 					communicationObject.Abort();
