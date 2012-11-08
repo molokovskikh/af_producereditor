@@ -32,7 +32,9 @@ namespace ProducerEditor.Infrastructure.Binders
 		private bool BindAction(View view, ToolStripButton button, string action)
 		{
 			var methods = _presenter.GetType().GetMethods()
-				.Where(m => m.Name == action && m.GetParameters().Length == 1)
+				.Where(m => m.Name == action
+					&& m.GetParameters().Length == 1
+					&& m.GetParameters()[0].Name != "flag")
 				.ToArray();
 
 			if (methods.Length == 0)
