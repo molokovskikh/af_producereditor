@@ -41,7 +41,7 @@ namespace ProducerEditor.Infrastructure.Binders
 				return false;
 
 			foreach (var methodInfo in methods) {
-				//замыкание!
+				//Р·Р°РјС‹РєР°РЅРёРµ!
 				var method = methodInfo;
 				var parameter = methodInfo.GetParameters()[0];
 				var table = view.GetTableForParameter(parameter);

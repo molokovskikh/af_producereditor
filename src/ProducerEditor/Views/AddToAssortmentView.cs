@@ -11,16 +11,16 @@ namespace ProducerEditor.Views
 	{
 		public AddToAssortmentView(ExcludeDto exclude, List<ProducerDto> producers)
 		{
-			Text = "Добавление в ассортимент";
+			Text = "Р”РѕР±Р°РІР»РµРЅРёРµ РІ Р°СЃСЃРѕСЂС‚РёРјРµРЅС‚";
 			Width = 400;
 			Height = 500;
 			var accept = ((Button) AcceptButton);
-			accept.Text = "Добавить";
+			accept.Text = "Р”РѕР±Р°РІРёС‚СЊ";
 			AcceptButton = null;
 
 			var createEquivalent = new CheckBox {
 				AutoSize = true,
-				Text = "Создать новый эквивалент?",
+				Text = "РЎРѕР·РґР°С‚СЊ РЅРѕРІС‹Р№ СЌРєРІРёРІР°Р»РµРЅС‚?",
 				Checked = true
 			};
 			table.Controls.Add(createEquivalent, 0, 0);
@@ -30,7 +30,7 @@ namespace ProducerEditor.Views
 			};
 			table.Controls.Add(equivalent, 1, 0);
 			table.Controls.Add(new Label {
-				Text = "Выберете производителя",
+				Text = "Р’С‹Р±РµСЂРµС‚Рµ РїСЂРѕРёР·РІРѕРґРёС‚РµР»СЏ",
 				AutoSize = true,
 			}, 0, 1);
 			var searcher = new ProducerSearcher(producers);
@@ -52,7 +52,7 @@ namespace ProducerEditor.Views
 					if(!s.CheckProductIsMonobrend(exclude.Id, producer.Id))
 						s.AddToAssotrment(exclude.Id, producer.Id, equivalent);
 					else {
-						MessageBox.Show("Товар помечен как \"Монобренд\", добавление к нему нового поставщика возможно только при снятии этой отметки.", "Невозможно добавить поставщика");
+						MessageBox.Show("РўРѕРІР°СЂ РїРѕРјРµС‡РµРЅ РєР°Рє \"РњРѕРЅРѕР±СЂРµРЅРґ\", РґРѕР±Р°РІР»РµРЅРёРµ Рє РЅРµРјСѓ РЅРѕРІРѕРіРѕ РїРѕСЃС‚Р°РІС‰РёРєР° РІРѕР·РјРѕР¶РЅРѕ С‚РѕР»СЊРєРѕ РїСЂРё СЃРЅСЏС‚РёРё СЌС‚РѕР№ РѕС‚РјРµС‚РєРё.", "РќРµРІРѕР·РјРѕР¶РЅРѕ РґРѕР±Р°РІРёС‚СЊ РїРѕСЃС‚Р°РІС‰РёРєР°");
 					}
 			});
 		}

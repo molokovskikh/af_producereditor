@@ -7,8 +7,8 @@ namespace ProducerEditor.Views
 	public class Legend : UserControl
 	{
 		Dictionary<string, string> knownStyles = new Dictionary<string, string>{
-			{"WithoutOffers", "Есть предложения"},
-			{"SameAsCurrent", "Синоним аналог"}
+			{"WithoutOffers", "Р•СЃС‚СЊ РїСЂРµРґР»РѕР¶РµРЅРёСЏ"},
+			{"SameAsCurrent", "РЎРёРЅРѕРЅРёРј Р°РЅР°Р»РѕРі"}
 		};
 
 		public Legend(params string[] styles)
@@ -29,8 +29,8 @@ namespace ProducerEditor.Views
 				else if (item == "WithoutOffers")
 					color = Color.FromArgb(231, 231, 200);
 /*
-				не работает тк mix не зранит в стиле значение с которым надо смешивать
-				надо что то придумать, например хранить в стиле значение и смешивать правдо непонятно что будет применяться
+				РЅРµ СЂР°Р±РѕС‚Р°РµС‚ С‚Рє mix РЅРµ Р·СЂР°РЅРёС‚ РІ СЃС‚РёР»Рµ Р·РЅР°С‡РµРЅРёРµ СЃ РєРѕС‚РѕСЂС‹Рј РЅР°РґРѕ СЃРјРµС€РёРІР°С‚СЊ
+				РЅР°РґРѕ С‡С‚Рѕ С‚Рѕ РїСЂРёРґСѓРјР°С‚СЊ, РЅР°РїСЂРёРјРµСЂ С…СЂР°РЅРёС‚СЊ РІ СЃС‚РёР»Рµ Р·РЅР°С‡РµРЅРёРµ Рё СЃРјРµС€РёРІР°С‚СЊ РїСЂР°РІРґРѕ РЅРµРїРѕРЅСЏС‚РЅРѕ С‡С‚Рѕ Р±СѓРґРµС‚ РїСЂРёРјРµРЅСЏС‚СЊСЃСЏ
 				var style = StylesHolder.Instance.GetStyle(item);
 				var styleColor = style.Get(StyleElementType.BackgroundColor);
 				var color = Color.FromArgb(styleColor.R, styleColor.G, styleColor.B);
