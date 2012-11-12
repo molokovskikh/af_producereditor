@@ -11,9 +11,7 @@ namespace ProducerEditor
 		[STAThread]
 		public static void Main()
 		{
-#if !DEBUG
 			try {
-#endif
 				XmlConfigurator.Configure();
 #if !DEBUG
 				var installer = new Installer.Installer();
@@ -33,6 +31,11 @@ namespace ProducerEditor
 			}
 			catch (Exception e) {
 				HandleException(e);
+			}
+#else
+			}
+			catch(Exception) {
+				throw;
 			}
 #endif
 		}
