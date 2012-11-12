@@ -10,9 +10,7 @@ namespace ProducerEditor.Service
 		private readonly string _smtpServer;
 		private readonly string _synonymDeleteNotificationMail;
 
-#if DEBUG
 		public List<MailMessage> Messages = new List<MailMessage>();
-#endif
 
 		public Mailer()
 		{
