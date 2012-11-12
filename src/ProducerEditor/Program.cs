@@ -12,28 +12,26 @@ namespace ProducerEditor
 		public static void Main()
 		{
 #if !DEBUG
-			try
-			{
+			try {
 #endif
-			XmlConfigurator.Configure();
+				XmlConfigurator.Configure();
 #if !DEBUG
 				var installer = new Installer.Installer();
 				if (installer.Update())
 					return;
 #endif
 
-			Application.EnableVisualStyles();
-			Application.SetCompatibleTextRenderingDefault(false);
-			Initializer.Initialize();
+				Application.EnableVisualStyles();
+				Application.SetCompatibleTextRenderingDefault(false);
+				Initializer.Initialize();
 #if !DEBUG
 				Application.ThreadException += (sender, e) => HandleException(e.Exception);
 #endif
 
-			Application.Run(new Shell());
+				Application.Run(new Shell());
 #if !DEBUG
 			}
-			catch (Exception e)
-			{
+			catch (Exception e) {
 				HandleException(e);
 			}
 #endif
