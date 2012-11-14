@@ -2,7 +2,9 @@
 using System.Configuration;
 using System.IO;
 using CassiniDev;
+using NHibernate;
 using NUnit.Framework;
+using ProducerEditor.Service;
 
 namespace ProducerEditor.Tests
 {
@@ -10,10 +12,12 @@ namespace ProducerEditor.Tests
 	public class FixtureSetup
 	{
 		private Server webServer;
+		public static ISessionFactory sessionFactory;
 
 		[SetUp]
 		public void Setup()
 		{
+			sessionFactory = Global.InitializeNHibernate();
 			Test.Support.Setup.Initialize();
 			StartServer();
 		}

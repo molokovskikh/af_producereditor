@@ -8,12 +8,6 @@ namespace ProducerEditor.Tests
 	public class InitializationFixture
 	{
 		[Test]
-		public void Try_to_initialize()
-		{
-			Global.InitializeNHibernate();
-		}
-
-		[Test]
 		public void Try_to_resolve_service()
 		{
 			var container = Global.Setup();

@@ -169,6 +169,21 @@ order by p.Id;")
 				foreach (var sourceId in sourceProduceIds) {
 					var source = session.Load<Producer>(sourceId);
 					session.CreateSQLQuery(@"
+drop temporary table if exists for_delete;
+create temporary table for_delete engine=memory
+select d.SynonymFirmCrCode as Id
+from farm.SynonymFirmCr d
+	join farm.SynonymFirmCr s on s.PriceCode = d.PriceCode and s.Synonym = d.Synonym and s.CodeFirmCr = :TargetId
+where d.CodeFirmCr = :SourceId
+;
+
+delete s
+from farm.SynonymFirmCr s
+join for_delete d on d.Id = s.SynonymFirmCrCode
+;
+
+drop temporary table if exists for_delete;
+
 update farm.SynonymFirmCr
 set CodeFirmCr = :TargetId
 where CodeFirmCr = :SourceId

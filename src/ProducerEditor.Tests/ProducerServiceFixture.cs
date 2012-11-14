@@ -3,18 +3,20 @@ using System.Collections.Generic;
 using System.Linq;
 using System.ServiceModel;
 using System.Text;
+using Castle.ActiveRecord;
 using NUnit.Framework;
 using NHibernate;
 using NHibernate.Linq;
 using ProducerEditor.Contract;
 using ProducerEditor.Service;
 using ProducerEditor.Service.Models;
+using Test.Support;
 using Test.Support.Suppliers;
 
 namespace ProducerEditor.Tests
 {
 	[TestFixture]
-	public class ProducerServiceFixture
+	public class ProducerServiceFixture : IntegrationFixture
 	{
 		private ISessionFactory sessionFactory;
 		private ProducerService service;
@@ -24,11 +26,12 @@ namespace ProducerEditor.Tests
 		public void Setup()
 		{
 			mailer = new Mailer();
-			sessionFactory = Global.InitializeNHibernate();
+			sessionFactory = FixtureSetup.sessionFactory;
 			service = new ProducerService(sessionFactory, mailer);
 
 			CreateExclude();
 		}
+
 
 		private void CreateExclude()
 		{
@@ -55,6 +58,23 @@ namespace ProducerEditor.Tests
 				session.Save(productSynonym);
 				session.Save(exclude);
 			}
+		}
+
+		[Test]
+		public void Join_producers_with_identical_synonyms()
+		{
+			var price = TestSupplier.Create().Prices[0];
+			var producer1 = new TestProducer("Тестовый производитель");
+			var producer2 = new TestProducer("Тестовый производитель");
+			var synonym1 = new TestProducerSynonym("Тестовый синоним", producer1, price);
+			var synonym2 = new TestProducerSynonym("Тестовый синоним", producer2, price);
+			session.Save(producer1);
+			session.Save(producer2);
+			session.Save(synonym1);
+			session.Save(synonym2);
+			session.Transaction.Commit();
+
+			service.DoJoin(new[] { producer1.Id }, producer2.Id);
 		}
 
 		[Test]

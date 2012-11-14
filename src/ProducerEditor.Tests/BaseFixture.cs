@@ -12,7 +12,7 @@ namespace ProducerEditor.Tests
 		[SetUp]
 		public void Setup()
 		{
-			sessionFactory = Global.InitializeNHibernate();
+			sessionFactory = FixtureSetup.sessionFactory;
 			session = sessionFactory.OpenSession();
 		}
 
