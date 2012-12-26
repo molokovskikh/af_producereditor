@@ -29,6 +29,9 @@ namespace ProducerEditor.Contract
 		IList<ProducerSynonymDto> GetSynonyms(uint producerId);
 
 		[OperationContract]
+		IList<ProducerSynonymDto> GetSynonymsWithProduct(uint producerId, uint catalogProductId);
+
+		[OperationContract]
 		IList<SynonymReportItem> ShowSuspiciousSynonyms();
 
 		[OperationContract]

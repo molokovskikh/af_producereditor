@@ -179,7 +179,8 @@ namespace ProducerEditor.Views
 		private void SelectedAssortmentChanged(AssortmentDto assortment)
 		{
 			Action(s => {
-				synonymsTable.TemplateManager.Source = s.GetSynonyms(assortment.ProducerId).ToList();
+				//synonymsTable.TemplateManager.Source = s.GetSynonyms(assortment.ProducerId).ToList();
+				synonymsTable.TemplateManager.Source = s.GetSynonymsWithProduct(assortment.ProducerId, assortment.CatalogId).ToList();
 				equivalentTable.TemplateManager.Source = s.GetEquivalents(assortment.ProducerId).ToList();
 			});
 		}

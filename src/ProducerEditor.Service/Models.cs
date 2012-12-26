@@ -123,6 +123,36 @@ group by sfc.SynonymFirmCrCode", filter))
 				.List<ProducerSynonymDto>().ToList();
 		}
 
+		public static List<ProducerSynonymDto> LoadWithProduct(ISession session, Query query, uint catalogProductId)
+		{
+			var filter = "";
+			if (query.Field == "ProducerId")
+				filter = "sfc.CodeFirmCr = :value";
+			if (query.Field == "Name")
+				filter = "sfc.Synonym = :value";
+			if (filter == "")
+				throw new Exception(String.Format("Не знаю как фильтровать по {0}", query.Field));
+			return session.CreateSQLQuery(String.Format(@"
+select sfc.Synonym as Name,
+p.Name as Producer,
+sfc.SynonymFirmCrCode as Id,
+s.Name as Supplier,
+r.Region,
+c.Id is not null as HaveOffers
+from farm.SynonymFirmCr sfc
+	join Catalogs.Producers p on p.Id = sfc.CodeFirmCr
+	join usersettings.PricesData pd on sfc.PriceCode = pd.PriceCode
+	join Customers.Suppliers s on s.Id = pd.FirmCode
+	join farm.Regions r on s.HomeRegion = r.RegionCode
+	join farm.Core0 c on c.SynonymFirmCrCode = sfc.SynonymFirmCrCode
+	join Catalogs.Products pr on pr.Id = c.ProductId
+where {0} and s.Payer <> 921 and r.Retail = 0 and pr.CatalogId = {1}
+group by sfc.SynonymFirmCrCode", filter, catalogProductId))
+				.SetParameter("value", query.Value)
+				.SetResultTransformer(new AliasToPropertyTransformer(typeof(ProducerSynonymDto)))
+				.List<ProducerSynonymDto>().ToList();
+		}
+
 		public virtual bool Exist(ISession session)
 		{
 			return session

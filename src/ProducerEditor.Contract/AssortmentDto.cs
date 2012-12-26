@@ -18,6 +18,9 @@ namespace ProducerEditor.Contract
 		public uint ProducerId { get; set; }
 
 		[DataMember]
+		public uint CatalogId { get; set; }
+
+		[DataMember]
 		public bool Checked { get; set; }
 	}
 
