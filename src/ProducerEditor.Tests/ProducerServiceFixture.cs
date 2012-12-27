@@ -197,5 +197,39 @@ namespace ProducerEditor.Tests
 				.FirstOrDefault(s => s.Name == exclude.ProducerSynonym && s.Supplier == exclude.Supplier);
 			Assert.That(synonym, Is.Not.Null, "не создали синоним");
 		}
+
+		[Test]
+		public void DeleteSynonymProducerWithretransTest()
+		{
+			var supplier = TestSupplier.Create();
+			supplier.Prices[0].Costs[0].PriceItem.Format.PriceFormat = PriceFormatType.NativeDbf;
+			var producer = new TestProducer {
+				Name = "Тестовый производитель"
+			};
+
+			Save(producer);
+			var price = service.Slave(s => s.Load<Price>(supplier.Prices[0].Id));
+			var producerSynonym = new TestProducerSynonym {
+				Price = supplier.Prices[0],
+				Producer = producer,
+				Name = "Тестовый синоним1"
+			};
+			Save(producerSynonym);
+			var cr = new TestCore {
+				Price = supplier.Prices[0],
+				ProducerSynonym = producerSynonym,
+				Quantity = "1",
+				Code = "123",
+				Period = "123"
+			};
+			Save(cr);
+			Flush();
+			Reopen();
+			service.DeleteProducerSynonymWithRetrans(producerSynonym.Id);
+			var savedSynonym = session.Query<ProducerSynonym>().Where(s => s.Id == producerSynonym.Id).ToList();
+			Assert.That(savedSynonym.Count, Is.EqualTo(0));
+			Assert.That(PriceRetrans.Retranses.Count, Is.EqualTo(1));
+			Assert.That(PriceRetrans.Retranses.First(), Is.EqualTo(supplier.Prices[0].Costs[0].PriceItem.Id));
+		}
 	}
 }

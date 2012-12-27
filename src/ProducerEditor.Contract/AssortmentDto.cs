@@ -21,6 +21,9 @@ namespace ProducerEditor.Contract
 		public uint CatalogId { get; set; }
 
 		[DataMember]
+		public bool Monobrend { get; set; }
+
+		[DataMember]
 		public bool Checked { get; set; }
 	}
 

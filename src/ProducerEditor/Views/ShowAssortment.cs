@@ -39,7 +39,9 @@ namespace ProducerEditor.Views
 				.Edit("SearchText")
 				.Button("Поиск", Search)
 				.Separator()
-				.Button("Удалить (Delete)", Delete);
+				.Button("Удалить (Delete)", Delete)
+				.Separator()
+				.Button("Удалить синоним", DeleteProducerSynonym);
 
 			navigationToolStrip = new ToolStrip()
 				.Button("К закаладке", MoveToBookmark)
@@ -183,6 +185,23 @@ namespace ProducerEditor.Views
 				synonymsTable.TemplateManager.Source = s.GetSynonymsWithProduct(assortment.ProducerId, assortment.CatalogId).ToList();
 				equivalentTable.TemplateManager.Source = s.GetEquivalents(assortment.ProducerId).ToList();
 			});
+		}
+
+		private void DeleteProducerSynonym()
+		{
+			var assortment = assortmentTable.Selected<AssortmentDto>();
+			if (assortment == null)
+				return;
+			if(assortment.Monobrend) {
+				MessageBox.Show("Синоним не может быть удален, потому что выбранный продукт имеет свойство Монобренд");
+				return;
+			}
+			var synonym = synonymsTable.Selected<ProducerSynonymDto>();
+			if(synonym == null)
+				return;
+			Action(s => s.DeleteProducerSynonymWithRetrans(synonym.Id));
+			((List<ProducerSynonymDto>)synonymsTable.TemplateManager.Source).Remove(synonym);
+			synonymsTable.RebuildViewPort();
 		}
 
 		private void Delete()

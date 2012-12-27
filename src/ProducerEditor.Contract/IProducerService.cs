@@ -43,6 +43,8 @@ namespace ProducerEditor.Contract
 		[OperationContract]
 		Pager<AssortmentDto> SearchAssortment(string text, uint page);
 
+		[OperationContract]
+		void DeleteProducerSynonymWithRetrans(uint producerSynonymId);
 
 		[OperationContract]
 		void DeleteAssortment(uint assortmentId);

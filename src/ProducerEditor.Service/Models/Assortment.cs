@@ -43,7 +43,8 @@ select a.Id,
 		c.Name as Product,
 		a.Checked,
 		a.ProducerId,
-		a.CatalogId
+		a.CatalogId,
+		c.Monobrend
 from catalogs.Assortment a
 	join catalogs.Producers pr on pr.Id = a.ProducerId
 	join Catalogs.Catalog c on a.CatalogId = c.id

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.ServiceModel;
 using Common.Models.Helpers;
@@ -338,6 +339,16 @@ where CodeFirmCr = :ProducerId and ProductId in (
 						.SetParameter("ProducerId", assortment.Producer.Id)
 						.ExecuteUpdate();
 				}));
+		}
+
+		public virtual void DeleteProducerSynonymWithRetrans(uint producerSynonymId)
+		{
+			Transaction(s => {
+				var synonym = s.Load<ProducerSynonym>(producerSynonymId);
+				var prices = PriceRetrans.GetPricsForRetrans(s, new[] { synonym });
+				Delete<ProducerSynonym>(synonym.Id);
+				PriceRetrans.RetransAll(prices, s);
+			});
 		}
 
 		public virtual Pager<AssortmentDto> ShowAssortment(uint assortimentId)
