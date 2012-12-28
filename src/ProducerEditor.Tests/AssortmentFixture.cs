@@ -38,7 +38,6 @@ namespace ProducerEditor.Tests
 			var findedAssortments = Assortment.Search(session, 0, new Query("ProducerId", assortments.Content[1].ProducerId));
 			Assert.That(findedAssortments.Content.Count, Is.GreaterThan(1));
 			Assert.That(findedAssortments.Page, Is.EqualTo(0));
-			Assert.That(findedAssortments.TotalPages, Is.EqualTo(1));
 		}
 
 		[Test]

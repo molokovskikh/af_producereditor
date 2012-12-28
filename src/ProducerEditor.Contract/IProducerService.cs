@@ -29,6 +29,9 @@ namespace ProducerEditor.Contract
 		IList<ProducerSynonymDto> GetSynonyms(uint producerId);
 
 		[OperationContract]
+		IList<ProducerSynonymDto> GetSynonymsWithProduct(uint producerId, uint catalogProductId);
+
+		[OperationContract]
 		IList<SynonymReportItem> ShowSuspiciousSynonyms();
 
 		[OperationContract]
@@ -40,6 +43,8 @@ namespace ProducerEditor.Contract
 		[OperationContract]
 		Pager<AssortmentDto> SearchAssortment(string text, uint page);
 
+		[OperationContract]
+		void DeleteProducerSynonymWithRetrans(uint producerSynonymId);
 
 		[OperationContract]
 		void DeleteAssortment(uint assortmentId);
