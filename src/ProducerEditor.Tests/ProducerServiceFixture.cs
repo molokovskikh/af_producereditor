@@ -9,6 +9,7 @@ using NHibernate;
 using NHibernate.Linq;
 using ProducerEditor.Contract;
 using ProducerEditor.Service;
+using ProducerEditor.Service.Helpers;
 using ProducerEditor.Service.Models;
 using Test.Support;
 using Test.Support.Suppliers;
@@ -21,6 +22,7 @@ namespace ProducerEditor.Tests
 		private ISessionFactory sessionFactory;
 		private ProducerService service;
 		private Mailer mailer;
+		private ISession localSession;
 
 		[SetUp]
 		public void Setup()
@@ -28,10 +30,17 @@ namespace ProducerEditor.Tests
 			mailer = new Mailer();
 			sessionFactory = FixtureSetup.sessionFactory;
 			service = new ProducerService(sessionFactory, mailer);
+			localSession = sessionFactory.OpenSession();
 
 			CreateExclude();
 		}
 
+		[TearDown]
+		public void TearDown()
+		{
+			if (localSession != null)
+				localSession.Close();
+		}
 
 		private void CreateExclude()
 		{
@@ -230,6 +239,24 @@ namespace ProducerEditor.Tests
 			Assert.That(savedSynonym.Count, Is.EqualTo(0));
 			Assert.That(PriceRetrans.Retranses.Count, Is.EqualTo(1));
 			Assert.That(PriceRetrans.Retranses.First(), Is.EqualTo(supplier.Prices[0].Costs[0].PriceItem.Id));
+		}
+
+		[Test]
+		public void Log_updates()
+		{
+			var begin = DateTime.Now.AddSeconds(-2);
+			var producer = localSession.Query<Producer>().First();
+			var producerDto = new ProducerDto {
+				Checked = !producer.Checked,
+				Id = producer.Id,
+				Name = producer.Name
+			};
+			service.UpdateProducer(producerDto);
+
+			var users = localSession.CreateSQLQuery("select OperatorName from Logs.ProducerLogs where LogTime >= :begin")
+				.SetParameter("begin", begin)
+				.List<string>();
+			Assert.That(users, Is.EquivalentTo(new[] { Environment.UserName }));
 		}
 	}
 }

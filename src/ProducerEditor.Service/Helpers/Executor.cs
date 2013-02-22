@@ -27,7 +27,7 @@ namespace ProducerEditor.Service.Helpers
 							user = OperationContext.Current.IncomingMessageHeaders.GetHeader<string>("UserName", "");
 						}
 						session.CreateSQLQuery(@"
-set @InUnser = :user
+set @InUser = :user
 ;
 set @InHost = :host
 ;")
