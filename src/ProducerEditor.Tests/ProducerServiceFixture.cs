@@ -244,8 +244,11 @@ namespace ProducerEditor.Tests
 		[Test]
 		public void Log_updates()
 		{
-			var begin = DateTime.Now.AddSeconds(-2);
+			var begin = DateTime.Now;
 			var producer = localSession.Query<Producer>().First();
+			localSession.CreateSQLQuery("delete from Logs.ProducerLogs where ProducerId = :id")
+				.SetParameter("id", producer.Id)
+				.ExecuteUpdate();
 			var producerDto = new ProducerDto {
 				Checked = !producer.Checked,
 				Id = producer.Id,
@@ -253,7 +256,8 @@ namespace ProducerEditor.Tests
 			};
 			service.UpdateProducer(producerDto);
 
-			var users = localSession.CreateSQLQuery("select OperatorName from Logs.ProducerLogs where LogTime >= :begin")
+			var users = localSession.CreateSQLQuery("select OperatorName from Logs.ProducerLogs where ProducerId = :id and  LogTime >= :begin")
+				.SetParameter("id", producer.Id)
 				.SetParameter("begin", begin)
 				.List<string>();
 			Assert.That(users, Is.EquivalentTo(new[] { Environment.UserName }));
