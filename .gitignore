@@ -5,3 +5,4 @@ obj
 AssemblyInfo.cs
 output/
 packages/
+src/*.properties
