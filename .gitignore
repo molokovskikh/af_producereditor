@@ -6,3 +6,5 @@ AssemblyInfo.cs
 output/
 packages/
 src/*.properties
+*.user
+*.suo
