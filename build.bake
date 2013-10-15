@@ -123,7 +123,7 @@ task @cleanServiceDeployDir:
 task @buildDeployPackage, [@GenerateAssemblyInfo, @build, @buildService, @buildInstaller, @cleanDeployPackage]:
 	output = Path.GetFullPath("$buildRoot/${project}.Setup/")
 	source = Path.GetFullPath("$buildRoot/${project}/")
-	certPath = Path.GetFullPath("lib/CodeSign.pfx")
+	certPath = GetResource("inforoomCS.pfx")
 	password = "password"
 
 	items = (TaskItem("${project}", {"Visible" : "false", "Install" : "true"}),
