@@ -69,7 +69,8 @@ publisher = "Inforoom"
 Global(
 	Project : "ProducerEditor",
 	HumanReadableName : "Редактор производителей",
-	Profile: @catalog
+	Profile: @catalog,
+	GenerateAssemblyInfoIgnore: (/DevAge.+/,)
 )
 
 def Clean(path as String):
