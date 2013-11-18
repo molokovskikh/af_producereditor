@@ -70,7 +70,8 @@ Global(
 	Project : "ProducerEditor",
 	HumanReadableName : "Редактор производителей",
 	Profile: @catalog,
-	GenerateAssemblyInfoIgnore: (/DevAge.+/,)
+	GenerateAssemblyInfoIgnore: (/DevAge.+/,),
+	TestIgnore: (/Subway.+/,)
 )
 
 def Clean(path as String):
