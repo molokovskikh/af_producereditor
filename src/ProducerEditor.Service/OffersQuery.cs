@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Runtime.Serialization;
 using Common.Models.Helpers;
+using Common.NHibernate;
 using NHibernate;
 using ProducerEditor.Contract;
 

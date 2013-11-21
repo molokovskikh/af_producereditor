@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using Common.Models.Helpers;
+using Common.NHibernate;
 using MySql.Data.MySqlClient;
 using NHibernate;
 using NHibernate.Linq;
@@ -52,8 +53,7 @@ from catalogs.Assortment a
 order by c.Name
 limit :begin, 100")
 				.SetParameter("begin", page * 100)
-				.SetResultTransformer(new AliasToPropertyTransformer(typeof(AssortmentDto)))
-				.List<AssortmentDto>();
+				.ToList<AssortmentDto>();
 			var count = Query.GetQuery(session, query, @"
 select count(*)
 from catalogs.Assortment a 

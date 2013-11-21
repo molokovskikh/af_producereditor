@@ -5,6 +5,7 @@ using System.Linq;
 using System.ServiceModel;
 using Common.Models.Helpers;
 using Common.MySql;
+using Common.NHibernate;
 using NHibernate;
 using NHibernate.Linq;
 using ProducerEditor.Contract;
@@ -98,9 +99,8 @@ from Catalogs.Producers p
 where p.Name like :text
 or exists(select * from Catalogs.ProducerEquivalents e where e.Name like :text and e.ProducerId = p.Id)
 order by p.Name")
-				.SetResultTransformer(new AliasToPropertyTransformer(typeof(ProducerDto)))
 				.SetParameter("text", text)
-				.List<ProducerDto>());
+				.ToList<ProducerDto>());
 		}
 
 		public virtual List<OfferView> ShowOffers(OffersQueryParams query)
@@ -159,8 +159,7 @@ from ProductsAndProducers pap
 group by pap.ProductId, pap.CodeFirmCr
 order by p.Id;")
 				.SetParameter("ProducerId", producerId)
-				.SetResultTransformer(new AliasToPropertyTransformer(typeof(ProductAndProducer)))
-				.List<ProductAndProducer>()).ToList();
+				.ToList<ProductAndProducer>()).ToList();
 		}
 
 		public virtual void DoJoin(uint[] sourceProduceIds, uint targetProducerId)

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Common.Models.Helpers;
+using Common.NHibernate;
 using NHibernate;
 using NHibernate.Transform;
 using ProducerEditor.Contract;
@@ -39,8 +40,7 @@ group by sfc.SynonymFirmCrCode
 order by sfc.Synonym;")
 				.SetParameter("begin", begin)
 				.SetParameter("end", end)
-				.SetResultTransformer(new AliasToPropertyTransformer(typeof(SynonymReportItem)))
-				.List<SynonymReportItem>().ToList();
+				.ToList<SynonymReportItem>();
 		}
 
 		public static IList<SynonymReportItem> Suspicious(ISession session)
@@ -71,8 +71,7 @@ FROM logs.SynonymFirmCrLogs sfcl
 where ((sfcl.Operation = 0 and sfcl.OperatorName != 'ProcessingSvc') or (sfcl.Operation = 1 and sfcl.OperatorName != 'ProducerEditor' and sfcl.OPeratorHost like 'OPT%'))
 group by sfc.SynonymFirmCrCode
 order by sfc.Synonym;")
-				.SetResultTransformer(new AliasToPropertyTransformer(typeof(SynonymReportItem)))
-				.List<SynonymReportItem>().ToList();
+				.ToList<SynonymReportItem>();
 		}
 	}
 }

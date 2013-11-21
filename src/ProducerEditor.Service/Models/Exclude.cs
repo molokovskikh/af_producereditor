@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using Common.Models.Helpers;
+using Common.NHibernate;
 using NHibernate;
 using NHibernate.Linq;
 using NHibernate.Mapping.Attributes;
@@ -103,8 +104,7 @@ farm.Excludes e
 				sqlQuery.SetParameter(parameters.Key, parameters.Value);
 
 			var items = sqlQuery
-				.SetResultTransformer(new AliasToPropertyTransformer(typeof(T)))
-				.List<T>();
+				.ToList<T>();
 
 			query.Query.SelectParts.Clear();
 			query.Query.SelectParts.Add("count(*)");

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Common.Models.Helpers;
+using Common.NHibernate;
 using NHibernate;
 using NHibernate.Linq;
 using NHibernate.Mapping.Attributes;
@@ -119,8 +120,7 @@ from farm.SynonymFirmCr sfc
 where {0} and s.Payer <> 921 and r.Retail = 0
 group by sfc.SynonymFirmCrCode", filter))
 				.SetParameter("value", query.Value)
-				.SetResultTransformer(new AliasToPropertyTransformer(typeof(ProducerSynonymDto)))
-				.List<ProducerSynonymDto>().ToList();
+				.ToList<ProducerSynonymDto>().ToList();
 		}
 
 		public static List<ProducerSynonymDto> LoadWithProduct(ISession session, Query query, uint catalogProductId)
@@ -149,8 +149,7 @@ from farm.SynonymFirmCr sfc
 where {0} and s.Payer <> 921 and r.Retail = 0 and pr.CatalogId = {1}
 group by sfc.SynonymFirmCrCode", filter, catalogProductId))
 				.SetParameter("value", query.Value)
-				.SetResultTransformer(new AliasToPropertyTransformer(typeof(ProducerSynonymDto)))
-				.List<ProducerSynonymDto>().ToList();
+				.ToList<ProducerSynonymDto>().ToList();
 		}
 
 		public virtual bool Exist(ISession session)
