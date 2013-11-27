@@ -62,7 +62,6 @@ project = "ProducerEditor"
 buildRoot = "output"
 projectFile = Path.GetFullPath("src/${project}/${project}.csproj")
 output = Path.GetFullPath("$buildRoot/${project}");
-version = GetVersion()
 deploymentUrl = "http://publish.analit.net/ProducerEditor/"
 publisher = "Inforoom"
 
@@ -123,6 +122,7 @@ task @cleanServiceDeployDir:
 	Clean("\\\\acdcserv\\WebApps\\ProducerEditor.Service\\")
 
 task @buildDeployPackage, [@GenerateAssemblyInfo, @build, @buildService, @buildInstaller, @cleanDeployPackage]:
+	version = GetVersion()
 	output = Path.GetFullPath("$buildRoot/${project}.Setup/")
 	source = Path.GetFullPath("$buildRoot/${project}/")
 	certPath = GetResource("inforoomCS.pfx")
