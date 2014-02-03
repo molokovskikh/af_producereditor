@@ -125,7 +125,7 @@
     <StyleCopOverrideSettingsFile>$(StylecopAddonPath)\Settings.StyleCop</StyleCopOverrideSettingsFile>
   </PropertyGroup>
   <ItemGroup>
-    <StyleCopAdditionalAddinPaths Include="..\..\packages\StyleCopAddOn.1.0.4\lib\4.0">
+    <StyleCopAdditionalAddinPaths Include="$(StylecopAddonPath)\lib\4.0">
       <InProject>false</InProject>
     </StyleCopAdditionalAddinPaths>
   </ItemGroup>
