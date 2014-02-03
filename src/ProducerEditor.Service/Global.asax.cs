@@ -75,7 +75,7 @@ namespace ProducerEditor.Service
 						.If(t => t.Name.Contains("Service"))
 						.WithService.AllInterfaces()
 						.Configure(c => {
-							var conf = c.Named(c.ServiceType.Name)
+							var conf = c
 								.AsWcfService(new DefaultServiceModel().AddEndpoints(WcfEndpoint.BoundTo(binding)).Hosted())
 								.Interceptors(InterceptorReference.ForType<ErrorLoggingInterceptor>()).Anywhere;
 						}));
@@ -92,7 +92,6 @@ namespace ProducerEditor.Service
 					{ Environment.ConnectionDriver, "NHibernate.Driver.MySqlDataDriver" },
 					{ Environment.ConnectionProvider, "NHibernate.Connection.DriverConnectionProvider" },
 					{ Environment.ConnectionStringName, ConnectionHelper.GetConnectionName() },
-					{ Environment.ProxyFactoryFactoryClass, "NHibernate.ByteCode.Castle.ProxyFactoryFactory, NHibernate.ByteCode.Castle" },
 					{ Environment.Hbm2ddlKeyWords, "none" }
 				})
 				.AddInputStream(HbmSerializer.Default.Serialize(typeof(Supplier).Assembly))
