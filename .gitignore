@@ -8,3 +8,4 @@ packages/
 src/*.properties
 *.user
 *.suo
+*.gen.*
