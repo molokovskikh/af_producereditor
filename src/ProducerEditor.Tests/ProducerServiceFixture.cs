@@ -210,23 +210,17 @@ namespace ProducerEditor.Tests
 		[Test]
 		public void DeleteSynonymProducerWithretransTest()
 		{
-			var supplier = TestSupplier.Create();
-			supplier.Prices[0].Costs[0].PriceItem.Format.PriceFormat = PriceFormatType.NativeDbf;
+			var supplier = TestSupplier.CreateNaked(session);
+			var price = supplier.Prices[0];
+			price.Costs[0].PriceItem.Format.PriceFormat = PriceFormatType.NativeDbf;
 			var producer = new TestProducer {
 				Name = "Тестовый производитель"
 			};
 
 			Save(producer);
-			var price = service.Slave(s => s.Load<Price>(supplier.Prices[0].Id));
-			var producerSynonym = new TestProducerSynonym {
-				Price = supplier.Prices[0],
-				Producer = producer,
-				Name = "Тестовый синоним1"
-			};
-			Save(producerSynonym);
-			var cr = new TestCore {
-				Price = supplier.Prices[0],
-				ProducerSynonym = producerSynonym,
+			var producerSynonym = price.AddProducerSynonym(producer.Name, producer);
+			var cr = new TestCore(price.AddProductSynonym("Тестовый синоним2"), producerSynonym) {
+				Price = price,
 				Quantity = "1",
 				Code = "123",
 				Period = "123"
@@ -238,7 +232,7 @@ namespace ProducerEditor.Tests
 			var savedSynonym = session.Query<ProducerSynonym>().Where(s => s.Id == producerSynonym.Id).ToList();
 			Assert.That(savedSynonym.Count, Is.EqualTo(0));
 			Assert.That(PriceRetrans.Retranses.Count, Is.EqualTo(1));
-			Assert.That(PriceRetrans.Retranses.First(), Is.EqualTo(supplier.Prices[0].Costs[0].PriceItem.Id));
+			Assert.That(PriceRetrans.Retranses.First(), Is.EqualTo(price.Costs[0].PriceItem.Id));
 		}
 
 		[Test]
