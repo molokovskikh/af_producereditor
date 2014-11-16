@@ -9,15 +9,6 @@ import Microsoft.Build.Tasks from "Microsoft.Build.Tasks.v3.5"
 import Microsoft.Build.Utilities.TaskItem from "Microsoft.Build.Utilities.v3.5" as TaskItem
 import ICSharpCode.SharpZipLib.Zip
 import Bake.Win32.Helper
-import file from Config.bake
-import file from lib.bake
-import file from deploy.bake
-import file from Migration.bake
-import file from Tools.bake
-import file from AssemblyInfo.bake
-import file from Db.bake
-import file from Test.bake
-import file from MySql.bake
 
 class BakeMsbuildEngine(IBuildEngine):
 
@@ -115,7 +106,7 @@ task @cleanService:
 			FrameworkVersion : "4.0.30319").Execute()
 	Clean("$buildRoot/ProducerEditor.Service")
 
-task @deployService, [@buildService, @cleanServiceDeployDir, @SendDeployNotification]:
+task @deployService, [@buildService, @cleanServiceDeployDir, "deploy:notify"]:
 	Cp(FileSet("**/*.*", BaseDirectory : "$buildRoot/ProducerEditor.Service/"), "\\\\acdcserv\\WebApps\\ProducerEditor.Service\\")
 
 task @cleanServiceDeployDir:
@@ -211,7 +202,7 @@ task @cleanDeployPackage:
 	Clean("$buildRoot/${project}.Setup")
 	Clean("$buildRoot/bootstrapper")
 
-task @deploy, [@CheckScmChanges, @UpdateRevision, @buildDeployPackage, @Production, @Migrate, @cleanDeployDir, @deployService, @SendDeployNotification]:
+task @deploy, [@CheckScmChanges, @UpdateRevision, @buildDeployPackage, @Production, @Migrate, @cleanDeployDir, @deployService, "deploy:notify"]:
 	deployDir = Path.Combine(Globals.PublishRoot, project)
 	Cp(FileSet("**/*.*", BaseDirectory : "$buildRoot/${project}.Setup"), deployDir)
 
