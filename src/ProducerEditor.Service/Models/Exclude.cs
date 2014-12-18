@@ -45,7 +45,8 @@ namespace ProducerEditor.Service
 					.FirstOrDefault(s => s.Price == Price && s.Name == ProducerSynonym && s.Producer == null);
 				if (synonym == null)
 					return;
-				session.Delete(synonym);
+				synonym.MarkAsDeleted();
+				session.Update(synonym);
 			}
 		}
 	}

@@ -89,6 +89,9 @@ namespace ProducerEditor.Service
 		[Property(Column = "Synonym")]
 		public virtual string Name { get; set; }
 
+		[Property]
+		public virtual string Canonical { get; set; }
+
 		[ManyToOne(ClassType = typeof(Producer), Column = "CodeFirmCr")]
 		public virtual Producer Producer { get; set; }
 
@@ -158,6 +161,13 @@ group by sfc.SynonymFirmCrCode", filter, catalogProductId))
 				.Query<ProducerSynonym>()
 				.FirstOrDefault(s => s.Price == Price && s.Producer == Producer && s.Name == Name) != null;
 		}
+
+		public virtual void MarkAsDeleted()
+		{
+			Producer = null;
+			Canonical = null;
+			Name = "<удален>";
+		}
 	}
 
 	[Class(Table = "farm.Synonym")]
@@ -170,14 +180,24 @@ group by sfc.SynonymFirmCrCode", filter, catalogProductId))
 		[Property(Column = "Synonym")]
 		public virtual string Name { get; set; }
 
+		[Property]
+		public virtual string Canonical { get; set; }
+
 		[Property(Column = "Junk")]
 		public virtual bool Junk { get; set; }
 
 		[Property(Column = "ProductId")]
-		public virtual uint ProductId { get; set; }
+		public virtual uint? ProductId { get; set; }
 
 		[ManyToOne(ClassType = typeof(Price), Column = "PriceCode")]
 		public virtual Price Price { get; set; }
+
+		public virtual void MarkAsDeleted()
+		{
+			ProductId = null;
+			Canonical = null;
+			Name = "<удален>";
+		}
 	}
 
 	[Class(Table = "Catalogs.ProducerEquivalents")]

@@ -105,6 +105,12 @@ namespace ProducerEditor.Tests
 			var exclude = excludes.Content.First(e => e.OriginalSynonymId != 0);
 			service.DeleteSynonym(exclude.OriginalSynonymId);
 			Assert.That(mailer.Messages[0].Body, Is.StringContaining(String.Format("Продукт: {0}", exclude.Catalog)));
+
+			session.Transaction.Commit();
+			var synonym = session.Load<TestProductSynonym>(exclude.OriginalSynonymId);
+			Assert.IsNull(synonym.Canonical, synonym.Id.ToString());
+			Assert.IsNull(synonym.Product, synonym.Id.ToString());
+			Assert.AreEqual("<удален>", synonym.Name);
 		}
 
 		[Test]

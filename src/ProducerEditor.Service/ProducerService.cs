@@ -177,9 +177,9 @@ from farm.SynonymFirmCr d
 where d.CodeFirmCr = :SourceId
 ;
 
-delete s
-from farm.SynonymFirmCr s
+update farm.SynonymFirmCr s
 join for_delete d on d.Id = s.SynonymFirmCrCode
+set s.CodeFirmCr = null, Synonym = '<удален>', Canonical = null
 ;
 
 drop temporary table if exists for_delete;
@@ -242,7 +242,7 @@ where CodeFirmCr = :SourceId
 		public virtual void CreateEquivalentForProducer(uint producerId, string equivalentName)
 		{
 			Transaction(session => {
-				var producer = session.Get<Producer>(producerId);
+				var producer = session.Load<Producer>(producerId);
 				producer.AddEquivalent(equivalentName);
 			});
 		}
@@ -251,10 +251,10 @@ where CodeFirmCr = :SourceId
 		{
 			Transaction(session => {
 				var synonym = session.Load<ProducerSynonym>(producerSynonymId);
-				session.Delete(synonym);
-
 				session.Save(new BlockedProducerSynonym(synonym));
 				_mailer.SynonymWasDeleted(synonym);
+				synonym.MarkAsDeleted();
+				session.Update(synonym);
 			});
 		}
 
@@ -271,7 +271,7 @@ WHERE OriginalSynonymId = :SynonymId")
 
 				if (synonym == null)
 					return;
-				session.Delete(synonym);
+
 				var productName = session.CreateSQLQuery(@"
 select c.Name
 from Catalogs.Products p
@@ -280,6 +280,7 @@ where p.Id = :productId")
 					.SetParameter("productId", synonym.ProductId)
 					.UniqueResult<string>();
 				_mailer.SynonymWasDeleted(synonym, productName);
+				synonym.MarkAsDeleted();
 			});
 		}
 
@@ -344,8 +345,9 @@ where CodeFirmCr = :ProducerId and ProductId in (
 		{
 			Transaction(s => {
 				var synonym = s.Load<ProducerSynonym>(producerSynonymId);
+				synonym.MarkAsDeleted();
+				s.Update(synonym);
 				var prices = PriceRetrans.GetPricsForRetrans(s, new[] { synonym });
-				Delete<ProducerSynonym>(synonym.Id);
 				PriceRetrans.RetransAll(prices, s);
 			});
 		}
