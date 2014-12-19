@@ -179,7 +179,7 @@ where d.CodeFirmCr = :SourceId
 
 update farm.SynonymFirmCr s
 join for_delete d on d.Id = s.SynonymFirmCrCode
-set s.CodeFirmCr = null, Synonym = '<удален>', Canonical = null
+set s.CodeFirmCr = null, Synonym = concat('<удален-', s.SynonymFirmCrCode, '>'), Canonical = null
 ;
 
 drop temporary table if exists for_delete;

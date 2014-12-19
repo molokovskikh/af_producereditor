@@ -166,7 +166,7 @@ group by sfc.SynonymFirmCrCode", filter, catalogProductId))
 		{
 			Producer = null;
 			Canonical = null;
-			Name = "<удален>";
+			Name = String.Format("<удален-{0}>", Id);
 		}
 	}
 
@@ -196,7 +196,7 @@ group by sfc.SynonymFirmCrCode", filter, catalogProductId))
 		{
 			ProductId = null;
 			Canonical = null;
-			Name = "<удален>";
+			Name = String.Format("<удален-{0}>", Id);
 		}
 	}
 
