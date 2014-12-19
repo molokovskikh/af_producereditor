@@ -113,7 +113,7 @@ task @cleanServiceDeployDir:
 	Clean("\\\\acdcserv\\WebApps\\ProducerEditor.Service\\")
 
 task @buildDeployPackage, [@GenerateAssemblyInfo, @build, @buildService, @buildInstaller, @cleanDeployPackage]:
-	version = GetVersion()
+	version = GetVersion().ToString()
 	output = Path.GetFullPath("$buildRoot/${project}.Setup/")
 	source = Path.GetFullPath("$buildRoot/${project}/")
 	certPath = GetResource("inforoomCS.pfx")
