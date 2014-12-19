@@ -110,7 +110,7 @@ namespace ProducerEditor.Tests
 			var synonym = session.Load<TestProductSynonym>(exclude.OriginalSynonymId);
 			Assert.IsNull(synonym.Canonical, synonym.Id.ToString());
 			Assert.IsNull(synonym.Product, synonym.Id.ToString());
-			Assert.AreEqual("<удален>", synonym.Name);
+			Assert.AreEqual(String.Format("<удален-{0}>", synonym.Id), synonym.Name);
 		}
 
 		[Test]
