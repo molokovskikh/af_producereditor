@@ -55,5 +55,10 @@ namespace ProducerEditor.Service.Models
 
 			Equivalents.Add(new ProducerEquivalent(this, name));
 		}
+
+		public virtual void MarkAsDeleted()
+		{
+			Name = String.Format("<удален-{0}>", Id);
+		}
 	}
 }

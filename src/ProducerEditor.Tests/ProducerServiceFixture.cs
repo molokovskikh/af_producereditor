@@ -114,6 +114,17 @@ namespace ProducerEditor.Tests
 		}
 
 		[Test]
+		public void Delete_producer()
+		{
+			var producer = new TestProducer(Guid.NewGuid().ToString());
+			session.Save(producer);
+			session.Transaction.Commit();
+			service.DeleteProducer(producer.Id);
+			session.Refresh(producer);
+			Assert.AreEqual(String.Format("<удален-{0}>", producer.Id), producer.Name);
+		}
+
+		[Test]
 		public void Get_data_for_exclude()
 		{
 			var excludes = service.ShowExcludes();

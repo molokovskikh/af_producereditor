@@ -203,7 +203,8 @@ where CodeFirmCr = :SourceId
 						.ExecuteUpdate();
 					target.MergeToEquivalent(source, session);
 
-					session.Delete(source);
+					source.MarkAsDeleted();
+					session.Update(source);
 				}
 			});
 		}
@@ -234,7 +235,7 @@ where CodeFirmCr = :SourceId
 		public virtual IList<ProducerEquivalentDto> GetEquivalents(uint producerId)
 		{
 			return Slave(s => {
-				var producer = s.Get<Producer>(producerId);
+				var producer = s.Load<Producer>(producerId);
 				return producer.Equivalents.Select(e => new ProducerEquivalentDto(e.Id, e.Name)).ToList();
 			});
 		}
@@ -307,7 +308,11 @@ where p.Id = :productId")
 
 		public virtual void DeleteProducer(uint producerId)
 		{
-			Delete<Producer>(producerId);
+			Transaction(session => {
+				var producer = session.Load<Producer>(producerId);
+				producer.MarkAsDeleted();
+				session.Update(producer);
+			});
 		}
 
 		public virtual void DeleteExclude(uint excludeId)
@@ -318,7 +323,7 @@ where p.Id = :productId")
 		public void Delete<T>(uint id)
 		{
 			Transaction(session => {
-				var producer = session.Get<T>(id);
+				var producer = session.Load<T>(id);
 				session.Delete(producer);
 			});
 		}
