@@ -44,8 +44,10 @@ namespace ProducerEditor.Tests
 
 		private void CreateExclude()
 		{
+			var supplier = TestSupplier.CreateNaked(this.session);
+			this.session.Transaction.Commit();
+			this.session.BeginTransaction();
 			using (var session = sessionFactory.OpenSession()) {
-				var supplier = TestSupplier.Create();
 				var price = session.Load<Price>(supplier.Prices[0].Id);
 				var producerSynonym = new ProducerSynonym {
 					Name = "Тетовый синоним",
@@ -72,7 +74,7 @@ namespace ProducerEditor.Tests
 		[Test]
 		public void Join_producers_with_identical_synonyms()
 		{
-			var price = TestSupplier.Create().Prices[0];
+			var price = TestSupplier.CreateNaked(session).Prices[0];
 			var producer1 = new TestProducer("Тестовый производитель");
 			var producer2 = new TestProducer("Тестовый производитель");
 			var synonym1 = new TestProducerSynonym("Тестовый синоним", producer1, price);

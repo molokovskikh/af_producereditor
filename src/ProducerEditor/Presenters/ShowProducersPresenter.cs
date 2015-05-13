@@ -10,6 +10,26 @@ using ProducerEditor.Views;
 
 namespace ProducerEditor.Presenters
 {
+	public class ObservableCollection2<T> : ObservableCollection<T>
+	{
+		public ObservableCollection2()
+		{
+		}
+
+		public ObservableCollection2(List<T> list) : base(list)
+		{
+		}
+
+		public ObservableCollection2(IEnumerable<T> collection) : base(collection)
+		{
+		}
+
+		public void Sort(IComparer<T> comparer)
+		{
+			((List<T>)Items).Sort(comparer);
+		}
+	}
+
 	public class ShowProducersPresenter : Presenter
 	{
 		private ObservableCollection<ProducerDto> producers;
@@ -58,9 +78,9 @@ namespace ProducerEditor.Presenters
 			text = text ?? "";
 			var allProducers = ShowProducers.producers;
 			if (string.IsNullOrEmpty(text))
-				Producers = new ObservableCollection<ProducerDto>(allProducers);
+				Producers = new ObservableCollection2<ProducerDto>(allProducers);
 			else
-				Producers = new ObservableCollection<ProducerDto>(Request(r => r.GetProducers(text)));
+				Producers = new ObservableCollection2<ProducerDto>(Request(r => r.GetProducers(text)));
 
 			if (Producers.Count == 0) {
 				MessageBox.Show("По вашему запросу ничеого не найдено", "Результаты поиска",
@@ -72,8 +92,8 @@ namespace ProducerEditor.Presenters
 		public void CurrentChanged(ProducerDto producer)
 		{
 			Action(s => {
-				ProducerSynonyms = new ObservableCollection<ProducerSynonymDto>(s.GetSynonyms(producer.Id));
-				ProducerEquivalents = new ObservableCollection<ProducerEquivalentDto>(s.GetEquivalents(producer.Id));
+				ProducerSynonyms = new ObservableCollection2<ProducerSynonymDto>(s.GetSynonyms(producer.Id));
+				ProducerEquivalents = new ObservableCollection2<ProducerEquivalentDto>(s.GetEquivalents(producer.Id));
 			});
 		}
 
