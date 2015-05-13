@@ -1,12 +1,12 @@
 ﻿import System
 import System.IO
-import System.Xml from "C:\\Windows\\Microsoft.NET\\Framework\\v2.0.50727\\System.Xml.dll"
+import System.Xml
 import System.Security.Cryptography.X509Certificates
 import System.Net.Mail
 import System.Threading
 import Microsoft.Build.Framework
-import Microsoft.Build.Tasks from "Microsoft.Build.Tasks.v3.5"
-import Microsoft.Build.Utilities.TaskItem from "Microsoft.Build.Utilities.v3.5" as TaskItem
+import Microsoft.Build.Tasks from "Microsoft.Build.Tasks.v4.0"
+import Microsoft.Build.Utilities.TaskItem from "Microsoft.Build.Utilities.v4.0" as TaskItem
 import ICSharpCode.SharpZipLib.Zip
 import Bake.Win32.Helper
 
@@ -107,10 +107,10 @@ task @cleanService:
 	Clean("$buildRoot/ProducerEditor.Service")
 
 task @deployService, [@buildService, @cleanServiceDeployDir, "deploy:notify"]:
-	Cp(FileSet("**/*.*", BaseDirectory : "$buildRoot/ProducerEditor.Service/"), "\\\\acdcserv\\WebApps\\ProducerEditor.Service\\")
+	Cp(FileSet("**/*.*", BaseDirectory : "$buildRoot/ProducerEditor.Service/"), "${Globals.DeployRoot}\\ProducerEditor.Service\\")
 
 task @cleanServiceDeployDir:
-	Clean("\\\\acdcserv\\WebApps\\ProducerEditor.Service\\")
+	Clean("${Globals.DeployRoot}\\ProducerEditor.Service\\")
 
 task @buildDeployPackage, [@GenerateAssemblyInfo, @build, @buildService, @buildInstaller, @cleanDeployPackage]:
 	version = GetVersion().ToString()
