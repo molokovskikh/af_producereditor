@@ -19,6 +19,8 @@ namespace ProducerEditor.Views
 	public class ShowSynonymReport : View
 	{
 		private VirtualTable report;
+		private DateTime lastBeginDate = DateTime.Today.AddDays(-1);
+		private DateTime lastEndDate = DateTime.Today;
 
 		public ShowSynonymReport(IList<SynonymReportItem> items)
 		{
@@ -72,7 +74,8 @@ namespace ProducerEditor.Views
 			report.Host
 				.InputMap()
 				.KeyDown(Keys.Space, Suspicios)
-				.KeyDown(Keys.Delete, Delete);
+				.KeyDown(Keys.Delete, Delete)
+				.KeyDown(Keys.F11, Reload);
 
 			Controls.Add(report.Host);
 
@@ -97,10 +100,15 @@ namespace ProducerEditor.Views
 				.Host(beginPeriodCalendar)
 				.Label("По")
 				.Host(endPeriodCalendar)
-				.Button("Показать", () => { Action(s => { report.TemplateManager.Source = s.ShowSynonymReport(beginPeriodCalendar.Value, endPeriodCalendar.Value).ToList(); }); })
+				.Button("Показать", () => Action(s => {
+					lastBeginDate = beginPeriodCalendar.Value;
+					lastEndDate = endPeriodCalendar.Value;
+					report.TemplateManager.Source = s.ShowSynonymReport(beginPeriodCalendar.Value, endPeriodCalendar.Value).ToList();
+				}))
 				.Separator()
 				.Button("Suspicious", "Подозрительный (Пробел)", Suspicios)
-				.Button("Удалить (Delete)", Delete);
+				.Button("Удалить (Delete)", Delete)
+				.Button("Обновить (F11)", Reload);
 
 			MinimumSize = new Size(640, 480);
 			KeyPreview = true;
@@ -148,6 +156,13 @@ namespace ProducerEditor.Views
 		private SynonymReportItem CurrentItem()
 		{
 			return report.Selected<SynonymReportItem>();
+		}
+
+		public void Reload()
+		{
+			Action(s => {
+				report.TemplateManager.Source = s.ShowSynonymReport(lastBeginDate, lastEndDate).ToList();
+			});
 		}
 	}
 }

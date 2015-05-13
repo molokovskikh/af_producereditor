@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Windows.Forms;
 using ProducerEditor.Contract;
 using ProducerEditor.Infrastructure;
@@ -29,6 +30,7 @@ namespace ProducerEditor.Views
 		private readonly VirtualTable equivalentTable;
 
 		private string _searchText;
+		private Pager<AssortmentDto> lastPager;
 
 		public ShowAssortment(Pager<AssortmentDto> assortments)
 		{
@@ -41,7 +43,8 @@ namespace ProducerEditor.Views
 				.Separator()
 				.Button("Удалить (Delete)", Delete)
 				.Separator()
-				.Button("Удалить синоним", DeleteProducerSynonym);
+				.Button("Удалить синоним", DeleteProducerSynonym)
+				.Button("Обновить (F11)", Reload);
 
 			navigationToolStrip = new ToolStrip()
 				.Button("К закаладке", MoveToBookmark)
@@ -69,7 +72,8 @@ namespace ProducerEditor.Views
 			assortmentTable.TemplateManager.ResetColumns();
 			assortmentTable.Host
 				.InputMap()
-				.KeyDown(Keys.Delete, Delete);
+				.KeyDown(Keys.Delete, Delete)
+				.KeyDown(Keys.F11, Reload);
 
 			UpdateAssortment(assortments);
 
@@ -159,17 +163,7 @@ namespace ProducerEditor.Views
 
 			assortmentTable.Host.Tag = PaginatorExtention.TableName;
 
-			navigationToolStrip.ActAsPaginator(
-				assortments,
-				page => {
-					Pager<AssortmentDto> pager = null;
-					if (String.IsNullOrEmpty(_searchText))
-						Action(s => { pager = s.GetAssortmentPage(page); });
-					else
-						Action(s => { pager = s.SearchAssortment(_searchText, page); });
-					UpdateAssortment(pager);
-					return pager;
-				});
+			navigationToolStrip.ActAsPaginator(assortments, LoadPage);
 
 			MoveToBookmark();
 			Shown += (s, a) => assortmentTable.Host.Focus();
@@ -178,10 +172,25 @@ namespace ProducerEditor.Views
 			SelectedAssortmentChanged(selected);
 		}
 
+		private Pager<AssortmentDto> LoadPage(uint page)
+		{
+			Pager<AssortmentDto> pager = null;
+			if (String.IsNullOrEmpty(_searchText))
+				Action(s => { pager = s.GetAssortmentPage(page); });
+			else
+				Action(s => { pager = s.SearchAssortment(_searchText, page); });
+			UpdateAssortment(pager);
+			return pager;
+		}
+
+		private void Reload()
+		{
+			LoadPage(lastPager.Page);
+		}
+
 		private void SelectedAssortmentChanged(AssortmentDto assortment)
 		{
 			Action(s => {
-				//synonymsTable.TemplateManager.Source = s.GetSynonyms(assortment.ProducerId).ToList();
 				synonymsTable.TemplateManager.Source = s.GetSynonymsWithProduct(assortment.ProducerId, assortment.CatalogId).ToList();
 				equivalentTable.TemplateManager.Source = s.GetEquivalents(assortment.ProducerId).ToList();
 			});
@@ -260,6 +269,7 @@ namespace ProducerEditor.Views
 
 		private void UpdateAssortment(Pager<AssortmentDto> pager)
 		{
+			lastPager = pager;
 			assortmentTable.TemplateManager.Source = pager.Content.ToList();
 		}
 	}

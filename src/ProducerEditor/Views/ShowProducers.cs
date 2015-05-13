@@ -22,6 +22,7 @@ namespace ProducerEditor.Views
 {
 	public class ShowProducers : View
 	{
+		private string lastSearchTerm = "";
 		public static List<ProducerDto> producers;
 
 		private VirtualTable producerTable;
@@ -37,7 +38,7 @@ namespace ProducerEditor.Views
 			Text = "Производители";
 			searchText = ((ToolStripTextBox)toolStrip.Items["SearchText"]);
 
-			UpdateProducers();
+			Reload();
 		}
 
 		protected override void Init()
@@ -50,7 +51,8 @@ namespace ProducerEditor.Views
 				.Button("Продукты (Enter)", ShowProductsAndProducersOrOffers)
 				.Button("Показать в ассортименте", ShowAssortmentForProducer)
 				.Separator()
-				.Button("Создать эквивалент", ShowCreateEquivalentForProducer);
+				.Button("Создать эквивалент", ShowCreateEquivalentForProducer)
+				.Button("Обновить (F11)", Reload);
 			toolStrip.Tag = "Searchable";
 
 			var bookmarksToolStrip = new ToolStrip()
@@ -67,14 +69,13 @@ namespace ProducerEditor.Views
 						((IDomElementWithChildren)row.Children.Last()).Prepend(new TextBlock { Class = "BookmarkGlyph" });
 					return row;
 				}));
-			producerTable.RegisterBehavior(
-				new InputController());
+			producerTable.RegisterBehavior(new InputController());
 			producerTable.Host.Name = "Producers";
 			producerTable.Host.KeyDown += (sender, args) => {
 				if (args.KeyCode == Keys.Enter && String.IsNullOrEmpty(searchText.Text))
 					ShowProductsAndProducersOrOffers();
 				else if (args.KeyCode == Keys.Enter)
-					((ShowProducersPresenter)Presenter).Search(searchText.Text);
+					Search(searchText.Text);
 				else if (args.KeyCode == Keys.Escape && !String.IsNullOrEmpty(searchText.Text))
 					searchText.Text = "";
 				else if (args.KeyCode == Keys.Escape && String.IsNullOrEmpty(searchText.Text))
@@ -88,6 +89,8 @@ namespace ProducerEditor.Views
 				if (Char.IsLetterOrDigit(args.KeyChar))
 					searchText.Text += args.KeyChar;
 			};
+			producerTable.Host.InputMap()
+				.KeyDown(Keys.F11, Reload);
 
 			synonymsTable = new VirtualTable(new TemplateManager<ProducerSynonymDto>(
 				() => {
@@ -143,6 +146,23 @@ namespace ProducerEditor.Views
 			producersToEquivalentsSplit.SplitterDistance = (int)(0.7 * producersToEquivalentsSplit.Width);
 			Shown += (sender, args) => producerTable.Host.Focus();
 			synonymsTable.TemplateManager.ResetColumns();
+		}
+
+		public void Search(string text)
+		{
+			text = text ?? "";
+			var allProducers = producers;
+			lastSearchTerm = text;
+			if (string.IsNullOrEmpty(text))
+				((ShowProducersPresenter)Presenter).Producers = new ObservableCollection2<ProducerDto>(allProducers);
+			else
+				((ShowProducersPresenter)Presenter).Producers = new ObservableCollection2<ProducerDto>(Request(r => r.GetProducers(text)));
+
+			if (((ShowProducersPresenter)Presenter).Producers.Count == 0) {
+				MessageBox.Show("По вашему запросу ничеого не найдено", "Результаты поиска",
+					MessageBoxButtons.OK,
+					MessageBoxIcon.Warning);
+			}
 		}
 
 		private void SetBookmark()
@@ -216,9 +236,9 @@ namespace ProducerEditor.Views
 			((ShowProducersPresenter)Presenter).CurrentChanged(producer);
 		}
 
-		public void UpdateProducers()
+		public void Reload()
 		{
-			Action(s => { producers = s.GetProducers("").ToList(); });
+			Action(s => { producers = s.GetProducers(lastSearchTerm).ToList(); });
 			producerTable.TemplateManager.Source = producers;
 		}
 

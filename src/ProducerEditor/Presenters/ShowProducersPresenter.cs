@@ -73,22 +73,6 @@ namespace ProducerEditor.Presenters
 			}
 		}
 
-		public void Search(string text)
-		{
-			text = text ?? "";
-			var allProducers = ShowProducers.producers;
-			if (string.IsNullOrEmpty(text))
-				Producers = new ObservableCollection2<ProducerDto>(allProducers);
-			else
-				Producers = new ObservableCollection2<ProducerDto>(Request(r => r.GetProducers(text)));
-
-			if (Producers.Count == 0) {
-				MessageBox.Show("По вашему запросу ничеого не найдено", "Результаты поиска",
-					MessageBoxButtons.OK,
-					MessageBoxIcon.Warning);
-			}
-		}
-
 		public void CurrentChanged(ProducerDto producer)
 		{
 			Action(s => {

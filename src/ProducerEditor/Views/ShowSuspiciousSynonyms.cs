@@ -29,7 +29,8 @@ namespace ProducerEditor.Views
 			var tools = new ToolStrip()
 				.Button("Удалить (Delete)", Delete)
 				.Button("Не подозрительный (Пробел)", NotSuspicious)
-				.Button("Отправить уведомление поставщику", SendNotificationToSupplier);
+				.Button("Отправить уведомление поставщику", SendNotificationToSupplier)
+				.Button("Обновить (F11)", Reload);
 
 			report = new VirtualTable(new TemplateManager<SynonymReportItem>(
 				() => {
@@ -70,7 +71,8 @@ namespace ProducerEditor.Views
 			report.Host
 				.InputMap()
 				.KeyDown(Keys.Delete, NotSuspicious)
-				.KeyDown(Keys.Space, Delete);
+				.KeyDown(Keys.Space, Delete)
+				.KeyDown(Keys.F11, Reload);
 
 			report.TemplateManager.Source = items.ToList();
 			report.Behavior<ColumnResizeBehavior>().ColumnResized += column => WidthHolder.Update(report, column, widths);
@@ -125,6 +127,13 @@ namespace ProducerEditor.Views
 		private SynonymReportItem CurrentItem()
 		{
 			return report.Selected<SynonymReportItem>();
+		}
+
+		private void Reload()
+		{
+			Action(s => {
+				report.TemplateManager.Source = s.ShowSuspiciousSynonyms();
+			});
 		}
 	}
 }

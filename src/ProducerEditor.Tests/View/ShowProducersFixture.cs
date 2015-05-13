@@ -30,7 +30,7 @@ namespace ProducerEditor.Tests.View
 		[Test]
 		public void Update_producer_on_search()
 		{
-			presenter.Search("фарм");
+			view.Search("фарм");
 			Assert.That(presenter.Producers.Count, Is.Not.EqualTo(0));
 			Assert.That(presenter.Producers.Count, Is.LessThan(ShowProducers.producers.Count));
 			var host = view.Children().OfType<TableHost>().First(h => h.Name == "Producers");

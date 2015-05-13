@@ -6,6 +6,7 @@ using ProducerEditor.Infrastructure;
 using ProducerEditor.Presenters;
 using Subway.Dom;
 using Subway.Dom.Styles;
+using Subway.Helpers;
 using Subway.VirtualTable;
 using Subway.VirtualTable.Behaviors.Specialized;
 using View = ProducerEditor.Infrastructure.View;
@@ -73,7 +74,6 @@ namespace ProducerEditor.Views
 			split.Panel1.Controls.Add(assortment.Host);
 			split.Panel2.Controls.Add(synonymsTable.Host);
 
-
 			Controls.Add(excludes.Host);
 			Controls.Add(split);
 			Controls.Add(new Legend("WithoutOffers", "SameAsCurrent"));
@@ -86,9 +86,17 @@ namespace ProducerEditor.Views
 				.Button("MistakenExclude", "Ошибочное исключение")
 				.Button("DeleteSynonym", "Ошибочное сопоставление по наименованию")
 				.Button("MistakenProducerSynonym", "Ошибочное сопоставление по производителю")
-				.Button("AddEquivalent", "Создать эквивалент"));
+				.Button("AddEquivalent", "Создать эквивалент")
+				.Button("Обновить (F11)", Reload));
+			excludes.Host.InputMap()
+				.KeyDown(Keys.F11, Reload);
 
 			Shown += (s, a) => excludes.Host.Focus();
+		}
+
+		private void Reload()
+		{
+			((ShowExcludesPresenter)Presenter).Refresh();
 		}
 	}
 }

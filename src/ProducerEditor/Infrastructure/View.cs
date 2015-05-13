@@ -145,7 +145,7 @@ namespace ProducerEditor.Infrastructure
 		private IEnumerable<IUIPattern> DetectPatterns(object presenter)
 		{
 			var uiPatterns = new IUIPattern[] { new PagerPattern(presenter), new SearchPattern(presenter) };
-			return uiPatterns.Where(p => p.IsApplicable());
+			return uiPatterns.Where(p => p.IsApplicable(this));
 		}
 
 		protected virtual Action Controller<T>(Expression<Func<IProducerService, T>> func)

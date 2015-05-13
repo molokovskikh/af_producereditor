@@ -13,6 +13,7 @@ namespace ProducerEditor.Infrastructure.UIPatterns
 		public PagerPattern(object presenter)
 		{
 			_presenter = presenter;
+			_method = _presenter.GetType().GetMethod("Page");
 		}
 
 		public void Apply(Form view)
@@ -45,9 +46,8 @@ namespace ProducerEditor.Infrastructure.UIPatterns
 			return (IPager)_method.Invoke(_presenter, new object[] { page });
 		}
 
-		public bool IsApplicable()
+		public bool IsApplicable(Form view)
 		{
-			_method = _presenter.GetType().GetMethod("Page");
 			return _method != null;
 		}
 	}

@@ -119,7 +119,7 @@ namespace ProducerEditor.Presenters
 			return this.page;
 		}
 
-		private void Refresh()
+		public void Refresh()
 		{
 			page = RequestExcludes(page.Page, true);
 		}
