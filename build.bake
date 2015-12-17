@@ -72,7 +72,7 @@ def Clean(path as String):
 
 task @default, [@buildDeployPackage]
 
-task @build, [@clean]:
+task @build, ["packages:fix", @clean]:
 	MsBuild(projectFile,
 			Parameters : { "OutDir" : output + "\\" ,
 						   "Configuration" : "release"},
@@ -184,9 +184,7 @@ task @buildDeployPackage, [@GenerateAssemblyInfo, @build, @buildService, @buildI
 						Culture : "ru").Execute()
 	Mv("${output}setup.exe", "${output}${project}.Setup.exe")
 
-	cert = X509Certificate2(System.IO.File.ReadAllBytes(certPath), password)
-	Sh("\"signtool\" sign /sha1 ${cert.Thumbprint} ${output}${project}.Setup.exe")
-
+	Sign("${output}${project}.Setup.exe")
 	GeneratePublishPage("${output}/publish.htm", version, project)
 
 task @buildInstaller:

@@ -9,3 +9,4 @@ src/*.properties
 *.user
 *.suo
 *.gen.*
+*.vs
