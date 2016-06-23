@@ -89,6 +89,13 @@ namespace ProducerEditor.Presenters
 
 		public void Delete(ProducerDto producer)
 		{
+			if (producer.HasCompany) {
+				MessageBox.Show(String.Format("Производителя \"{0}\" нельзя удалить, потому что он имеет компанию в Интерфейсе производителя", producer.Name), "Удаление производителя",
+					MessageBoxButtons.OK,
+					MessageBoxIcon.Warning);
+				return;
+			}
+
 			var dialogResult = MessageBox.Show(String.Format("Удалить производителя \"{0}\"", producer.Name), "Удаление производителя",
 				MessageBoxButtons.OKCancel,
 				MessageBoxIcon.Question);

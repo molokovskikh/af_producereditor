@@ -16,5 +16,8 @@ namespace ProducerEditor.Contract
 
 		[DataMember]
 		public virtual bool HasOffers { get; set; }
+
+		[DataMember]
+		public virtual bool HasCompany { get; set; }
 	}
 }
