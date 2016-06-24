@@ -94,7 +94,8 @@ namespace ProducerEditor.Service
 select p.Id,
 p.Name,
 p.Checked,
-exists(select * from farm.core0 c where c.CodeFirmCr = p.Id) as HasOffers
+exists(select * from farm.core0 c where c.CodeFirmCr = p.Id) as HasOffers,
+exists(select * from producerinterface.accountcompany ac where ac.ProducerId = p.Id) as HasCompany
 from Catalogs.Producers p
 where p.Name like :text
 or exists(select * from Catalogs.ProducerEquivalents e where e.Name like :text and e.ProducerId = p.Id)
